@@ -10,6 +10,7 @@ import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Query;
@@ -35,6 +36,7 @@ public interface AuthApi {
 
     @POST("auth/v1/recover")
     Call<Void> forgotPassword(
+            @Query("redirect_to") String redirectTo,
             @Body ForgotPasswordRequest request
     );
 
@@ -45,6 +47,12 @@ public interface AuthApi {
 
     @PUT("auth/v1/user")
     Call<AuthResponse.User> updatePassword(
+            @Body UpdatePasswordRequest request
+    );
+
+    @PUT("auth/v1/user")
+    Call<AuthResponse.User> resetPassword(
+            @Header("Authorization") String authorization,
             @Body UpdatePasswordRequest request
     );
 }

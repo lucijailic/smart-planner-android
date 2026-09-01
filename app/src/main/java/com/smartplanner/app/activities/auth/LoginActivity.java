@@ -65,7 +65,12 @@ public class LoginActivity extends AppCompatActivity {
         btnSignIn.setOnClickListener(view -> attemptLogin());
 
         tvForgotPassword.setOnClickListener(view -> {
-            // Navigation will be added after ForgotPasswordActivity is created.
+            Intent intent = new Intent(
+                    LoginActivity.this,
+                    ForgotPasswordActivity.class
+            );
+
+            startActivity(intent);
         });
 
         tvCreateAccount.setOnClickListener(view -> {
