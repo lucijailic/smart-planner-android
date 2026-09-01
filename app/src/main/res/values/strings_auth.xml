@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Login -->
+    <string name="login_title">Welcome back</string>
+    <string name="login_subtitle">Sign in to continue planning your day.</string>
+
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+
+    <string name="sign_in">Sign In</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="create_account">Create account</string>
+
+    <!-- Login validation -->
+    <string name="error_invalid_email">Please enter a valid email address.</string>
+    <string name="error_password_required">Please enter your password.</string>
+    <string name="error_password_too_short">Password must contain at least 8 characters.</string>
+
+    <!-- Login errors -->
+    <string name="error_invalid_credentials">Invalid email or password.</string>
+    <string name="error_connection">Unable to connect. Please try again.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+
+    <!-- Loading -->
+    <string name="signing_in">Signing in…</string>
+
+    <!-- Register -->
+    <string name="register_title">Create your account</string>
+    <string name="register_subtitle">Start planning your tasks, events and daily activities.</string>
+
+    <string name="first_name">First name</string>
+    <string name="last_name">Last name</string>
+    <string name="confirm_password">Confirm password</string>
+
+    <string name="register">Create Account</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="back_to_sign_in">Sign In</string>
+
+    <!-- Register validation -->
+    <string name="error_first_name">Please enter your first name.</string>
+    <string name="error_last_name">Please enter your last name.</string>
+    <string name="error_passwords_do_not_match">Passwords do not match.</string>
+
+    <!-- Register state -->
+    <string name="creating_account">Creating account…</string>
+    <string name="registration_successful">Account created successfully.</string>
+</resources>
