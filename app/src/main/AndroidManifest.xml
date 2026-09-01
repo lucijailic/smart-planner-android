@@ -20,12 +20,39 @@
 
         <activity
             android:name=".activities.auth.LoginActivity"
+            android:exported="false">
+
+        </activity>
+
+        <activity
+            android:name=".activities.auth.ForgotPasswordActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.auth.SplashActivity"
             android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <activity
+            android:name=".activities.auth.ResetPasswordActivity"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="smartplanner"
+                    android:host="reset-password" />
             </intent-filter>
 
         </activity>

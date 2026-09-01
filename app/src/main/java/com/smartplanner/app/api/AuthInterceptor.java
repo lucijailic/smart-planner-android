@@ -24,6 +24,12 @@ public class AuthInterceptor implements Interceptor {
 
         Request originalRequest = chain.request();
 
+        // If the request already has an Authorization header,
+        // keep it. This is needed for flows such as password recovery.
+        if (originalRequest.header("Authorization") != null) {
+            return chain.proceed(originalRequest);
+        }
+
         String accessToken = sessionManager.getAccessToken();
 
         if (accessToken == null || accessToken.isEmpty()) {
@@ -32,7 +38,10 @@ public class AuthInterceptor implements Interceptor {
 
         Request authenticatedRequest = originalRequest
                 .newBuilder()
-                .header("Authorization", "Bearer " + accessToken)
+                .header(
+                        "Authorization",
+                        "Bearer " + accessToken
+                )
                 .build();
 
         return chain.proceed(authenticatedRequest);

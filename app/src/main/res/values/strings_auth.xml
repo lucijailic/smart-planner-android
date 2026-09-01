@@ -45,4 +45,38 @@
     <!-- Register state -->
     <string name="creating_account">Creating account…</string>
     <string name="registration_successful">Account created successfully.</string>
+
+    <!-- Splash -->
+    <string name="splash_tagline">Plan smarter. Stay organized.</string>
+
+    <!-- Forgot Password -->
+    <string name="forgot_password_title">Forgot your password?</string>
+    <string name="forgot_password_subtitle">Enter your email address and we\'ll send you instructions to reset your password.</string>
+
+    <string name="send_reset_link">Send Reset Link</string>
+    <string name="back_to_login">Back to Sign In</string>
+
+    <string name="sending_reset_link">Sending reset link…</string>
+
+    <string name="reset_link_sent">
+    If an account with this email address exists, password reset instructions have been sent.
+    </string>
+
+    <string name="error_send_reset_link">
+    Unable to send reset instructions. Please try again.
+    </string>
+
+    <!-- Reset Password -->
+    <string name="reset_password_title">Create a new password</string>
+    <string name="reset_password_subtitle">Enter a new password for your Smart Planner account.</string>
+
+    <string name="new_password">New password</string>
+    <string name="confirm_new_password">Confirm new password</string>
+
+    <string name="save_new_password">Save New Password</string>
+    <string name="saving_new_password">Saving new password…</string>
+
+    <string name="password_reset_successful">Your password has been changed successfully. Please sign in with your new password.</string>
+    <string name="error_invalid_recovery_link">This password reset link is invalid or has expired. Please request a new one.</string>
+    <string name="error_reset_password">Unable to reset password. Please try again.</string>
 </resources>

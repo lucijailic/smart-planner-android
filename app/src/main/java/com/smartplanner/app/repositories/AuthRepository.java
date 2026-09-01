@@ -158,7 +158,10 @@ public class AuthRepository {
         ForgotPasswordRequest request =
                 new ForgotPasswordRequest(email);
 
-        authApi.forgotPassword(request)
+        authApi.forgotPassword(
+                        "smartplanner://reset-password",
+                        request
+                )
                 .enqueue(new Callback<Void>() {
 
                     @Override
@@ -432,5 +435,56 @@ public class AuthRepository {
                 && !response.getAccessToken().isEmpty()
                 && response.getRefreshToken() != null
                 && !response.getRefreshToken().isEmpty();
+    }
+
+    public void resetPassword(
+            String recoveryAccessToken,
+            String newPassword,
+            AuthCallback<AuthResponse.User> callback
+    ) {
+
+        UpdatePasswordRequest request =
+                new UpdatePasswordRequest(newPassword);
+
+        authApi.resetPassword(
+                        "Bearer " + recoveryAccessToken,
+                        request
+                )
+                .enqueue(new Callback<AuthResponse.User>() {
+
+                    @Override
+                    public void onResponse(
+                            Call<AuthResponse.User> call,
+                            Response<AuthResponse.User> response
+                    ) {
+
+                        if (response.isSuccessful()
+                                && response.body() != null) {
+
+                            /*
+                             * After password recovery we require
+                             * the user to log in again.
+                             */
+                            sessionManager.clearSession();
+
+                            callback.onSuccess(response.body());
+
+                        } else {
+                            callback.onError(
+                                    "Unable to reset password."
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<AuthResponse.User> call,
+                            Throwable throwable
+                    ) {
+                        callback.onError(
+                                "Unable to connect. Please try again."
+                        );
+                    }
+                });
     }
 }
