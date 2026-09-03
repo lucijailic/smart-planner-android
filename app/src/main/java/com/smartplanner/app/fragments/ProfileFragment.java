@@ -25,6 +25,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.smartplanner.app.activities.profile.EditProfileActivity;
+import com.smartplanner.app.activities.profile.CategoriesActivity;
 
 public class ProfileFragment extends Fragment {
 
@@ -47,8 +48,9 @@ public class ProfileFragment extends Fragment {
 
     private MaterialCardView cardEditProfile;
 
-
     private ActivityResultLauncher<Intent> editProfileLauncher;
+
+    private MaterialCardView cardCategories;
 
     public ProfileFragment() {
         super(R.layout.fragment_profile);
@@ -99,6 +101,9 @@ public class ProfileFragment extends Fragment {
 
         cardEditProfile =
                 view.findViewById(R.id.cardEditProfile);
+
+        cardCategories =
+                view.findViewById(R.id.cardCategories);
     }
 
     private void initRepositories() {
@@ -142,6 +147,18 @@ public class ProfileFragment extends Fragment {
                     );
 
                     editProfileLauncher.launch(intent);
+                }
+        );
+
+        cardCategories.setOnClickListener(
+                view -> {
+
+                    Intent intent = new Intent(
+                            requireContext(),
+                            CategoriesActivity.class
+                    );
+
+                    startActivity(intent);
                 }
         );
     }
