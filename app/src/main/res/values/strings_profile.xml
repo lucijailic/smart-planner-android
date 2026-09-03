@@ -71,4 +71,25 @@
     <string name="delete_category_confirm">Delete</string>
     <string name="category_deleted">Category deleted successfully.</string>
     <string name="category_delete_error">Unable to delete category. Please try again.</string>
+
+    <!-- Notification Preferences -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_subtitle">Manage how Smart Planner reminds you about tasks and events.</string>
+
+    <string name="notifications_enabled">Notifications enabled</string>
+    <string name="notifications_enabled_description">Allow Smart Planner to send reminders for your tasks and events.</string>
+
+    <string name="default_task_reminder">Default Task Reminder</string>
+    <string name="default_event_reminder">Default Event Reminder</string>
+
+    <string name="reminder_none">None</string>
+    <string name="reminder_10_minutes">10 minutes before</string>
+    <string name="reminder_30_minutes">30 minutes before</string>
+    <string name="reminder_1_hour">1 hour before</string>
+    <string name="reminder_1_day">1 day before</string>
+
+    <string name="save_notification_preferences">Save Changes</string>
+    <string name="notification_preferences_saved">Notification preferences updated successfully.</string>
+    <string name="notification_preferences_error">Unable to load notification preferences.</string>
+    <string name="notification_preferences_update_error">Unable to update notification preferences. Please try again.</string>
 </resources>

@@ -66,6 +66,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.profile.NotificationsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
