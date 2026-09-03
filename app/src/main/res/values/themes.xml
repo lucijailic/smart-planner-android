@@ -1,9 +1,54 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.SmartPlanner" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <style name="Base.Theme.SmartPlanner"
+        parent="Theme.Material3.Light.NoActionBar">
+
+        <item name="colorPrimary">@color/sp_teal</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="colorSecondary">@color/sp_navy</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <item name="colorSurface">@color/sp_surface</item>
+        <item name="colorOnSurface">@color/sp_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/sp_text_secondary</item>
+
+        <item name="android:colorBackground">@color/sp_background</item>
+
+        <item name="android:statusBarColor">@color/sp_background</item>
+        <item name="android:navigationBarColor">@color/sp_background</item>
+
+        <item name="android:windowLightStatusBar">true</item>
+
+        <item name="android:fontFamily">sans</item>
+
     </style>
 
-    <style name="Theme.SmartPlanner" parent="Base.Theme.SmartPlanner" />
+
+    <style name="Theme.SmartPlanner"
+        parent="Base.Theme.SmartPlanner" />
+
+
+    <!-- LOGIN INPUT -->
+
+    <style name="Widget.SmartPlanner.LoginInput"
+        parent="Widget.Material3.TextInputLayout.OutlinedBox">
+
+        <item name="boxBackgroundColor">@color/sp_surface</item>
+
+        <item name="boxStrokeColor">@color/login_input_stroke</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+
+        <item name="boxCornerRadiusTopStart">20dp</item>
+        <item name="boxCornerRadiusTopEnd">20dp</item>
+        <item name="boxCornerRadiusBottomStart">20dp</item>
+        <item name="boxCornerRadiusBottomEnd">20dp</item>
+
+        <item name="hintTextColor">@color/sp_text_hint</item>
+
+    </style>
+
 </resources>

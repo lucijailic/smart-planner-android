@@ -1,5 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- SMART PLANNER BRAND -->
+    <color name="sp_teal">#46C8BE</color>
+    <color name="sp_teal_dark">#20A8A6</color>
+    <color name="sp_teal_deep">#148E93</color>
+    <color name="sp_mint">#78DDD0</color>
+
+    <!-- TEXT -->
+    <color name="sp_navy">#214A75</color>
+    <color name="sp_text_primary">#183B5B</color>
+    <color name="sp_text_secondary">#7A8B9D</color>
+    <color name="sp_text_hint">#96A4B1</color>
+
+    <!-- BACKGROUND -->
+    <color name="sp_background">#F7FCFB</color>
+    <color name="sp_surface">#FFFFFF</color>
+    <color name="sp_surface_soft">#F4FAF9</color>
+
+    <!-- BORDERS -->
+    <color name="sp_border">#DCE9E8</color>
+    <color name="sp_border_focus">#48C7BE</color>
+
+    <!-- ERROR -->
+    <color name="sp_error">#D84C4C</color>
+
 </resources>
