@@ -58,6 +58,10 @@
         </activity>
 
         <activity
+            android:name=".activities.profile.EditProfileActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
