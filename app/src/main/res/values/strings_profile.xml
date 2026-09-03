@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+
+    <!-- Profile sections -->
+    <string name="profile_account">Account</string>
+    <string name="profile_preferences">Preferences</string>
+    <string name="profile_other">Other</string>
+
+    <!-- Profile actions -->
+    <string name="edit_profile">Edit Profile</string>
+    <string name="categories">Categories</string>
+    <string name="notifications">Notifications</string>
+    <string name="settings">Settings</string>
+    <string name="about_app">About App</string>
+    <string name="log_out">Log Out</string>
+
+    <!-- Profile state -->
+    <string name="profile_error">Unable to load your profile.</string>
+    <string name="try_again">Try Again</string>
+
+    <!-- Edit Profile -->
+    <string name="edit_profile_title">Edit Profile</string>
+    <string name="edit_profile_subtitle">Update your personal information.</string>
+    <string name="email_read_only">Email address cannot be changed here.</string>
+
+    <string name="save_changes">Save Changes</string>
+    <string name="saving_changes">Saving changes…</string>
+
+    <string name="profile_updated">Profile updated successfully.</string>
+    <string name="profile_update_error">Unable to update your profile. Please try again.</string>
+
+    <string name="discard_changes_title">Discard changes?</string>
+    <string name="discard_changes_message">You have unsaved changes. Are you sure you want to leave?</string>
+    <string name="continue_editing">Continue Editing</string>
+    <string name="discard">Discard</string>
+</resources>
