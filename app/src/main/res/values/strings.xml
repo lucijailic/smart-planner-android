@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Smart Planner</string>
+
+    <!-- Main navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_events">Events</string>
+    <string name="nav_statistics">Statistics</string>
+    <string name="nav_profile">Profile</string>
 </resources>
