@@ -27,6 +27,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import com.smartplanner.app.activities.profile.EditProfileActivity;
 import com.smartplanner.app.activities.profile.CategoriesActivity;
 import com.smartplanner.app.activities.profile.NotificationsActivity;
+import com.smartplanner.app.activities.profile.SettingsActivity;
 
 public class ProfileFragment extends Fragment {
 
@@ -54,6 +55,8 @@ public class ProfileFragment extends Fragment {
     private MaterialCardView cardCategories;
 
     private MaterialCardView cardNotifications;
+
+    private MaterialCardView cardSettings;
 
     public ProfileFragment() {
         super(R.layout.fragment_profile);
@@ -110,6 +113,9 @@ public class ProfileFragment extends Fragment {
 
         cardNotifications =
                 view.findViewById(R.id.cardNotifications);
+
+        cardSettings =
+                view.findViewById(R.id.cardSettings);
     }
 
     private void initRepositories() {
@@ -174,6 +180,18 @@ public class ProfileFragment extends Fragment {
                     Intent intent = new Intent(
                             requireContext(),
                             NotificationsActivity.class
+                    );
+
+                    startActivity(intent);
+                }
+        );
+
+        cardSettings.setOnClickListener(
+                view -> {
+
+                    Intent intent = new Intent(
+                            requireContext(),
+                            SettingsActivity.class
                     );
 
                     startActivity(intent);

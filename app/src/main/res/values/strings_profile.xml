@@ -92,4 +92,27 @@
     <string name="notification_preferences_saved">Notification preferences updated successfully.</string>
     <string name="notification_preferences_error">Unable to load notification preferences.</string>
     <string name="notification_preferences_update_error">Unable to update notification preferences. Please try again.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_app">App</string>
+
+    <string name="change_password">Change Password</string>
+    <string name="change_password_description">Update your account password.</string>
+
+    <string name="about_app_description">Learn more about Smart Planner.</string>
+
+    <!-- Change Password -->
+    <string name="change_password_title">Change Password</string>
+    <string name="change_password_subtitle">Choose a new password for your Smart Planner account.</string>
+    <string name="change_password_success">Password changed successfully.</string>
+    <string name="change_password_error">Unable to change password. Please try again.</string>
+    <string name="error_confirm_password_required">Please confirm your new password.</string>
+
+    <!-- About App -->
+    <string name="about_dialog_title">Smart Planner</string>
+    <string name="about_dialog_description">Smart Planner helps you organize tasks, events and daily activities in one place.</string>
+    <string name="about_dialog_version">Version %1$s</string>
+    <string name="close">Close</string>
 </resources>
