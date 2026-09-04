@@ -2,32 +2,35 @@ package com.smartplanner.app.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.smartplanner.app.BuildConfig;
 import com.smartplanner.app.R;
 import com.smartplanner.app.activities.auth.LoginActivity;
+import com.smartplanner.app.activities.profile.CategoriesActivity;
+import com.smartplanner.app.activities.profile.EditProfileActivity;
+import com.smartplanner.app.activities.profile.NotificationsActivity;
+import com.smartplanner.app.activities.profile.SettingsActivity;
 import com.smartplanner.app.models.UiState;
 import com.smartplanner.app.models.UserProfile;
 import com.smartplanner.app.repositories.AuthRepository;
 import com.smartplanner.app.viewmodels.ProfileViewModel;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-
-import com.smartplanner.app.activities.profile.EditProfileActivity;
-import com.smartplanner.app.activities.profile.CategoriesActivity;
-import com.smartplanner.app.activities.profile.NotificationsActivity;
-import com.smartplanner.app.activities.profile.SettingsActivity;
 
 public class ProfileFragment extends Fragment {
 
@@ -43,20 +46,17 @@ public class ProfileFragment extends Fragment {
 
     private MaterialButton btnRetryProfile;
 
+    private MaterialCardView cardEditProfile;
+    private MaterialCardView cardCategories;
+    private MaterialCardView cardNotifications;
+    private MaterialCardView cardSettings;
+    private MaterialCardView cardAbout;
     private MaterialCardView cardLogout;
 
     private ProfileViewModel profileViewModel;
     private AuthRepository authRepository;
 
-    private MaterialCardView cardEditProfile;
-
     private ActivityResultLauncher<Intent> editProfileLauncher;
-
-    private MaterialCardView cardCategories;
-
-    private MaterialCardView cardNotifications;
-
-    private MaterialCardView cardSettings;
 
     public ProfileFragment() {
         super(R.layout.fragment_profile);
@@ -71,9 +71,9 @@ public class ProfileFragment extends Fragment {
 
         initViews(view);
         initRepositories();
+        setupActivityResultLaunchers();
         setupViewModel();
         setupListeners();
-        setupActivityResultLaunchers();
     }
 
     private void initViews(View view) {
@@ -102,9 +102,6 @@ public class ProfileFragment extends Fragment {
         btnRetryProfile =
                 view.findViewById(R.id.btnRetryProfile);
 
-        cardLogout =
-                view.findViewById(R.id.cardLogout);
-
         cardEditProfile =
                 view.findViewById(R.id.cardEditProfile);
 
@@ -116,12 +113,34 @@ public class ProfileFragment extends Fragment {
 
         cardSettings =
                 view.findViewById(R.id.cardSettings);
+
+        cardAbout =
+                view.findViewById(R.id.cardAbout);
+
+        cardLogout =
+                view.findViewById(R.id.cardLogout);
     }
 
     private void initRepositories() {
 
         authRepository =
                 new AuthRepository(requireContext());
+    }
+
+    private void setupActivityResultLaunchers() {
+
+        editProfileLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.StartActivityForResult(),
+                        result -> {
+
+                            if (result.getResultCode()
+                                    == requireActivity().RESULT_OK) {
+
+                                profileViewModel.loadProfile();
+                            }
+                        }
+                );
     }
 
     private void setupViewModel() {
@@ -146,57 +165,113 @@ public class ProfileFragment extends Fragment {
                 view -> profileViewModel.loadProfile()
         );
 
-        cardLogout.setOnClickListener(
-                view -> performLogout()
-        );
-
         cardEditProfile.setOnClickListener(
-                view -> {
-
-                    Intent intent = new Intent(
-                            requireContext(),
-                            EditProfileActivity.class
-                    );
-
-                    editProfileLauncher.launch(intent);
-                }
+                view -> openEditProfile()
         );
 
         cardCategories.setOnClickListener(
-                view -> {
-
-                    Intent intent = new Intent(
-                            requireContext(),
-                            CategoriesActivity.class
-                    );
-
-                    startActivity(intent);
-                }
+                view -> openCategories()
         );
 
         cardNotifications.setOnClickListener(
-                view -> {
-
-                    Intent intent = new Intent(
-                            requireContext(),
-                            NotificationsActivity.class
-                    );
-
-                    startActivity(intent);
-                }
+                view -> openNotifications()
         );
 
         cardSettings.setOnClickListener(
-                view -> {
-
-                    Intent intent = new Intent(
-                            requireContext(),
-                            SettingsActivity.class
-                    );
-
-                    startActivity(intent);
-                }
+                view -> openSettings()
         );
+
+        cardAbout.setOnClickListener(
+                view -> showAboutDialog()
+        );
+
+        cardLogout.setOnClickListener(
+                view -> performLogout()
+        );
+    }
+
+    private void openEditProfile() {
+
+        Intent intent = new Intent(
+                requireContext(),
+                EditProfileActivity.class
+        );
+
+        editProfileLauncher.launch(intent);
+    }
+
+    private void openCategories() {
+
+        Intent intent = new Intent(
+                requireContext(),
+                CategoriesActivity.class
+        );
+
+        startActivity(intent);
+    }
+
+    private void openNotifications() {
+
+        Intent intent = new Intent(
+                requireContext(),
+                NotificationsActivity.class
+        );
+
+        startActivity(intent);
+    }
+
+    private void openSettings() {
+
+        Intent intent = new Intent(
+                requireContext(),
+                SettingsActivity.class
+        );
+
+        startActivity(intent);
+    }
+
+    private void showAboutDialog() {
+
+        if (!isAdded()) {
+            return;
+        }
+
+        View dialogView =
+                LayoutInflater.from(requireContext())
+                        .inflate(
+                                R.layout.dialog_about_app,
+                                null
+                        );
+
+        TextView tvAboutVersion =
+                dialogView.findViewById(
+                        R.id.tvAboutVersion
+                );
+
+        MaterialButton btnCloseAbout =
+                dialogView.findViewById(
+                        R.id.btnCloseAbout
+                );
+
+        tvAboutVersion.setText(
+                getString(
+                        R.string.about_dialog_version,
+                        BuildConfig.VERSION_NAME
+                )
+        );
+
+        AlertDialog aboutDialog =
+                new MaterialAlertDialogBuilder(
+                        requireContext()
+                )
+                        .setView(dialogView)
+                        .create();
+
+        btnCloseAbout.setOnClickListener(
+                view -> aboutDialog.dismiss()
+        );
+
+        aboutDialog.show();
     }
 
     private void performLogout() {
@@ -214,7 +289,7 @@ public class ProfileFragment extends Fragment {
                         }
 
                         requireActivity().runOnUiThread(
-                                () -> openLogin()
+                                ProfileFragment.this::openLogin
                         );
                     }
 
@@ -228,17 +303,16 @@ public class ProfileFragment extends Fragment {
                         requireActivity().runOnUiThread(
                                 () -> {
 
-                                    Toast.makeText(
-                                            requireContext(),
-                                            message,
-                                            Toast.LENGTH_SHORT
-                                    ).show();
+                                    if (message != null
+                                            && !message.trim().isEmpty()) {
 
-                                    /*
-                                     * AuthRepository already clears
-                                     * the local session even if the
-                                     * Supabase logout request fails.
-                                     */
+                                        Toast.makeText(
+                                                requireContext(),
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                        ).show();
+                                    }
+
                                     openLogin();
                                 }
                         );
@@ -363,21 +437,5 @@ public class ProfileFragment extends Fragment {
 
             tvProfileError.setText(message);
         }
-    }
-
-    private void setupActivityResultLaunchers() {
-
-        editProfileLauncher =
-                registerForActivityResult(
-                        new ActivityResultContracts.StartActivityForResult(),
-                        result -> {
-
-                            if (result.getResultCode()
-                                    == requireActivity().RESULT_OK) {
-
-                                profileViewModel.loadProfile();
-                            }
-                        }
-                );
     }
 }

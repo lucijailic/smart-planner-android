@@ -10,7 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.smartplanner.app.R;
 import com.smartplanner.app.models.Category;
 
@@ -58,13 +58,14 @@ public class CategoryAdapter
             int viewType
     ) {
 
-        View view = LayoutInflater
-                .from(parent.getContext())
-                .inflate(
-                        R.layout.item_category,
-                        parent,
-                        false
-                );
+        View view =
+                LayoutInflater
+                        .from(parent.getContext())
+                        .inflate(
+                                R.layout.item_category,
+                                parent,
+                                false
+                        );
 
         return new CategoryViewHolder(view);
     }
@@ -96,8 +97,8 @@ public class CategoryAdapter
 
         private final TextView tvCategoryName;
 
-        private final MaterialButton btnEditCategory;
-        private final MaterialButton btnDeleteCategory;
+        private final MaterialCardView btnEditCategory;
+        private final MaterialCardView btnDeleteCategory;
 
         public CategoryViewHolder(
                 @NonNull View itemView
@@ -139,15 +140,17 @@ public class CategoryAdapter
             );
 
             btnEditCategory.setOnClickListener(
-                    view -> listener.onEditCategory(
-                            category
-                    )
+                    view ->
+                            listener.onEditCategory(
+                                    category
+                            )
             );
 
             btnDeleteCategory.setOnClickListener(
-                    view -> listener.onDeleteCategory(
-                            category
-                    )
+                    view ->
+                            listener.onDeleteCategory(
+                                    category
+                            )
             );
         }
 
@@ -167,52 +170,44 @@ public class CategoryAdapter
 
             try {
 
-                GradientDrawable drawable =
-                        new GradientDrawable();
-
-                drawable.setShape(
-                        GradientDrawable.RECTANGLE
-                );
-
-                drawable.setCornerRadius(
-                        dpToPx(8)
-                );
-
-                drawable.setColor(
-                        Color.parseColor(
+                viewCategoryColor.setBackground(
+                        createIndicatorDrawable(
                                 safeColor
                         )
                 );
 
+            } catch (IllegalArgumentException exception) {
+
                 viewCategoryColor.setBackground(
-                        drawable
-                );
-
-            } catch (
-                    IllegalArgumentException exception
-            ) {
-
-                GradientDrawable fallbackDrawable =
-                        new GradientDrawable();
-
-                fallbackDrawable.setShape(
-                        GradientDrawable.RECTANGLE
-                );
-
-                fallbackDrawable.setCornerRadius(
-                        dpToPx(8)
-                );
-
-                fallbackDrawable.setColor(
-                        Color.parseColor(
+                        createIndicatorDrawable(
                                 "#46C8BE"
                         )
                 );
-
-                viewCategoryColor.setBackground(
-                        fallbackDrawable
-                );
             }
+        }
+
+        private GradientDrawable createIndicatorDrawable(
+                String colorHex
+        ) {
+
+            GradientDrawable drawable =
+                    new GradientDrawable();
+
+            drawable.setShape(
+                    GradientDrawable.RECTANGLE
+            );
+
+            drawable.setCornerRadius(
+                    dpToPx(8)
+            );
+
+            drawable.setColor(
+                    Color.parseColor(
+                            colorHex
+                    )
+            );
+
+            return drawable;
         }
 
         private float dpToPx(
