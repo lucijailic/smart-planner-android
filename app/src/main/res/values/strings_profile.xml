@@ -17,6 +17,11 @@
     <string name="about_app">About App</string>
     <string name="log_out">Log Out</string>
 
+    <string name="profile_categories_description">Organize your tasks and events.</string>
+    <string name="profile_notifications_description">Manage reminders and alerts.</string>
+    <string name="profile_settings_description">Account and app preferences.</string>
+    <string name="profile_about_description">Learn more about Smart Planner.</string>
+
     <!-- Profile state -->
     <string name="profile_error">Unable to load your profile.</string>
     <string name="try_again">Try Again</string>
@@ -24,6 +29,12 @@
     <!-- Edit Profile -->
     <string name="edit_profile_title">Edit Profile</string>
     <string name="edit_profile_subtitle">Update your personal information.</string>
+
+    <string name="edit_profile_card_title">Your profile</string>
+    <string name="edit_profile_card_description">Update your name and review your account email.</string>
+
+    <string name="personal_information">Personal information</string>
+
     <string name="email_read_only">Email address cannot be changed here.</string>
 
     <string name="save_changes">Save Changes</string>
@@ -56,6 +67,16 @@
     <string name="category_color">Color</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="your_categories">Your categories</string>
+    <string name="manage_categories">Manage categories</string>
+    <string name="manage_categories_description">Create a category for your planner.</string>
+    <string name="add">Add</string>
+    <string name="choose_category_color">Choose a color</string>
+    <string name="category_preview">Preview</string>
+    <string name="category_preview_default">Category</string>
+    <string name="category_name_example">e.g. Work</string>
+    <string name="categories_footer_title">Keep everything organized</string>
+    <string name="categories_footer_description">Create categories to better organize your tasks and events.</string>
 
     <!-- Category actions -->
     <string name="edit_category">Edit Category</string>
@@ -92,16 +113,24 @@
     <string name="notification_preferences_saved">Notification preferences updated successfully.</string>
     <string name="notification_preferences_error">Unable to load notification preferences.</string>
     <string name="notification_preferences_update_error">Unable to update notification preferences. Please try again.</string>
+    <string name="notifications_hero_title">Stay on track</string>
+    <string name="notifications_hero_description">Get timely reminders so you never miss an important task or event.</string>
+
+    <string name="notifications_off_title">Notifications are off</string>
+    <string name="notifications_off_description">Turn on notifications to receive reminders for your tasks and events.</string>
+
+    <string name="task_reminder_description">Choose when to be reminded about your tasks.</string>
+    <string name="event_reminder_description">Choose when to be reminded about your events.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_account">Account</string>
-    <string name="settings_app">App</string>
 
     <string name="change_password">Change Password</string>
     <string name="change_password_description">Update your account password.</string>
-
-    <string name="about_app_description">Learn more about Smart Planner.</string>
+    <string name="settings_subtitle">Manage your account and security preferences.</string>
+    <string name="settings_security_title">Account security</string>
+    <string name="settings_security_description">Keep your Smart Planner account secure by using a strong password.</string>
 
     <!-- Change Password -->
     <string name="change_password_title">Change Password</string>
@@ -109,10 +138,15 @@
     <string name="change_password_success">Password changed successfully.</string>
     <string name="change_password_error">Unable to change password. Please try again.</string>
     <string name="error_confirm_password_required">Please confirm your new password.</string>
+    <string name="create_strong_password">Create a strong password</string>
+    <string name="password_security_hint">Use a password that is difficult for others to guess.</string>
+    <string name="new_password_section">New password</string>
+    <string name="password_requirement_hint">Use at least 8 characters and make sure both passwords match.</string>
 
     <!-- About App -->
     <string name="about_dialog_title">Smart Planner</string>
     <string name="about_dialog_description">Smart Planner helps you organize tasks, events and daily activities in one place.</string>
     <string name="about_dialog_version">Version %1$s</string>
     <string name="close">Close</string>
+
 </resources>

@@ -6,18 +6,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sp_background"
+    android:fadeScrollbars="true"
     android:fillViewport="true"
-    android:overScrollMode="never">
+    android:fitsSystemWindows="true"
+    android:overScrollMode="never"
+    android:scrollbarStyle="insideInset"
+    android:scrollbars="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="700dp"
         android:paddingStart="24dp"
-        android:paddingTop="28dp"
+        android:paddingTop="26dp"
         android:paddingEnd="24dp"
-        android:paddingBottom="32dp">
-
+        android:paddingBottom="24dp">
 
         <!-- TITLE -->
 
@@ -25,13 +28,13 @@
             android:id="@+id/tvNotificationsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-rounded"
             android:text="@string/notifications_title"
             android:textColor="@color/sp_text_primary"
-            android:textSize="30sp"
+            android:textSize="28sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
 
         <!-- SUBTITLE -->
 
@@ -39,14 +42,13 @@
             android:id="@+id/tvNotificationsSubtitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
+            android:layout_marginTop="4dp"
             android:text="@string/notifications_subtitle"
             android:textColor="@color/sp_text_secondary"
-            android:textSize="14sp"
+            android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvNotificationsTitle" />
-
 
         <!-- LOADING -->
 
@@ -54,13 +56,12 @@
             android:id="@+id/progressNotificationsLoading"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_marginTop="90dp"
+            android:layout_marginTop="70dp"
             android:indeterminateTint="@color/sp_teal"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvNotificationsSubtitle" />
-
 
         <!-- FORM -->
 
@@ -68,42 +69,111 @@
             android:id="@+id/layoutNotificationsForm"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="16dp"
             android:orientation="vertical"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvNotificationsSubtitle">
 
+            <!-- HERO -->
 
-            <!-- ENABLE NOTIFICATIONS CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardNotificationHero"
+                android:layout_width="match_parent"
+                android:layout_height="88dp"
+                app:cardBackgroundColor="@color/sp_surface_soft"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/sp_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_notifications_hero"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="16dp">
+
+                    <FrameLayout
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@drawable/bg_notification_bell_icon">
+
+                        <ImageView
+                            android:id="@+id/ivNotificationHeroIcon"
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_profile_notifications"
+                            app:tint="@color/sp_teal_deep" />
+
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="13dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvNotificationHeroTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-rounded"
+                            android:text="@string/notifications_hero_title"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvNotificationHeroDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/notifications_hero_description"
+                            android:textColor="@color/sp_text_secondary"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ENABLE -->
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="94dp"
+                android:layout_marginTop="12dp"
                 app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
+                app:cardElevation="1dp"
                 app:strokeColor="@color/sp_border"
                 app:strokeWidth="1dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="92dp"
-                    android:paddingStart="18dp"
-                    android:paddingTop="16dp"
+                    android:layout_height="match_parent"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
                     android:paddingEnd="14dp"
-                    android:paddingBottom="16dp">
+                    android:paddingBottom="14dp">
 
                     <TextView
                         android:id="@+id/tvNotificationsEnabled"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="14dp"
+                        android:fontFamily="sans-serif-rounded"
                         android:text="@string/notifications_enabled"
                         android:textColor="@color/sp_text_primary"
-                        android:textSize="16sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
                         app:layout_constraintEnd_toStartOf="@id/switchNotificationsEnabled"
                         app:layout_constraintStart_toStartOf="parent"
@@ -113,11 +183,11 @@
                         android:id="@+id/tvNotificationsEnabledDescription"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
+                        android:layout_marginTop="3dp"
                         android:layout_marginEnd="14dp"
                         android:text="@string/notifications_enabled_description"
                         android:textColor="@color/sp_text_secondary"
-                        android:textSize="13sp"
+                        android:textSize="11sp"
                         app:layout_constraintEnd_toStartOf="@id/switchNotificationsEnabled"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tvNotificationsEnabled" />
@@ -134,122 +204,238 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- TASK -->
 
-            <!-- TASK REMINDER LABEL -->
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:layout_marginBottom="9dp"
-                android:text="@string/default_task_reminder"
-                android:textColor="@color/sp_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-
-            <!-- TASK REMINDER -->
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilTaskReminder"
-                style="@style/Widget.SmartPlanner.LoginInput"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTaskReminder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:endIconMode="dropdown_menu">
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="1dp"
+                app:strokeColor="@color/sp_border"
+                app:strokeWidth="1dp">
 
-                <AutoCompleteTextView
-                    android:id="@+id/actTaskReminder"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:focusable="false"
-                    android:gravity="center_vertical"
-                    android:inputType="none"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="8dp"
-                    android:textColor="@color/sp_text_primary"
-                    android:textSize="15sp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="14dp"
+                    android:paddingTop="13dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="13dp">
 
-            </com.google.android.material.textfield.TextInputLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
+                        <FrameLayout
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="@drawable/bg_notification_task_icon">
 
-            <!-- EVENT REMINDER LABEL -->
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@null"
+                                android:src="@drawable/ic_nav_tasks"
+                                app:tint="#4E83F1" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="9dp"
-                android:text="@string/default_event_reminder"
-                android:textColor="@color/sp_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                        </FrameLayout>
 
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
-            <!-- EVENT REMINDER -->
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-rounded"
+                                android:text="@string/default_task_reminder"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilEventReminder"
-                style="@style/Widget.SmartPlanner.LoginInput"
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/task_reminder_description"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="11sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilTaskReminder"
+                        style="@style/Widget.SmartPlanner.LoginInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        app:endIconMode="dropdown_menu">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/actTaskReminder"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:focusable="false"
+                            android:gravity="center_vertical"
+                            android:inputType="none"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="8dp"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="14sp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- EVENT -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEventReminder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:endIconMode="dropdown_menu">
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="1dp"
+                app:strokeColor="@color/sp_border"
+                app:strokeWidth="1dp">
 
-                <AutoCompleteTextView
-                    android:id="@+id/actEventReminder"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:focusable="false"
-                    android:gravity="center_vertical"
-                    android:inputType="none"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="8dp"
-                    android:textColor="@color/sp_text_primary"
-                    android:textSize="15sp" />
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="14dp"
+                    android:paddingTop="13dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="13dp">
 
-            </com.google.android.material.textfield.TextInputLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
+                        <FrameLayout
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="@drawable/bg_notification_event_icon">
 
-            <!-- SAVE BUTTON -->
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@null"
+                                android:src="@drawable/ic_nav_events"
+                                app:tint="#E96C85" />
+
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-rounded"
+                                android:text="@string/default_event_reminder"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/event_reminder_description"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="11sp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilEventReminder"
+                        style="@style/Widget.SmartPlanner.LoginInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        app:endIconMode="dropdown_menu">
+
+                        <AutoCompleteTextView
+                            android:id="@+id/actEventReminder"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:focusable="false"
+                            android:gravity="center_vertical"
+                            android:inputType="none"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="8dp"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="14sp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- SAVE -->
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveNotifications"
                 android:layout_width="match_parent"
-                android:layout_height="62dp"
-                android:layout_marginTop="34dp"
-                android:background="@drawable/bg_login_button"
-                android:elevation="6dp"
+                android:layout_height="54dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_categories_add_button"
+                android:elevation="2dp"
+                android:fontFamily="sans-serif-rounded"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:text="@string/save_notification_preferences"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 app:backgroundTint="@null"
-                app:cornerRadius="20dp" />
-
-
-            <!-- SAVE PROGRESS -->
+                app:cornerRadius="18dp" />
 
             <ProgressBar
                 android:id="@+id/progressSaveNotifications"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:indeterminateTint="@color/sp_teal"
                 android:visibility="gone" />
 
         </LinearLayout>
 
-
-        <!-- ERROR STATE -->
+        <!-- ERROR -->
 
         <LinearLayout
             android:id="@+id/layoutNotificationsError"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="90dp"
+            android:layout_marginTop="70dp"
             android:gravity="center"
             android:orientation="vertical"
             android:visibility="gone"
@@ -269,13 +455,15 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRetryNotifications"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_marginTop="18dp"
+                android:layout_height="46dp"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif-rounded"
                 android:text="@string/try_again"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
+                android:textStyle="bold"
                 app:backgroundTint="@color/sp_teal_dark"
-                app:cornerRadius="16dp" />
+                app:cornerRadius="15dp" />
 
         </LinearLayout>
 

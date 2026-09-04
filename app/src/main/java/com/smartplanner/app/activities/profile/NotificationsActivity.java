@@ -1,24 +1,28 @@
 package com.smartplanner.app.activities.profile;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.textfield.TextInputLayout;
 import com.smartplanner.app.R;
 import com.smartplanner.app.models.NotificationPreferences;
 import com.smartplanner.app.models.UiState;
 import com.smartplanner.app.viewmodels.NotificationPreferencesViewModel;
-import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,7 +53,19 @@ public class NotificationsActivity
 
     private TextView tvNotificationsError;
 
+    private TextView tvNotificationHeroTitle;
+    private TextView tvNotificationHeroDescription;
+
+    private ImageView ivNotificationHeroIcon;
+
+    private MaterialCardView cardNotificationHero;
+    private MaterialCardView cardTaskReminder;
+    private MaterialCardView cardEventReminder;
+
     private MaterialSwitch switchNotificationsEnabled;
+
+    private TextInputLayout tilTaskReminder;
+    private TextInputLayout tilEventReminder;
 
     private AutoCompleteTextView actTaskReminder;
     private AutoCompleteTextView actEventReminder;
@@ -66,9 +82,6 @@ public class NotificationsActivity
             new LinkedHashMap<>();
 
     private boolean preferencesLoaded = false;
-
-    private TextInputLayout tilTaskReminder;
-    private TextInputLayout tilEventReminder;
 
     @Override
     protected void onCreate(
@@ -113,9 +126,49 @@ public class NotificationsActivity
                         R.id.tvNotificationsError
                 );
 
+        cardNotificationHero =
+                findViewById(
+                        R.id.cardNotificationHero
+                );
+
+        tvNotificationHeroTitle =
+                findViewById(
+                        R.id.tvNotificationHeroTitle
+                );
+
+        tvNotificationHeroDescription =
+                findViewById(
+                        R.id.tvNotificationHeroDescription
+                );
+
+        ivNotificationHeroIcon =
+                findViewById(
+                        R.id.ivNotificationHeroIcon
+                );
+
+        cardTaskReminder =
+                findViewById(
+                        R.id.cardTaskReminder
+                );
+
+        cardEventReminder =
+                findViewById(
+                        R.id.cardEventReminder
+                );
+
         switchNotificationsEnabled =
                 findViewById(
                         R.id.switchNotificationsEnabled
+                );
+
+        tilTaskReminder =
+                findViewById(
+                        R.id.tilTaskReminder
+                );
+
+        tilEventReminder =
+                findViewById(
+                        R.id.tilEventReminder
                 );
 
         actTaskReminder =
@@ -137,12 +190,6 @@ public class NotificationsActivity
                 findViewById(
                         R.id.btnRetryNotifications
                 );
-
-        tilTaskReminder =
-                findViewById(R.id.tilTaskReminder);
-
-        tilEventReminder =
-                findViewById(R.id.tilEventReminder);
     }
 
     private void setupReminderOptions() {
@@ -246,19 +293,86 @@ public class NotificationsActivity
     private void setupListeners() {
 
         btnRetryNotifications.setOnClickListener(
-                view -> viewModel.loadPreferences()
+                view ->
+                        viewModel.loadPreferences()
         );
 
         btnSaveNotifications.setOnClickListener(
-                view -> savePreferences()
+                view ->
+                        savePreferences()
         );
 
         switchNotificationsEnabled.setOnCheckedChangeListener(
-                (buttonView, isChecked) ->
-                        updateReminderFieldsEnabledState(
-                                isChecked
-                        )
+                (buttonView, isChecked) -> {
+
+                    updateNotificationUi(
+                            isChecked
+                    );
+                }
         );
+    }
+
+    private void updateNotificationUi(
+            boolean enabled
+    ) {
+
+        updateHeroState(enabled);
+
+        updateReminderFieldsEnabledState(
+                enabled
+        );
+    }
+
+    private void updateHeroState(
+            boolean enabled
+    ) {
+
+        if (enabled) {
+
+            tvNotificationHeroTitle.setText(
+                    R.string.notifications_hero_title
+            );
+
+            tvNotificationHeroDescription.setText(
+                    R.string.notifications_hero_description
+            );
+
+            ivNotificationHeroIcon.setImageTintList(
+                    ColorStateList.valueOf(
+                            ContextCompat.getColor(
+                                    this,
+                                    R.color.sp_teal_deep
+                            )
+                    )
+            );
+
+            cardNotificationHero.setAlpha(
+                    1.0f
+            );
+
+        } else {
+
+            tvNotificationHeroTitle.setText(
+                    R.string.notifications_off_title
+            );
+
+            tvNotificationHeroDescription.setText(
+                    R.string.notifications_off_description
+            );
+
+            ivNotificationHeroIcon.setImageTintList(
+                    ColorStateList.valueOf(
+                            ContextCompat.getColor(
+                                    this,
+                                    R.color.sp_text_hint
+                            )
+                    )
+            );
+
+            cardNotificationHero.setAlpha(
+                    0.82f
+            );
+        }
     }
 
     private void renderPreferencesState(
@@ -393,6 +507,7 @@ public class NotificationsActivity
                 );
 
         if (taskLabel == null) {
+
             taskLabel =
                     getString(
                             R.string.reminder_1_day
@@ -400,6 +515,7 @@ public class NotificationsActivity
         }
 
         if (eventLabel == null) {
+
             eventLabel =
                     getString(
                             R.string.reminder_30_minutes
@@ -416,7 +532,7 @@ public class NotificationsActivity
                 false
         );
 
-        updateReminderFieldsEnabledState(
+        updateNotificationUi(
                 preferences.isNotificationsEnabled()
         );
 
@@ -475,11 +591,13 @@ public class NotificationsActivity
                 );
 
         if (taskReminder == null) {
+
             taskReminder =
                     REMINDER_ONE_DAY;
         }
 
         if (eventReminder == null) {
+
             eventReminder =
                     REMINDER_THIRTY_MINUTES;
         }
@@ -496,26 +614,50 @@ public class NotificationsActivity
             boolean enabled
     ) {
 
-        // Disable/enable the complete Material input containers.
-        // This also disables the dropdown end icon.
-        tilTaskReminder.setEnabled(enabled);
-        tilEventReminder.setEnabled(enabled);
+        tilTaskReminder.setEnabled(
+                enabled
+        );
 
-        // Disable/enable the actual dropdown fields.
-        actTaskReminder.setEnabled(enabled);
-        actEventReminder.setEnabled(enabled);
+        tilEventReminder.setEnabled(
+                enabled
+        );
 
-        actTaskReminder.setClickable(enabled);
-        actEventReminder.setClickable(enabled);
+        actTaskReminder.setEnabled(
+                enabled
+        );
 
-        actTaskReminder.setFocusable(enabled);
-        actEventReminder.setFocusable(enabled);
+        actEventReminder.setEnabled(
+                enabled
+        );
 
-        // Visually indicate that reminder options are unavailable.
-        float alpha = enabled ? 1.0f : 0.35f;
+        actTaskReminder.setClickable(
+                enabled
+        );
 
-        tilTaskReminder.setAlpha(alpha);
-        tilEventReminder.setAlpha(alpha);
+        actEventReminder.setClickable(
+                enabled
+        );
+
+        actTaskReminder.setFocusable(
+                enabled
+        );
+
+        actEventReminder.setFocusable(
+                enabled
+        );
+
+        float cardAlpha =
+                enabled
+                        ? 1.0f
+                        : 0.42f;
+
+        cardTaskReminder.setAlpha(
+                cardAlpha
+        );
+
+        cardEventReminder.setAlpha(
+                cardAlpha
+        );
     }
 
     private void setSaving(
@@ -538,16 +680,35 @@ public class NotificationsActivity
 
         if (saving) {
 
-            tilTaskReminder.setEnabled(false);
-            tilEventReminder.setEnabled(false);
+            tilTaskReminder.setEnabled(
+                    false
+            );
 
-            actTaskReminder.setEnabled(false);
-            actEventReminder.setEnabled(false);
+            tilEventReminder.setEnabled(
+                    false
+            );
+
+            actTaskReminder.setEnabled(
+                    false
+            );
+
+            actEventReminder.setEnabled(
+                    false
+            );
+
+            cardTaskReminder.setAlpha(
+                    0.42f
+            );
+
+            cardEventReminder.setAlpha(
+                    0.42f
+            );
 
         } else {
 
-            updateReminderFieldsEnabledState(
-                    switchNotificationsEnabled.isChecked()
+            updateNotificationUi(
+                    switchNotificationsEnabled
+                            .isChecked()
             );
         }
     }

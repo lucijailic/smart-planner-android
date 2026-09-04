@@ -5,31 +5,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="9dp"
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="18dp"
-    app:cardElevation="2dp"
+    app:cardElevation="1dp"
     app:strokeColor="@color/sp_border"
     app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:paddingStart="18dp"
+        android:layout_height="70dp"
+        android:paddingStart="14dp"
         android:paddingEnd="12dp">
 
-
-        <!-- CATEGORY INDICATOR -->
+        <!-- COLOR INDICATOR -->
 
         <View
             android:id="@+id/viewCategoryColor"
-            android:layout_width="10dp"
-            android:layout_height="40dp"
+            android:layout_width="8dp"
+            android:layout_height="42dp"
             android:background="@drawable/bg_category_indicator"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
 
         <!-- CATEGORY NAME -->
 
@@ -37,51 +35,71 @@
             android:id="@+id/tvCategoryName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
+            android:layout_marginStart="15dp"
             android:layout_marginEnd="10dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-rounded"
+            android:maxLines="1"
             android:textColor="@color/sp_text_primary"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnEditCategory"
             app:layout_constraintStart_toEndOf="@id/viewCategoryColor"
             app:layout_constraintTop_toTopOf="parent" />
 
-
         <!-- EDIT -->
 
-        <com.google.android.material.button.MaterialButton
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/btnEditCategory"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:minWidth="0dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:text="@string/edit"
-            android:textAllCaps="false"
-            android:textColor="@color/sp_teal_dark"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="#E5F8F6"
+            app:cardCornerRadius="21dp"
+            app:cardElevation="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/btnDeleteCategory"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
 
+            <ImageView
+                android:layout_width="19dp"
+                android:layout_height="19dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/edit"
+                android:src="@drawable/ic_category_edit"
+                app:tint="@color/sp_teal_deep" />
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- DELETE -->
 
-        <com.google.android.material.button.MaterialButton
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/btnDeleteCategory"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:minWidth="0dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:text="@string/delete"
-            android:textAllCaps="false"
-            android:textColor="@color/sp_error"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="#FDECEE"
+            app:cardCornerRadius="21dp"
+            app:cardElevation="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="19dp"
+                android:layout_height="19dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/delete"
+                android:src="@drawable/ic_category_delete"
+                app:tint="@color/sp_error" />
+
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
