@@ -70,6 +70,14 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.profile.SettingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.profile.ChangePasswordActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
