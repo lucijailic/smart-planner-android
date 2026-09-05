@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <string name="tasks_title">Tasks</string>
+
+    <string name="add_task_title">Add Task</string>
+    <string name="edit_task_title">Edit Task</string>
+    <string name="add_task_subtitle">Organize your task and stay on track.</string>
+
+    <string name="task_title_label">Title</string>
+    <string name="task_title_hint">Enter task title</string>
+
+    <string name="task_category_label">Category</string>
+    <string name="task_category_hint">Select category</string>
+
+    <string name="task_description_label">Description</string>
+    <string name="task_description_hint">Add a description</string>
+
+    <string name="task_priority_label">Priority</string>
+    <string name="task_priority_low">Low</string>
+    <string name="task_priority_medium">Medium</string>
+    <string name="task_priority_high">High</string>
+
+    <string name="task_deadline_label">Deadline</string>
+    <string name="task_deadline_hint">Select date and time</string>
+
+    <string name="task_title_required">Task title is required.</string>
+    <string name="task_title_too_long">Task title cannot exceed 150 characters.</string>
+    <string name="task_saved">Task created successfully.</string>
+    <string name="task_save_error">Unable to save task.</string>
+
+    <string name="task_important_title">Important task</string>
+    <string name="task_important_description">Highlight this task as important.</string>
+
+    <string name="task_reminder_label">Reminder</string>
+    <string name="task_reminder_none">No reminder</string>
+
+    <string name="save_task">Save Task</string>
+
+    <string name="task_back_description">Go back</string>
+    <string name="task_duration_label">Estimated duration (minutes)</string>
+    <string name="task_duration_not_set">Not set</string>
+    <string name="task_duration_15">15 min</string>
+    <string name="task_duration_30">30 min</string>
+    <string name="task_duration_45">45 min</string>
+    <string name="task_duration_60">1 h</string>
+    <string name="task_duration_90">1 h 30 min</string>
+    <string name="task_duration_120">2 h</string>
+    <string name="task_duration_180">3 h</string>
+
+</resources>

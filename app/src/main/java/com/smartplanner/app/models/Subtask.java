@@ -2,22 +2,22 @@ package com.smartplanner.app.models;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Category {
+public class Subtask {
 
     @SerializedName("id")
     private String id;
 
+    @SerializedName("task_id")
+    private String taskId;
+
     @SerializedName("user_id")
     private String userId;
 
-    @SerializedName("name")
-    private String name;
+    @SerializedName("title")
+    private String title;
 
-    @SerializedName("icon")
-    private String icon;
-
-    @SerializedName("color")
-    private String color;
+    @SerializedName("is_completed")
+    private boolean completed;
 
     @SerializedName("created_at")
     private String createdAt;
@@ -29,24 +29,26 @@ public class Category {
         return id;
     }
 
+    public String getTaskId() {
+        return taskId;
+    }
+
     public String getUserId() {
         return userId;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    public String getIcon() {
-        return icon;
+    public boolean isCompleted() {
+        return completed;
     }
 
-    public String getColor() {
-        return color;
-    }
     public String getCreatedAt() {
         return createdAt;
     }
+
     public String getUpdatedAt() {
         return updatedAt;
     }
