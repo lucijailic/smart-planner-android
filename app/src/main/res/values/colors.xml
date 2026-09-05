@@ -28,5 +28,6 @@
 
     <!-- ERROR -->
     <color name="sp_error">#D84C4C</color>
+    <color name="sp_outline">#D9DEE7</color>
 
 </resources>

@@ -78,6 +78,14 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.task.AddEditTaskActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.task.TaskDetailsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
