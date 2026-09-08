@@ -2,39 +2,46 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="52dp"
     android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp">
+    android:orientation="horizontal">
 
     <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/checkSubtaskCompleted"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:buttonTint="@color/sp_teal"
         android:contentDescription="Mark subtask as completed"
         android:focusable="false"
-        android:focusableInTouchMode="false" />
+        android:focusableInTouchMode="false"
+        android:gravity="center"
+        android:minWidth="0dp"
+        android:minHeight="0dp" />
 
     <TextView
         android:id="@+id/tvSubtaskTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="4dp"
         android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textColor="@color/sp_text_primary"
-        android:textSize="15sp" />
+        android:textSize="14sp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnDeleteSubtask"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        style="@style/Widget.Material3.Button.IconButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:contentDescription="Delete subtask"
         android:minWidth="0dp"
-        android:text="Delete"
-        android:textAllCaps="false"
-        android:textColor="@color/sp_error"
-        android:textSize="13sp" />
+        android:minHeight="0dp"
+        app:backgroundTint="@android:color/transparent"
+        app:icon="@drawable/ic_task_more"
+        app:iconSize="19dp"
+        app:iconTint="@color/sp_text_secondary" />
 
 </LinearLayout>

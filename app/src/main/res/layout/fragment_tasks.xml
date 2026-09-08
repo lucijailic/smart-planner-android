@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="28dp"
         android:text="Tasks"
         android:textColor="@color/sp_text_primary"
         android:textSize="28sp"
@@ -20,41 +20,56 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/tvTasksSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="2dp"
+        android:text="Stay organized, get things done."
+        android:textColor="@color/sp_text_secondary"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTasksTitle" />
+
     <LinearLayout
         android:id="@+id/layoutTaskSearch"
         android:layout_width="0dp"
-        android:layout_height="52dp"
+        android:layout_height="54dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="17dp"
         android:layout_marginEnd="20dp"
         android:background="@drawable/bg_task_search"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="14dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTasksTitle">
+        app:layout_constraintTop_toBottomOf="@id/tvTasksSubtitle">
 
         <ImageView
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:contentDescription="Search"
-            android:src="@drawable/ic_task_search" />
+            android:src="@drawable/ic_task_search"
+            app:tint="@color/sp_text_secondary" />
 
         <EditText
             android:id="@+id/etTaskSearch"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="11dp"
             android:layout_weight="1"
             android:background="@null"
-            android:hint="Search tasks"
+            android:hint="Search tasks..."
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:padding="0dp"
             android:singleLine="true"
             android:textColor="@color/sp_text_primary"
             android:textColorHint="@color/sp_text_hint"
-            android:textSize="15sp" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 
@@ -62,7 +77,7 @@
         android:id="@+id/taskFilterScroll"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="12dp"
         android:clipToPadding="false"
         android:fillViewport="false"
         android:overScrollMode="never"
@@ -76,62 +91,68 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/chipAll"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="38dp"
                 android:background="@drawable/bg_task_filter_chip_selected"
                 android:gravity="center"
+                android:minWidth="52dp"
                 android:text="All"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/chipToDo"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="38dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_task_filter_chip"
                 android:gravity="center"
+                android:minWidth="66dp"
                 android:text="To Do"
                 android:textColor="@color/sp_text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/chipInProgress"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="38dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_task_filter_chip"
                 android:gravity="center"
+                android:minWidth="96dp"
                 android:text="In Progress"
                 android:textColor="@color/sp_text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/chipCompleted"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="38dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_task_filter_chip"
                 android:gravity="center"
+                android:minWidth="90dp"
                 android:text="Completed"
                 android:textColor="@color/sp_text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/chipOverdue"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="38dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_task_filter_chip"
                 android:gravity="center"
+                android:minWidth="78dp"
                 android:text="Overdue"
                 android:textColor="@color/sp_text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
         </LinearLayout>
 
@@ -142,7 +163,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="20dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -155,11 +176,19 @@
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="44dp"
+            android:minWidth="0dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="18dp"
             android:text="Filters"
             android:textAllCaps="false"
             android:textColor="@color/sp_teal_dark"
-            android:textSize="14sp"
-            app:cornerRadius="12dp"
+            android:textSize="13sp"
+            app:cornerRadius="14dp"
+            app:icon="@drawable/ic_task_filter"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="18dp"
+            app:iconTint="@color/sp_teal_dark"
             app:strokeColor="@color/sp_teal_dark"
             app:strokeWidth="1dp" />
 
@@ -169,33 +198,42 @@
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:layout_marginStart="10dp"
+            android:minWidth="0dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="18dp"
             android:text="Sort"
             android:textAllCaps="false"
             android:textColor="@color/sp_teal_dark"
-            android:textSize="14sp"
-            app:cornerRadius="12dp"
+            android:textSize="13sp"
+            app:cornerRadius="14dp"
+            app:icon="@drawable/ic_task_sort"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="18dp"
+            app:iconTint="@color/sp_teal_dark"
             app:strokeColor="@color/sp_teal_dark"
             app:strokeWidth="1dp" />
 
     </LinearLayout>
-
-    <ProgressBar
-        android:id="@+id/progressTasks"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layoutTaskControls" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTasks"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingTop="10dp"
-        android:paddingBottom="96dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutTaskControls" />
+
+    <ProgressBar
+        android:id="@+id/progressTasks"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/sp_teal"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -207,15 +245,25 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
+        android:padding="24dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layoutTaskControls">
 
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:alpha="0.55"
+            android:contentDescription="No tasks"
+            android:src="@drawable/ic_nav_tasks"
+            app:tint="@color/sp_teal_dark" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
             android:text="No matching tasks"
             android:textColor="@color/sp_text_primary"
             android:textSize="18sp"
@@ -225,6 +273,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+            android:gravity="center"
             android:text="Try changing your search or filters."
             android:textColor="@color/sp_text_secondary"
             android:textSize="14sp" />
@@ -237,6 +286,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
+        android:padding="24dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -247,31 +297,37 @@
             android:id="@+id/tvTasksError"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:textColor="@color/sp_text_primary"
             android:textSize="15sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRetryTasks"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Try Again" />
+            android:layout_height="44dp"
+            android:layout_marginTop="14dp"
+            android:text="Try Again"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/sp_teal"
+            app:cornerRadius="14dp" />
 
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddTask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
         android:contentDescription="Add task"
         android:src="@drawable/ic_task_add"
         app:backgroundTint="@color/sp_teal"
         app:borderWidth="0dp"
-        app:elevation="6dp"
+        app:elevation="7dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:maxImageSize="24dp"
         app:tint="@color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

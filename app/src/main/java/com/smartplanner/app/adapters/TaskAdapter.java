@@ -5,6 +5,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,7 +26,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
+public class TaskAdapter
+        extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
     public interface OnImportantClickListener {
 
@@ -34,6 +37,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         );
     }
 
+    public interface OnTaskClickListener {
+
+        void onTaskClick(Task task);
+    }
+
     private final List<Task> tasks =
             new ArrayList<>();
 
@@ -41,7 +49,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             new HashMap<>();
 
     private OnImportantClickListener importantClickListener;
-
     private OnTaskClickListener taskClickListener;
 
     public void setTasks(
@@ -51,7 +58,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         tasks.clear();
 
         if (newTasks != null) {
-            tasks.addAll(newTasks);
+
+            tasks.addAll(
+                    newTasks
+            );
         }
 
         notifyDataSetChanged();
@@ -97,11 +107,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                 listener;
     }
 
-    public interface OnTaskClickListener {
-
-        void onTaskClick(Task task);
-    }
-
     @NonNull
     @Override
     public TaskViewHolder onCreateViewHolder(
@@ -118,7 +123,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                                 false
                         );
 
-        return new TaskViewHolder(view);
+        return new TaskViewHolder(
+                view
+        );
     }
 
     @Override
@@ -139,16 +146,19 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                 task
         );
 
-        holder.tvTaskStatus.setText(
-                getStatusText(task)
+        bindStatus(
+                holder,
+                task
         );
 
-        holder.tvTaskPriority.setText(
-                getPriorityText(task)
+        bindPriority(
+                holder,
+                task
         );
 
-        holder.tvTaskDeadline.setText(
-                getDeadlineText(task)
+        bindDeadline(
+                holder,
+                task
         );
 
         bindDuration(
@@ -193,6 +203,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public int getItemCount() {
+
         return tasks.size();
     }
 
@@ -201,111 +212,384 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             Task task
     ) {
 
+        Category category =
+                null;
+
         String categoryId =
                 task.getCategoryId();
 
-        if (categoryId == null
-                || categoryId.trim().isEmpty()) {
+        if (categoryId != null
+                && !categoryId.trim().isEmpty()) {
+
+            category =
+                    categoryMap.get(
+                            categoryId
+                    );
+        }
+
+        int categoryColor;
+
+        if (category != null) {
+
+            categoryColor =
+                    parseCategoryColor(
+                            category.getColor()
+                    );
+
+            holder.tvTaskCategory.setVisibility(
+                    View.VISIBLE
+            );
+
+            holder.tvTaskCategory.setText(
+                    category.getName()
+            );
+
+            holder.tvTaskCategory.setBackground(
+                    createRoundedBackground(
+                            categoryColor,
+                            50
+                    )
+            );
+
+            holder.ivTaskCategoryIcon.setImageResource(
+                    getCategoryIcon(
+                            category.getName()
+                    )
+            );
+
+        } else {
+
+            categoryColor =
+                    Color.parseColor(
+                            "#46C8BE"
+                    );
 
             holder.tvTaskCategory.setVisibility(
                     View.GONE
             );
 
-            return;
-        }
-
-        Category category =
-                categoryMap.get(categoryId);
-
-        if (category == null) {
-
-            holder.tvTaskCategory.setVisibility(
-                    View.GONE
+            holder.ivTaskCategoryIcon.setImageResource(
+                    R.drawable.ic_task_category_default
             );
-
-            return;
         }
 
-        holder.tvTaskCategory.setVisibility(
-                View.VISIBLE
-        );
-
-        holder.tvTaskCategory.setText(
-                category.getName()
-        );
-
-        int categoryColor =
-                parseCategoryColor(
-                        category.getColor()
-                );
-
-        GradientDrawable background =
-                new GradientDrawable();
-
-        background.setShape(
-                GradientDrawable.RECTANGLE
-        );
-
-        background.setCornerRadius(
-                dpToPx(
-                        holder.itemView,
-                        12
+        holder.ivTaskCategoryIcon.setBackground(
+                createRoundedBackground(
+                        makePastelColor(
+                                categoryColor
+                        ),
+                        50
                 )
         );
 
-        background.setColor(
+        holder.ivTaskCategoryIcon.setColorFilter(
                 categoryColor
         );
+    }
 
-        holder.tvTaskCategory.setBackground(
-                background
+    private int getCategoryIcon(
+            String categoryName
+    ) {
+
+        if (categoryName == null) {
+
+            return R.drawable.ic_task_category_default;
+        }
+
+        String name =
+                categoryName
+                        .trim()
+                        .toLowerCase(
+                                Locale.getDefault()
+                        );
+
+        if (name.contains("work")
+                || name.contains("job")
+                || name.contains("business")) {
+
+            return R.drawable.ic_task_category_work;
+        }
+
+        if (name.contains("university")
+                || name.contains("school")
+                || name.contains("study")
+                || name.contains("college")) {
+
+            return R.drawable.ic_task_category_study;
+        }
+
+        if (name.contains("personal")
+                || name.contains("home")) {
+
+            return R.drawable.ic_task_category_personal;
+        }
+
+        if (name.contains("health")
+                || name.contains("fitness")
+                || name.contains("gym")
+                || name.contains("sport")) {
+
+            return R.drawable.ic_task_category_health;
+        }
+
+        if (name.contains("shopping")
+                || name.contains("shop")
+                || name.contains("groceries")) {
+
+            return R.drawable.ic_task_category_shopping;
+        }
+
+        return R.drawable.ic_task_category_default;
+    }
+
+    private void bindStatus(
+            TaskViewHolder holder,
+            Task task
+    ) {
+
+        holder.tvTaskStatus.setText(
+                getStatusText(
+                        task
+                )
+        );
+
+        int backgroundColor;
+        int textColor;
+
+        if (isOverdue(task)) {
+
+            backgroundColor =
+                    Color.parseColor(
+                            "#FFE5E7"
+                    );
+
+            textColor =
+                    Color.parseColor(
+                            "#CF3F49"
+                    );
+
+        } else if (task.getStatus()
+                == TaskStatus.COMPLETED) {
+
+            backgroundColor =
+                    Color.parseColor(
+                            "#DDF7E9"
+                    );
+
+            textColor =
+                    Color.parseColor(
+                            "#258A5B"
+                    );
+
+        } else if (task.getStatus()
+                == TaskStatus.IN_PROGRESS) {
+
+            backgroundColor =
+                    Color.parseColor(
+                            "#E4F2FF"
+                    );
+
+            textColor =
+                    Color.parseColor(
+                            "#287AB8"
+                    );
+
+        } else {
+
+            backgroundColor =
+                    Color.parseColor(
+                            "#EAF4FF"
+                    );
+
+            textColor =
+                    Color.parseColor(
+                            "#3977A8"
+                    );
+        }
+
+        holder.tvTaskStatus.setBackground(
+                createRoundedBackground(
+                        backgroundColor,
+                        50
+                )
+        );
+
+        holder.tvTaskStatus.setTextColor(
+                textColor
         );
     }
 
-    private int parseCategoryColor(
-            String color
+    private void bindPriority(
+            TaskViewHolder holder,
+            Task task
     ) {
 
-        if (color == null
-                || color.trim().isEmpty()) {
+        holder.tvTaskPriority.setText(
+                getPriorityText(
+                        task
+                )
+        );
 
-            return Color.parseColor(
-                    "#46C8BE"
-            );
+        int backgroundColor;
+        int textColor;
+
+        if (task.getPriority() == null) {
+
+            backgroundColor =
+                    Color.parseColor(
+                            "#F1F4F6"
+                    );
+
+            textColor =
+                    Color.parseColor(
+                            "#718294"
+                    );
+
+        } else {
+
+            switch (task.getPriority()) {
+
+                case HIGH:
+
+                    backgroundColor =
+                            Color.parseColor(
+                                    "#FFE4E5"
+                            );
+
+                    textColor =
+                            Color.parseColor(
+                                    "#D63B45"
+                            );
+
+                    break;
+
+                case MEDIUM:
+
+                    backgroundColor =
+                            Color.parseColor(
+                                    "#FFF1D5"
+                            );
+
+                    textColor =
+                            Color.parseColor(
+                                    "#B87514"
+                            );
+
+                    break;
+
+                case LOW:
+                default:
+
+                    backgroundColor =
+                            Color.parseColor(
+                                    "#DDF7E7"
+                            );
+
+                    textColor =
+                            Color.parseColor(
+                                    "#258557"
+                            );
+
+                    break;
+            }
         }
 
-        try {
+        holder.tvTaskPriority.setBackground(
+                createRoundedBackground(
+                        backgroundColor,
+                        50
+                )
+        );
 
-            String formattedColor =
-                    color.trim();
+        holder.tvTaskPriority.setTextColor(
+                textColor
+        );
+    }
 
-            if (!formattedColor.startsWith("#")) {
+    private void bindDeadline(
+            TaskViewHolder holder,
+            Task task
+    ) {
 
-                formattedColor =
-                        "#" + formattedColor;
-            }
+        holder.tvTaskDeadline.setText(
+                getDeadlineText(
+                        task
+                )
+        );
 
-            return Color.parseColor(
-                    formattedColor
+        if (isOverdue(task)) {
+
+            holder.tvTaskDeadline.setTextColor(
+                    Color.parseColor(
+                            "#CF3F49"
+                    )
             );
 
-        } catch (IllegalArgumentException exception) {
+        } else {
 
-            return Color.parseColor(
-                    "#46C8BE"
+            holder.tvTaskDeadline.setTextColor(
+                    holder.itemView
+                            .getContext()
+                            .getColor(
+                                    R.color.sp_text_secondary
+                            )
             );
         }
     }
 
-    private float dpToPx(
-            View view,
-            int dp
+    private void bindDuration(
+            TaskViewHolder holder,
+            Task task
     ) {
 
-        return dp
-                * view.getResources()
-                .getDisplayMetrics()
-                .density;
+        Integer duration =
+                task.getEstimatedDuration();
+
+        if (duration == null) {
+
+            holder.layoutTaskDuration.setVisibility(
+                    View.GONE
+            );
+
+            return;
+        }
+
+        holder.layoutTaskDuration.setVisibility(
+                View.VISIBLE
+        );
+
+        holder.tvTaskDuration.setText(
+                formatDuration(
+                        duration
+                )
+        );
+    }
+
+    private void bindImportant(
+            TaskViewHolder holder,
+            Task task
+    ) {
+
+        if (task.isImportant()) {
+
+            holder.tvTaskImportant.setText(
+                    "★"
+            );
+
+            holder.tvTaskImportant.setAlpha(
+                    1f
+            );
+
+        } else {
+
+            holder.tvTaskImportant.setText(
+                    "☆"
+            );
+
+            holder.tvTaskImportant.setAlpha(
+                    0.75f
+            );
+        }
     }
 
     private String getStatusText(
@@ -347,13 +631,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         switch (task.getPriority()) {
 
             case LOW:
-                return "Low priority";
+                return "Low";
 
             case MEDIUM:
-                return "Medium priority";
+                return "Medium";
 
             case HIGH:
-                return "High priority";
+                return "High";
 
             default:
                 return "";
@@ -384,72 +668,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
         SimpleDateFormat outputFormat =
                 new SimpleDateFormat(
-                        "dd.MM.yyyy. HH:mm",
-                        Locale.getDefault()
+                        "dd MMM yyyy, HH:mm",
+                        Locale.ENGLISH
                 );
 
-        return "Deadline: "
-                + outputFormat.format(
+        return outputFormat.format(
                 parsedDate
         );
-    }
-
-    private void bindDuration(
-            TaskViewHolder holder,
-            Task task
-    ) {
-
-        Integer duration =
-                task.getEstimatedDuration();
-
-        if (duration == null) {
-
-            holder.tvTaskDuration.setVisibility(
-                    View.GONE
-            );
-
-            return;
-        }
-
-        holder.tvTaskDuration.setVisibility(
-                View.VISIBLE
-        );
-
-        holder.tvTaskDuration.setText(
-                "Duration: "
-                        + formatDuration(duration)
-        );
-    }
-
-    private void bindImportant(
-            TaskViewHolder holder,
-            Task task
-    ) {
-
-        holder.tvTaskImportant.setVisibility(
-                View.VISIBLE
-        );
-
-        if (task.isImportant()) {
-
-            holder.tvTaskImportant.setText(
-                    "★"
-            );
-
-            holder.tvTaskImportant.setAlpha(
-                    1.0f
-            );
-
-        } else {
-
-            holder.tvTaskImportant.setText(
-                    "☆"
-            );
-
-            holder.tvTaskImportant.setAlpha(
-                    0.55f
-            );
-        }
     }
 
     private String formatDuration(
@@ -479,6 +704,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     private boolean isOverdue(
             Task task
     ) {
+
+        if (task == null) {
+            return false;
+        }
 
         if (task.getStatus()
                 == TaskStatus.COMPLETED) {
@@ -540,22 +769,150 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return null;
     }
 
+    private int parseCategoryColor(
+            String color
+    ) {
+
+        if (color == null
+                || color.trim().isEmpty()) {
+
+            return Color.parseColor(
+                    "#46C8BE"
+            );
+        }
+
+        try {
+
+            String formattedColor =
+                    color.trim();
+
+            if (!formattedColor.startsWith("#")) {
+
+                formattedColor =
+                        "#" + formattedColor;
+            }
+
+            return Color.parseColor(
+                    formattedColor
+            );
+
+        } catch (IllegalArgumentException exception) {
+
+            return Color.parseColor(
+                    "#46C8BE"
+            );
+        }
+    }
+
+    private int makePastelColor(
+            int color
+    ) {
+
+        int red =
+                Color.red(
+                        color
+                );
+
+        int green =
+                Color.green(
+                        color
+                );
+
+        int blue =
+                Color.blue(
+                        color
+                );
+
+        red =
+                (int) (
+                        red * 0.18f
+                                + 255 * 0.82f
+                );
+
+        green =
+                (int) (
+                        green * 0.18f
+                                + 255 * 0.82f
+                );
+
+        blue =
+                (int) (
+                        blue * 0.18f
+                                + 255 * 0.82f
+                );
+
+        return Color.rgb(
+                red,
+                green,
+                blue
+        );
+    }
+
+    private GradientDrawable createRoundedBackground(
+            int color,
+            int radiusDp
+    ) {
+
+        GradientDrawable drawable =
+                new GradientDrawable();
+
+        drawable.setShape(
+                GradientDrawable.RECTANGLE
+        );
+
+        drawable.setColor(
+                color
+        );
+
+        drawable.setCornerRadius(
+                dpToPx(
+                        radiusDp
+                )
+        );
+
+        return drawable;
+    }
+
+    private float dpToPx(
+            int dp
+    ) {
+
+        return dp
+                * android.content.res.Resources
+                .getSystem()
+                .getDisplayMetrics()
+                .density;
+    }
+
     static class TaskViewHolder
             extends RecyclerView.ViewHolder {
+
+        ImageView ivTaskCategoryIcon;
 
         TextView tvTaskTitle;
         TextView tvTaskCategory;
         TextView tvTaskStatus;
         TextView tvTaskPriority;
+
         TextView tvTaskDeadline;
         TextView tvTaskDuration;
+
         TextView tvTaskImportant;
 
-        public TaskViewHolder(
+        LinearLayout layoutTaskDuration;
+
+        TaskViewHolder(
                 @NonNull View itemView
         ) {
 
-            super(itemView);
+            super(
+                    itemView
+            );
+
+            ivTaskCategoryIcon =
+                    itemView.findViewById(
+                            R.id.ivTaskCategoryIcon
+                    );
 
             tvTaskTitle =
                     itemView.findViewById(
@@ -590,6 +947,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             tvTaskImportant =
                     itemView.findViewById(
                             R.id.tvTaskImportant
+                    );
+
+            layoutTaskDuration =
+                    itemView.findViewById(
+                            R.id.layoutTaskDuration
                     );
         }
     }

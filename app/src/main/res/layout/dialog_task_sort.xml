@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    android:overScrollMode="never"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="22dp">
+
+        <!-- HANDLE -->
+
+        <View
+            android:layout_width="42dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_bottom_sheet_handle" />
+
+        <!-- HEADER -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sort tasks"
+            android:textColor="@color/sp_text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Choose how tasks are ordered"
+            android:textColor="@color/sp_text_secondary"
+            android:textSize="13sp" />
+
+        <!-- DEFAULT -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSortDefault"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="20dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/sp_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/sp_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Default"
+                        android:textColor="@color/sp_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Use the original task order"
+                        android:textColor="@color/sp_text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+                <RadioButton
+                    android:id="@+id/radioSortDefault"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:buttonTint="@color/sp_teal"
+                    android:clickable="false"
+                    android:focusable="false" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- NEAREST DEADLINE -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSortNearest"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="9dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/sp_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/sp_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nearest deadline"
+                        android:textColor="@color/sp_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Tasks due soonest appear first"
+                        android:textColor="@color/sp_text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+                <RadioButton
+                    android:id="@+id/radioSortNearest"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:buttonTint="@color/sp_teal"
+                    android:clickable="false"
+                    android:focusable="false" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- FARTHEST DEADLINE -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSortFarthest"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="9dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/sp_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/sp_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Farthest deadline"
+                        android:textColor="@color/sp_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Tasks due later appear first"
+                        android:textColor="@color/sp_text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+                <RadioButton
+                    android:id="@+id/radioSortFarthest"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:buttonTint="@color/sp_teal"
+                    android:clickable="false"
+                    android:focusable="false" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- PRIORITY -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSortPriority"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="9dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/sp_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/sp_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Highest priority"
+                        android:textColor="@color/sp_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="High-priority tasks appear first"
+                        android:textColor="@color/sp_text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+                <RadioButton
+                    android:id="@+id/radioSortPriority"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:buttonTint="@color/sp_teal"
+                    android:clickable="false"
+                    android:focusable="false" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- NEWEST -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSortNewest"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="9dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/sp_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/sp_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Newest"
+                        android:textColor="@color/sp_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Recently created tasks appear first"
+                        android:textColor="@color/sp_text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+                <RadioButton
+                    android:id="@+id/radioSortNewest"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:buttonTint="@color/sp_teal"
+                    android:clickable="false"
+                    android:focusable="false" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- OLDEST -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSortOldest"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="9dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/sp_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/sp_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Oldest"
+                        android:textColor="@color/sp_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Oldest created tasks appear first"
+                        android:textColor="@color/sp_text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+                <RadioButton
+                    android:id="@+id/radioSortOldest"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:buttonTint="@color/sp_teal"
+                    android:clickable="false"
+                    android:focusable="false" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- A-Z -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSortTitle"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="9dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/sp_surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/sp_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="10dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Title A–Z"
+                        android:textColor="@color/sp_text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Sort tasks alphabetically"
+                        android:textColor="@color/sp_text_secondary"
+                        android:textSize="11sp" />
+
+                </LinearLayout>
+
+                <RadioButton
+                    android:id="@+id/radioSortTitle"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:buttonTint="@color/sp_teal"
+                    android:clickable="false"
+                    android:focusable="false" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- APPLY -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnApplySort"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="20dp"
+            android:text="Apply Sort"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/sp_teal"
+            app:cornerRadius="16dp" />
+
+    </LinearLayout>
+
+</ScrollView>
