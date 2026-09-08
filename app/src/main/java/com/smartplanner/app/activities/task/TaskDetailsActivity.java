@@ -1,8 +1,12 @@
 package com.smartplanner.app.activities.task;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.smartplanner.app.R;
@@ -29,7 +34,6 @@ import com.smartplanner.app.models.enums.ReminderType;
 import com.smartplanner.app.models.enums.TaskStatus;
 import com.smartplanner.app.viewmodels.CategoriesViewModel;
 import com.smartplanner.app.viewmodels.TasksViewModel;
-import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,8 +46,7 @@ import java.util.TimeZone;
 
 public class TaskDetailsActivity extends AppCompatActivity {
 
-    public static final String EXTRA_TASK_ID =
-            "task_id";
+    public static final String EXTRA_TASK_ID = "task_id";
 
     private String taskId;
 
@@ -52,11 +55,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     private Task currentTask;
 
-    private boolean subtaskCompletionUpdateInProgress =
-            false;
+    private boolean subtaskCompletionUpdateInProgress = false;
 
-    private final Map<String, Category> categoryMap =
-            new HashMap<>();
+    private final Map<String, Category> categoryMap = new HashMap<>();
 
     private ProgressBar progressTaskDetails;
     private ProgressBar progressSubtasks;
@@ -71,6 +72,16 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     private TextView tvTaskDetailsTitle;
     private TextView tvTaskDetailsImportant;
+
+    private TextView tvTaskDetailsStatusBadge;
+    private TextView tvTaskDetailsPriorityBadge;
+    private TextView tvTaskHeroDuration;
+
+    private LinearLayout layoutTaskHeroDuration;
+
+    private FrameLayout layoutTaskCategoryIcon;
+    private ImageView ivTaskCategoryIcon;
+
     private TextView tvTaskDetailsCategory;
     private TextView tvTaskDetailsStatus;
     private TextView tvTaskDetailsPriority;
@@ -79,6 +90,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private TextView tvTaskDetailsReminder;
     private TextView tvTaskDetailsDescription;
 
+    private TextView tvSubtasksTitle;
     private TextView tvSubtasksEmpty;
     private TextView tvSubtasksError;
 
@@ -90,33 +102,27 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private MaterialButton btnEditTask;
     private MaterialButton btnDeleteTask;
     private MaterialButton btnAddSubtask;
+
     private RecyclerView recyclerSubtasks;
     private SubtaskAdapter subtaskAdapter;
+
     private LinearLayout layoutSubtaskProgress;
+
     private TextView tvSubtaskProgressCount;
     private TextView tvSubtaskProgressPercent;
+
     private LinearProgressIndicator progressSubtaskCompletion;
 
     @Override
-    protected void onCreate(
-            Bundle savedInstanceState
-    ) {
+    protected void onCreate(Bundle savedInstanceState) {
 
-        super.onCreate(
-                savedInstanceState
-        );
+        super.onCreate(savedInstanceState);
 
-        setContentView(
-                R.layout.activity_task_details
-        );
+        setContentView(R.layout.activity_task_details);
 
-        taskId =
-                getIntent().getStringExtra(
-                        EXTRA_TASK_ID
-                );
+        taskId = getIntent().getStringExtra(EXTRA_TASK_ID);
 
-        if (taskId == null
-                || taskId.trim().isEmpty()) {
+        if (taskId == null || taskId.trim().isEmpty()) {
 
             finish();
 
@@ -132,7 +138,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         observeCategories();
         observeStatusAction();
         observeDeleteAction();
-
         observeSubtasks();
         observeSubtaskAction();
         observeDeleteSubtaskAction();
@@ -143,149 +148,112 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private void initViews() {
 
         progressTaskDetails =
-                findViewById(
-                        R.id.progressTaskDetails
-                );
+                findViewById(R.id.progressTaskDetails);
 
         progressSubtasks =
-                findViewById(
-                        R.id.progressSubtasks
-                );
+                findViewById(R.id.progressSubtasks);
 
         scrollTaskDetails =
-                findViewById(
-                        R.id.scrollTaskDetails
-                );
+                findViewById(R.id.scrollTaskDetails);
 
         layoutTaskDetailsError =
-                findViewById(
-                        R.id.layoutTaskDetailsError
-                );
+                findViewById(R.id.layoutTaskDetailsError);
 
         tvTaskDetailsError =
-                findViewById(
-                        R.id.tvTaskDetailsError
-                );
+                findViewById(R.id.tvTaskDetailsError);
 
         btnRetryTaskDetails =
-                findViewById(
-                        R.id.btnRetryTaskDetails
-                );
+                findViewById(R.id.btnRetryTaskDetails);
 
         tvTaskDetailsTitle =
-                findViewById(
-                        R.id.tvTaskDetailsTitle
-                );
+                findViewById(R.id.tvTaskDetailsTitle);
 
         tvTaskDetailsImportant =
-                findViewById(
-                        R.id.tvTaskDetailsImportant
-                );
+                findViewById(R.id.tvTaskDetailsImportant);
+
+        tvTaskDetailsStatusBadge =
+                findViewById(R.id.tvTaskDetailsStatusBadge);
+
+        tvTaskDetailsPriorityBadge =
+                findViewById(R.id.tvTaskDetailsPriorityBadge);
+
+        tvTaskHeroDuration =
+                findViewById(R.id.tvTaskHeroDuration);
+
+        layoutTaskHeroDuration =
+                findViewById(R.id.layoutTaskHeroDuration);
+
+        layoutTaskCategoryIcon =
+                findViewById(R.id.layoutTaskCategoryIcon);
+
+        ivTaskCategoryIcon =
+                findViewById(R.id.ivTaskCategoryIcon);
 
         tvTaskDetailsCategory =
-                findViewById(
-                        R.id.tvTaskDetailsCategory
-                );
+                findViewById(R.id.tvTaskDetailsCategory);
 
         tvTaskDetailsStatus =
-                findViewById(
-                        R.id.tvTaskDetailsStatus
-                );
+                findViewById(R.id.tvTaskDetailsStatus);
 
         tvTaskDetailsPriority =
-                findViewById(
-                        R.id.tvTaskDetailsPriority
-                );
+                findViewById(R.id.tvTaskDetailsPriority);
 
         tvTaskDetailsDeadline =
-                findViewById(
-                        R.id.tvTaskDetailsDeadline
-                );
+                findViewById(R.id.tvTaskDetailsDeadline);
 
         tvTaskDetailsDuration =
-                findViewById(
-                        R.id.tvTaskDetailsDuration
-                );
+                findViewById(R.id.tvTaskDetailsDuration);
 
         tvTaskDetailsReminder =
-                findViewById(
-                        R.id.tvTaskDetailsReminder
-                );
+                findViewById(R.id.tvTaskDetailsReminder);
 
         tvTaskDetailsDescription =
-                findViewById(
-                        R.id.tvTaskDetailsDescription
-                );
+                findViewById(R.id.tvTaskDetailsDescription);
+
+        tvSubtasksTitle =
+                findViewById(R.id.tvSubtasksTitle);
 
         tvSubtasksEmpty =
-                findViewById(
-                        R.id.tvSubtasksEmpty
-                );
+                findViewById(R.id.tvSubtasksEmpty);
 
         tvSubtasksError =
-                findViewById(
-                        R.id.tvSubtasksError
-                );
+                findViewById(R.id.tvSubtasksError);
 
         cardTaskDescription =
-                findViewById(
-                        R.id.cardTaskDescription
-                );
+                findViewById(R.id.cardTaskDescription);
 
         recyclerSubtasks =
-                findViewById(
-                        R.id.recyclerSubtasks
-                );
+                findViewById(R.id.recyclerSubtasks);
 
         btnStartTask =
-                findViewById(
-                        R.id.btnStartTask
-                );
+                findViewById(R.id.btnStartTask);
 
         btnCompleteTask =
-                findViewById(
-                        R.id.btnCompleteTask
-                );
+                findViewById(R.id.btnCompleteTask);
 
         btnReopenTask =
-                findViewById(
-                        R.id.btnReopenTask
-                );
+                findViewById(R.id.btnReopenTask);
 
         btnEditTask =
-                findViewById(
-                        R.id.btnEditTask
-                );
+                findViewById(R.id.btnEditTask);
 
         btnDeleteTask =
-                findViewById(
-                        R.id.btnDeleteTask
-                );
+                findViewById(R.id.btnDeleteTask);
 
         btnAddSubtask =
-                findViewById(
-                        R.id.btnAddSubtask
-                );
+                findViewById(R.id.btnAddSubtask);
 
         layoutSubtaskProgress =
-                findViewById(
-                        R.id.layoutSubtaskProgress
-                );
+                findViewById(R.id.layoutSubtaskProgress);
 
         tvSubtaskProgressCount =
-                findViewById(
-                        R.id.tvSubtaskProgressCount
-                );
+                findViewById(R.id.tvSubtaskProgressCount);
 
         tvSubtaskProgressPercent =
-                findViewById(
-                        R.id.tvSubtaskProgressPercent
-                );
+                findViewById(R.id.tvSubtaskProgressPercent);
 
         progressSubtaskCompletion =
-                findViewById(
-                        R.id.progressSubtaskCompletion
-                );
+                findViewById(R.id.progressSubtaskCompletion);
     }
 
     private void setupRecyclerView() {
@@ -327,7 +295,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         );
 
         recyclerSubtasks.setNestedScrollingEnabled(
-                false
+                true
         );
     }
 
@@ -335,15 +303,11 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         tasksViewModel =
                 new ViewModelProvider(this)
-                        .get(
-                                TasksViewModel.class
-                        );
+                        .get(TasksViewModel.class);
 
         categoriesViewModel =
                 new ViewModelProvider(this)
-                        .get(
-                                CategoriesViewModel.class
-                        );
+                        .get(CategoriesViewModel.class);
     }
 
     private void setupListeners() {
@@ -357,13 +321,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
         btnRetryTaskDetails.setOnClickListener(
                 view -> {
 
-                    tasksViewModel.loadTask(
-                            taskId
-                    );
-
-                    tasksViewModel.loadSubtasks(
-                            taskId
-                    );
+                    tasksViewModel.loadTask(taskId);
+                    tasksViewModel.loadSubtasks(taskId);
                 }
         );
 
@@ -471,13 +430,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 && taskId != null
                 && !taskId.trim().isEmpty()) {
 
-            tasksViewModel.loadTask(
-                    taskId
-            );
-
-            tasksViewModel.loadSubtasks(
-                    taskId
-            );
+            tasksViewModel.loadTask(taskId);
+            tasksViewModel.loadSubtasks(taskId);
         }
     }
 
@@ -740,6 +694,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
                         subtasks
                 );
 
+                updateSubtasksTitle(
+                        subtasks
+                );
+
                 if (subtasks == null
                         || subtasks.isEmpty()) {
 
@@ -816,6 +774,40 @@ public class TaskDetailsActivity extends AppCompatActivity {
         }
     }
 
+    private void updateSubtasksTitle(
+            List<Subtask> subtasks
+    ) {
+
+        if (subtasks == null
+                || subtasks.isEmpty()) {
+
+            tvSubtasksTitle.setText(
+                    "Subtasks"
+            );
+
+            return;
+        }
+
+        int total =
+                subtasks.size();
+
+        int completed =
+                0;
+
+        for (Subtask subtask : subtasks) {
+
+            if (subtask != null
+                    && subtask.isCompleted()) {
+
+                completed++;
+            }
+        }
+
+        tvSubtasksTitle.setText(
+                "Subtasks"
+        );
+    }
+
     private void updateSubtaskProgress(
             List<Subtask> subtasks
     ) {
@@ -859,28 +851,22 @@ public class TaskDetailsActivity extends AppCompatActivity {
                                 / total
                 );
 
-        String countText =
+        tvSubtaskProgressCount.setText(
                 completed
                         + " of "
                         + total
-                        + " completed";
-
-        String percentageText =
-                percentage
-                        + "%";
-
-        tvSubtaskProgressCount.setText(
-                countText
+                        + " completed"
         );
 
         tvSubtaskProgressPercent.setText(
-                percentageText
+                percentage + "%"
         );
 
         progressSubtaskCompletion.setProgress(
                 percentage
         );
     }
+
     private void handleSubtaskActionState(
             UiState<Subtask> state
     ) {
@@ -1124,9 +1110,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 false;
 
         TextInputLayout inputLayout =
-                new TextInputLayout(
-                        this
-                );
+                new TextInputLayout(this);
 
         inputLayout.setHint(
                 "Subtask title"
@@ -1170,9 +1154,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 );
 
         LinearLayout container =
-                new LinearLayout(
-                        this
-                );
+                new LinearLayout(this);
 
         container.setOrientation(
                 LinearLayout.VERTICAL
@@ -1499,20 +1481,37 @@ public class TaskDetailsActivity extends AppCompatActivity {
                         : View.GONE
         );
 
+        String status =
+                getStatusText(
+                        task
+                );
+
+        String priority =
+                getPriorityText(
+                        task
+                );
+
+        String duration =
+                getDurationText(
+                        task
+                );
+
         tvTaskDetailsStatus.setText(
-                getStatusText(task)
+                status
         );
 
         tvTaskDetailsPriority.setText(
-                getPriorityText(task)
+                priority
         );
 
         tvTaskDetailsDeadline.setText(
-                getDeadlineText(task)
+                getDeadlineText(
+                        task
+                )
         );
 
         tvTaskDetailsDuration.setText(
-                getDurationText(task)
+                duration
         );
 
         tvTaskDetailsReminder.setText(
@@ -1520,6 +1519,34 @@ public class TaskDetailsActivity extends AppCompatActivity {
                         task.getReminderType()
                 )
         );
+
+        tvTaskDetailsStatusBadge.setText(
+                status
+        );
+
+        tvTaskDetailsPriorityBadge.setText(
+                priority
+        );
+
+        Integer estimatedDuration =
+                task.getEstimatedDuration();
+
+        if (estimatedDuration == null) {
+
+            layoutTaskHeroDuration.setVisibility(
+                    View.GONE
+            );
+
+        } else {
+
+            layoutTaskHeroDuration.setVisibility(
+                    View.VISIBLE
+            );
+
+            tvTaskHeroDuration.setText(
+                    duration
+            );
+        }
 
         bindDescription(
                 task
@@ -1571,6 +1598,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
                     "No category"
             );
 
+            setTaskCategoryAppearance(
+                    null
+            );
+
             return;
         }
 
@@ -1585,12 +1616,265 @@ public class TaskDetailsActivity extends AppCompatActivity {
                     "No category"
             );
 
+            setTaskCategoryAppearance(
+                    null
+            );
+
             return;
         }
 
         tvTaskDetailsCategory.setText(
                 category.getName()
         );
+
+        setTaskCategoryAppearance(
+                category
+        );
+    }
+
+    private void setTaskCategoryAppearance(
+            Category category
+    ) {
+
+        int iconResource =
+                R.drawable.ic_task_category_default;
+
+        int categoryColor =
+                Color.parseColor(
+                        "#46C8BE"
+                );
+
+        if (category != null) {
+
+            iconResource =
+                    getTaskCategoryIcon(
+                            category
+                    );
+
+            categoryColor =
+                    getTaskCategoryColor(
+                            category
+                    );
+        }
+
+        ivTaskCategoryIcon.setImageResource(
+                iconResource
+        );
+
+        ivTaskCategoryIcon.setColorFilter(
+                categoryColor
+        );
+
+        GradientDrawable background =
+                new GradientDrawable();
+
+        background.setShape(
+                GradientDrawable.RECTANGLE
+        );
+
+        background.setCornerRadius(
+                dpToPx(
+                        16
+                )
+        );
+
+        background.setColor(
+                createPastelCategoryColor(
+                        categoryColor
+                )
+        );
+
+        layoutTaskCategoryIcon.setBackground(
+                background
+        );
+    }
+
+    private int getTaskCategoryIcon(
+            Category category
+    ) {
+
+        if (category == null) {
+            return R.drawable.ic_task_category_default;
+        }
+
+        String icon =
+                category.getIcon();
+
+        if (icon != null
+                && !icon.trim().isEmpty()) {
+
+            switch (
+                    icon.trim()
+                            .toLowerCase(
+                                    Locale.US
+                            )
+            ) {
+
+                case "work":
+
+                    return R.drawable.ic_task_category_work;
+
+                case "personal":
+
+                    return R.drawable.ic_task_category_personal;
+
+                case "health":
+
+                    return R.drawable.ic_task_category_health;
+
+                case "study":
+
+                    return R.drawable.ic_task_category_study;
+
+                case "shopping":
+
+                    return R.drawable.ic_task_category_shopping;
+            }
+        }
+
+        String name =
+                category.getName();
+
+        if (name == null) {
+            return R.drawable.ic_task_category_default;
+        }
+
+        name =
+                name.trim()
+                        .toLowerCase(
+                                Locale.US
+                        );
+
+        if (name.contains("work")
+                || name.contains("job")
+                || name.contains("business")) {
+
+            return R.drawable.ic_task_category_work;
+        }
+
+        if (name.contains("personal")
+                || name.contains("home")) {
+
+            return R.drawable.ic_task_category_personal;
+        }
+
+        if (name.contains("health")
+                || name.contains("fitness")
+                || name.contains("gym")
+                || name.contains("sport")) {
+
+            return R.drawable.ic_task_category_health;
+        }
+
+        if (name.contains("study")
+                || name.contains("university")
+                || name.contains("school")
+                || name.contains("college")) {
+
+            return R.drawable.ic_task_category_study;
+        }
+
+        if (name.contains("shopping")
+                || name.contains("shop")
+                || name.contains("groceries")) {
+
+            return R.drawable.ic_task_category_shopping;
+        }
+
+        return R.drawable.ic_task_category_default;
+    }
+
+    private int getTaskCategoryColor(
+            Category category
+    ) {
+
+        if (category == null
+                || category.getColor() == null
+                || category.getColor()
+                .trim()
+                .isEmpty()) {
+
+            return Color.parseColor(
+                    "#46C8BE"
+            );
+        }
+
+        try {
+
+            String color =
+                    category.getColor()
+                            .trim();
+
+            if (!color.startsWith("#")) {
+
+                color =
+                        "#" + color;
+            }
+
+            return Color.parseColor(
+                    color
+            );
+
+        } catch (IllegalArgumentException exception) {
+
+            return Color.parseColor(
+                    "#46C8BE"
+            );
+        }
+    }
+
+    private int createPastelCategoryColor(
+            int color
+    ) {
+
+        int red =
+                Color.red(
+                        color
+                );
+
+        int green =
+                Color.green(
+                        color
+                );
+
+        int blue =
+                Color.blue(
+                        color
+                );
+
+        red =
+                (int) (
+                        red * 0.18f
+                                + 255 * 0.82f
+                );
+
+        green =
+                (int) (
+                        green * 0.18f
+                                + 255 * 0.82f
+                );
+
+        blue =
+                (int) (
+                        blue * 0.18f
+                                + 255 * 0.82f
+                );
+
+        return Color.rgb(
+                red,
+                green,
+                blue
+        );
+    }
+
+    private float dpToPx(
+            float dp
+    ) {
+
+        return dp
+                * getResources()
+                .getDisplayMetrics()
+                .density;
     }
 
     private void bindDescription(
@@ -1623,7 +1907,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
             Task task
     ) {
 
-        if (isOverdue(task)) {
+        if (isOverdue(
+                task
+        )) {
+
             return "Overdue";
         }
 
@@ -1695,8 +1982,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         SimpleDateFormat output =
                 new SimpleDateFormat(
-                        "dd.MM.yyyy. HH:mm",
-                        Locale.getDefault()
+                        "dd MMM yyyy, HH:mm",
+                        Locale.ENGLISH
                 );
 
         return output.format(
@@ -1772,7 +2059,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 );
 
         formatter.setTimeZone(
-                TimeZone.getTimeZone("UTC")
+                TimeZone.getTimeZone(
+                        "UTC"
+                )
         );
 
         return formatter.format(
@@ -1783,6 +2072,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private boolean isOverdue(
             Task task
     ) {
+
+        if (task == null) {
+            return false;
+        }
 
         if (task.getStatus()
                 == TaskStatus.COMPLETED) {

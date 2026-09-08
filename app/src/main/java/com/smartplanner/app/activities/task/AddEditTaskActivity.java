@@ -2,6 +2,8 @@ package com.smartplanner.app.activities.task;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -42,7 +44,9 @@ public class AddEditTaskActivity extends AppCompatActivity {
             "task_id";
 
     private TextInputLayout tilTaskTitle;
+    private TextInputLayout tilTaskCategory;
     private TextInputLayout tilTaskReminder;
+    private TextInputLayout tilTaskDeadline;
 
     private TextInputEditText etTaskTitle;
     private TextInputEditText etTaskDescription;
@@ -53,6 +57,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
     private AutoCompleteTextView actTaskReminder;
 
     private MaterialButtonToggleGroup groupTaskPriority;
+
+    private MaterialButton btnPriorityLow;
+    private MaterialButton btnPriorityMedium;
+    private MaterialButton btnPriorityHigh;
 
     private MaterialSwitch switchTaskImportant;
 
@@ -118,6 +126,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
         initViews();
         setupViewModels();
         setupMode();
+
         setupGeneralListeners();
         setupCategoryListeners();
         setupPriorityListener();
@@ -125,6 +134,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
         setupReminderDropdown();
         setupDeadlinePicker();
 
+        updatePriorityAppearance();
         updateDeadlineClearButton();
         updateReminderAvailability();
 
@@ -142,6 +152,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
         }
     }
 
+    // =========================================================
+    // VIEWS
+    // =========================================================
+
     private void initViews() {
 
         tilTaskTitle =
@@ -149,9 +163,19 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         R.id.tilTaskTitle
                 );
 
+        tilTaskCategory =
+                findViewById(
+                        R.id.tilTaskCategory
+                );
+
         tilTaskReminder =
                 findViewById(
                         R.id.tilTaskReminder
+                );
+
+        tilTaskDeadline =
+                findViewById(
+                        R.id.tilTaskDeadline
                 );
 
         etTaskTitle =
@@ -189,6 +213,21 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         R.id.groupTaskPriority
                 );
 
+        btnPriorityLow =
+                findViewById(
+                        R.id.btnPriorityLow
+                );
+
+        btnPriorityMedium =
+                findViewById(
+                        R.id.btnPriorityMedium
+                );
+
+        btnPriorityHigh =
+                findViewById(
+                        R.id.btnPriorityHigh
+                );
+
         switchTaskImportant =
                 findViewById(
                         R.id.switchTaskImportant
@@ -215,6 +254,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 );
     }
 
+    // =========================================================
+    // VIEW MODELS
+    // =========================================================
+
     private void setupViewModels() {
 
         categoriesViewModel =
@@ -229,6 +272,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
                                 TasksViewModel.class
                         );
     }
+
+    // =========================================================
+    // MODE
+    // =========================================================
 
     private void setupMode() {
 
@@ -262,6 +309,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
         }
     }
 
+    // =========================================================
+    // GENERAL LISTENERS
+    // =========================================================
+
     private void setupGeneralListeners() {
 
         View btnBack =
@@ -277,10 +328,20 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 view -> attemptSaveTask()
         );
 
+        /*
+         * CLEAR DEADLINE
+         *
+         * Ovo je pravi button listener.
+         * Ne koristimo end icon kao Clear.
+         */
         btnClearTaskDeadline.setOnClickListener(
                 view -> clearDeadline()
         );
     }
+
+    // =========================================================
+    // CATEGORY
+    // =========================================================
 
     private void setupCategoryListeners() {
 
@@ -292,6 +353,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         selectedCategoryId =
                                 null;
 
+                        updateCategoryIcon(
+                                null
+                        );
+
                         return;
                     }
 
@@ -301,10 +366,17 @@ public class AddEditTaskActivity extends AppCompatActivity {
                     if (categoryPosition >= 0
                             && categoryPosition < categories.size()) {
 
+                        Category category =
+                                categories.get(
+                                        categoryPosition
+                                );
+
                         selectedCategoryId =
-                                categories
-                                        .get(categoryPosition)
-                                        .getId();
+                                category.getId();
+
+                        updateCategoryIcon(
+                                category
+                        );
                     }
                 }
         );
@@ -315,6 +387,175 @@ public class AddEditTaskActivity extends AppCompatActivity {
         );
     }
 
+    private void updateCategoryIcon(
+            Category category
+    ) {
+
+        int drawableResource =
+                getCategoryIconResource(
+                        category
+                );
+
+        tilTaskCategory.setStartIconDrawable(
+                drawableResource
+        );
+
+        int iconColor =
+                getCategoryColor(
+                        category
+                );
+
+        tilTaskCategory.setStartIconTintList(
+                ColorStateList.valueOf(
+                        iconColor
+                )
+        );
+    }
+
+    private int getCategoryIconResource(
+            Category category
+    ) {
+
+        if (category == null) {
+
+            return R.drawable.ic_task_category_default;
+        }
+
+        /*
+         * 1. Prvo pokušavamo koristiti spremljeni icon.
+         */
+        String icon =
+                category.getIcon();
+
+        if (icon != null
+                && !icon.trim().isEmpty()) {
+
+            String normalizedIcon =
+                    icon.trim()
+                            .toLowerCase(
+                                    Locale.US
+                            );
+
+            switch (normalizedIcon) {
+
+                case "work":
+                    return R.drawable.ic_task_category_work;
+
+                case "personal":
+                    return R.drawable.ic_task_category_personal;
+
+                case "health":
+                    return R.drawable.ic_task_category_health;
+
+                case "study":
+                    return R.drawable.ic_task_category_study;
+
+                case "shopping":
+                    return R.drawable.ic_task_category_shopping;
+            }
+        }
+
+        /*
+         * 2. Ako icon nije spremljen ili ima staru vrijednost,
+         * koristimo naziv kategorije kao fallback.
+         */
+        String name =
+                category.getName();
+
+        if (name == null
+                || name.trim().isEmpty()) {
+
+            return R.drawable.ic_task_category_default;
+        }
+
+        String normalizedName =
+                name.trim()
+                        .toLowerCase(
+                                Locale.US
+                        );
+
+        if (normalizedName.contains("work")
+                || normalizedName.contains("job")
+                || normalizedName.contains("business")) {
+
+            return R.drawable.ic_task_category_work;
+        }
+
+        if (normalizedName.contains("personal")
+                || normalizedName.contains("home")) {
+
+            return R.drawable.ic_task_category_personal;
+        }
+
+        if (normalizedName.contains("health")
+                || normalizedName.contains("fitness")
+                || normalizedName.contains("gym")
+                || normalizedName.contains("sport")) {
+
+            return R.drawable.ic_task_category_health;
+        }
+
+        if (normalizedName.contains("study")
+                || normalizedName.contains("university")
+                || normalizedName.contains("school")
+                || normalizedName.contains("college")) {
+
+            return R.drawable.ic_task_category_study;
+        }
+
+        if (normalizedName.contains("shopping")
+                || normalizedName.contains("shop")
+                || normalizedName.contains("groceries")) {
+
+            return R.drawable.ic_task_category_shopping;
+        }
+
+        return R.drawable.ic_task_category_default;
+    }
+
+    private int getCategoryColor(
+            Category category
+    ) {
+
+        if (category == null
+                || category.getColor() == null
+                || category.getColor()
+                .trim()
+                .isEmpty()) {
+
+            return Color.parseColor(
+                    "#7A8B9D"
+            );
+        }
+
+        try {
+
+            String color =
+                    category.getColor()
+                            .trim();
+
+            if (!color.startsWith("#")) {
+
+                color =
+                        "#" + color;
+            }
+
+            return Color.parseColor(
+                    color
+            );
+
+        } catch (IllegalArgumentException exception) {
+
+            return Color.parseColor(
+                    "#7A8B9D"
+            );
+        }
+    }
+
+    // =========================================================
+    // PRIORITY
+    // =========================================================
+
     private void setupPriorityListener() {
 
         groupTaskPriority.addOnButtonCheckedListener(
@@ -324,13 +565,15 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         return;
                     }
 
-                    if (checkedId == R.id.btnPriorityLow) {
+                    if (checkedId
+                            == R.id.btnPriorityLow) {
 
                         selectedPriority =
                                 TaskPriority.LOW;
 
                     } else if (
-                            checkedId == R.id.btnPriorityHigh
+                            checkedId
+                                    == R.id.btnPriorityHigh
                     ) {
 
                         selectedPriority =
@@ -341,9 +584,95 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         selectedPriority =
                                 TaskPriority.MEDIUM;
                     }
+
+                    updatePriorityAppearance();
                 }
         );
     }
+
+    private void updatePriorityAppearance() {
+
+        int textColor =
+                Color.parseColor(
+                        "#183B5B"
+                );
+
+        int selectedBackground;
+
+        switch (selectedPriority) {
+
+            case LOW:
+
+                selectedBackground =
+                        Color.parseColor(
+                                "#DDF6E8"
+                        );
+
+                break;
+
+            case HIGH:
+
+                selectedBackground =
+                        Color.parseColor(
+                                "#FFE0E3"
+                        );
+
+                break;
+
+            case MEDIUM:
+            default:
+
+                selectedBackground =
+                        Color.parseColor(
+                                "#FFF0D5"
+                        );
+
+                break;
+        }
+
+        int transparent =
+                Color.TRANSPARENT;
+
+        btnPriorityLow.setBackgroundTintList(
+                ColorStateList.valueOf(
+                        selectedPriority == TaskPriority.LOW
+                                ? selectedBackground
+                                : transparent
+                )
+        );
+
+        btnPriorityMedium.setBackgroundTintList(
+                ColorStateList.valueOf(
+                        selectedPriority == TaskPriority.MEDIUM
+                                ? selectedBackground
+                                : transparent
+                )
+        );
+
+        btnPriorityHigh.setBackgroundTintList(
+                ColorStateList.valueOf(
+                        selectedPriority == TaskPriority.HIGH
+                                ? selectedBackground
+                                : transparent
+                )
+        );
+
+        btnPriorityLow.setTextColor(
+                textColor
+        );
+
+        btnPriorityMedium.setTextColor(
+                textColor
+        );
+
+        btnPriorityHigh.setTextColor(
+                textColor
+        );
+    }
+
+    // =========================================================
+    // DURATION
+    // =========================================================
 
     private void setupDurationDropdown() {
 
@@ -468,6 +797,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
         return durationLabels;
     }
+
+    // =========================================================
+    // REMINDER
+    // =========================================================
 
     private void setupReminderDropdown() {
 
@@ -606,9 +939,20 @@ public class AddEditTaskActivity extends AppCompatActivity {
         return reminderLabels;
     }
 
+    // =========================================================
+    // DEADLINE
+    // =========================================================
+
     private void setupDeadlinePicker() {
 
         etTaskDeadline.setOnClickListener(
+                view -> showDatePicker()
+        );
+
+        /*
+         * Calendar icon također otvara DatePicker.
+         */
+        tilTaskDeadline.setEndIconOnClickListener(
                 view -> showDatePicker()
         );
     }
@@ -722,7 +1066,9 @@ public class AddEditTaskActivity extends AppCompatActivity {
                                     calendar;
 
                             updateDeadlineDisplay();
+
                             updateDeadlineClearButton();
+
                             updateReminderAvailability();
                         },
                         hour,
@@ -735,14 +1081,29 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
     private void clearDeadline() {
 
+        /*
+         * Ovo je cijela logika Clear akcije.
+         */
+
         selectedDeadline =
                 null;
 
         selectedReminderType =
                 ReminderType.NONE;
 
-        updateDeadlineDisplay();
+        etTaskDeadline.setText(
+                ""
+        );
+
+        actTaskReminder.dismissDropDown();
+
+        actTaskReminder.setText(
+                getReminderLabels().get(0),
+                false
+        );
+
         updateDeadlineClearButton();
+
         updateReminderAvailability();
     }
 
@@ -759,8 +1120,8 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
         SimpleDateFormat formatter =
                 new SimpleDateFormat(
-                        "dd.MM.yyyy. HH:mm",
-                        Locale.getDefault()
+                        "dd MMM yyyy, HH:mm",
+                        Locale.ENGLISH
                 );
 
         etTaskDeadline.setText(
@@ -770,19 +1131,35 @@ public class AddEditTaskActivity extends AppCompatActivity {
         );
     }
 
+    /*
+     * OVO JE KLJUČNI POPRAVAK.
+     *
+     * Prije smo button tijekom loadinga disableali,
+     * ali ga nakon loadinga nismo ponovno enableali.
+     */
     private void updateDeadlineClearButton() {
 
         boolean hasDeadline =
                 selectedDeadline != null;
 
+        btnClearTaskDeadline.setVisibility(
+                hasDeadline
+                        ? View.VISIBLE
+                        : View.INVISIBLE
+        );
+
         btnClearTaskDeadline.setEnabled(
+                hasDeadline
+        );
+
+        btnClearTaskDeadline.setClickable(
                 hasDeadline
         );
 
         btnClearTaskDeadline.setAlpha(
                 hasDeadline
                         ? 1.0f
-                        : 0.4f
+                        : 0.35f
         );
     }
 
@@ -841,6 +1218,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
             );
         }
     }
+
+    // =========================================================
+    // CATEGORIES OBSERVER
+    // =========================================================
 
     private void observeCategories() {
 
@@ -917,9 +1298,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
         List<String> categoryNames =
                 new ArrayList<>();
 
-        /*
-         * Position 0 predstavlja null category_id.
-         */
         categoryNames.add(
                 "No category"
         );
@@ -949,6 +1327,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
                     "No category",
                     false
             );
+
+            updateCategoryIcon(
+                    null
+            );
         }
     }
 
@@ -972,6 +1354,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 Toast.LENGTH_LONG
         ).show();
     }
+
+    // =========================================================
+    // TASK OBSERVER
+    // =========================================================
 
     private void observeTaskDetails() {
 
@@ -1029,7 +1415,12 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         true
                 );
 
+                /*
+                 * Nakon što forma ponovno postane enabled,
+                 * ponovno postavljamo state Clear gumba.
+                 */
                 updateDeadlineClearButton();
+
                 updateReminderAvailability();
 
                 break;
@@ -1041,6 +1432,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 );
 
                 updateDeadlineClearButton();
+
                 updateReminderAvailability();
 
                 String message =
@@ -1098,6 +1490,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
         );
 
         populatePriority();
+
         populateDuration();
 
         populateDeadline(
@@ -1105,6 +1498,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
         );
 
         updateDeadlineClearButton();
+
         updateReminderAvailability();
 
         if (selectedDeadline != null) {
@@ -1144,6 +1538,8 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
                 break;
         }
+
+        updatePriorityAppearance();
     }
 
     private void populateDuration() {
@@ -1294,10 +1690,18 @@ public class AddEditTaskActivity extends AppCompatActivity {
                     false
             );
 
+            updateCategoryIcon(
+                    null
+            );
+
             return;
         }
 
         for (Category category : categories) {
+
+            if (category == null) {
+                continue;
+            }
 
             if (selectedCategoryId.equals(
                     category.getId()
@@ -1306,6 +1710,15 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 actTaskCategory.setText(
                         category.getName(),
                         false
+                );
+
+                /*
+                 * Važno:
+                 * ikona se postavlja i kod inicijalnog
+                 * učitavanja Edit Taska.
+                 */
+                updateCategoryIcon(
+                        category
                 );
 
                 return;
@@ -1319,7 +1732,15 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 "No category",
                 false
         );
+
+        updateCategoryIcon(
+                null
+        );
     }
+
+    // =========================================================
+    // SAVE
+    // =========================================================
 
     private void attemptSaveTask() {
 
@@ -1357,6 +1778,17 @@ public class AddEditTaskActivity extends AppCompatActivity {
             );
 
             etTaskTitle.requestFocus();
+
+            return;
+        }
+
+        if (description.length() > 500) {
+
+            Toast.makeText(
+                    this,
+                    "Description can contain a maximum of 500 characters.",
+                    Toast.LENGTH_SHORT
+            ).show();
 
             return;
         }
@@ -1515,6 +1947,10 @@ public class AddEditTaskActivity extends AppCompatActivity {
         }
     }
 
+    // =========================================================
+    // FORM STATE
+    // =========================================================
+
     private void setSaving(
             boolean saving
     ) {
@@ -1569,6 +2005,18 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 enabled
         );
 
+        btnPriorityLow.setEnabled(
+                enabled
+        );
+
+        btnPriorityMedium.setEnabled(
+                enabled
+        );
+
+        btnPriorityHigh.setEnabled(
+                enabled
+        );
+
         switchTaskImportant.setEnabled(
                 enabled
         );
@@ -1577,9 +2025,17 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 enabled
         );
 
+        /*
+         * Ako forma nije enabled,
+         * privremeno disableamo Clear.
+         */
         if (!enabled) {
 
             btnClearTaskDeadline.setEnabled(
+                    false
+            );
+
+            btnClearTaskDeadline.setClickable(
                     false
             );
 
@@ -1593,10 +2049,20 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
         } else {
 
+            /*
+             * KLJUČNO:
+             * nakon ponovnog enableanja forme
+             * vraćamo stvarni Clear state.
+             */
             updateDeadlineClearButton();
+
             updateReminderAvailability();
         }
     }
+
+    // =========================================================
+    // HELPERS
+    // =========================================================
 
     private void clearErrors() {
 

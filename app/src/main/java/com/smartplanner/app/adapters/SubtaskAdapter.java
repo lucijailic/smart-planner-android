@@ -199,7 +199,7 @@ public class SubtaskAdapter
                 );
 
                 tvSubtaskTitle.setAlpha(
-                        0.6f
+                        0.55f
                 );
 
             } else {
