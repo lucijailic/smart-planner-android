@@ -86,6 +86,14 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.event.AddEditEventActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.event.EventDetailsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
