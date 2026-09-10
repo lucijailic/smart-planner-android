@@ -1915,49 +1915,9 @@ public class EventsFragment extends Fragment {
 
     private void updateSortButtonText() {
 
-        switch (selectedSortOption) {
-
-            case START_LATEST:
-
-                btnSortEvents.setText(
-                        "Latest"
-                );
-
-                break;
-
-            case NEWEST:
-
-                btnSortEvents.setText(
-                        "Newest"
-                );
-
-                break;
-
-            case OLDEST:
-
-                btnSortEvents.setText(
-                        "Oldest"
-                );
-
-                break;
-
-            case TITLE_A_Z:
-
-                btnSortEvents.setText(
-                        "A–Z"
-                );
-
-                break;
-
-            case START_SOONEST:
-            default:
-
-                btnSortEvents.setText(
-                        "Soonest"
-                );
-
-                break;
-        }
+        btnSortEvents.setText(
+                "Sort"
+        );
     }
 
     private void updateFiltersButtonText() {

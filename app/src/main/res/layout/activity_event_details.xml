@@ -12,62 +12,37 @@
     <LinearLayout
         android:id="@+id/layoutEventDetailsHeader"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="20dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingTop="14dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBackEventDetails"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:contentDescription="Back"
-            android:focusable="true"
-            android:padding="10dp"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="@color/sp_text_primary" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Event Details"
-                android:textColor="@color/sp_text_primary"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="View event information"
-                android:textColor="@color/sp_text_secondary"
-                android:textSize="13sp" />
-
-        </LinearLayout>
+            android:contentDescription="Go back"
+            app:backgroundTint="@android:color/transparent"
+            app:icon="@drawable/ic_task_back"
+            app:iconSize="22dp"
+            app:iconTint="@color/sp_text_primary" />
 
         <TextView
-            android:id="@+id/tvEventDetailsImportant"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:gravity="center"
-            android:text="☆"
-            android:textColor="@color/sp_teal_dark"
-            android:textSize="26sp" />
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:text="Event Details"
+            android:textColor="@color/sp_text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 
@@ -88,11 +63,12 @@
 
     <LinearLayout
         android:id="@+id/layoutEventDetailsError"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="24dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/layoutEventDetailsActions"
         app:layout_constraintEnd_toEndOf="parent"
@@ -105,13 +81,13 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Unable to load event."
-            android:textColor="@color/sp_text_primary"
-            android:textSize="15sp" />
+            android:textColor="@color/sp_text_secondary"
+            android:textSize="14sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRetryEventDetails"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
+            android:layout_height="48dp"
             android:layout_marginTop="14dp"
             android:text="Try Again"
             android:textAllCaps="false"
@@ -128,7 +104,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:fillViewport="true"
+        android:fillViewport="false"
         android:overScrollMode="never"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/layoutEventDetailsActions"
@@ -143,112 +119,105 @@
             android:paddingStart="20dp"
             android:paddingTop="8dp"
             android:paddingEnd="20dp"
-            android:paddingBottom="24dp">
+            android:paddingBottom="16dp">
 
-            <!-- MAIN CARD -->
+            <!-- EVENT HERO -->
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/sp_surface"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/sp_border"
-                app:strokeWidth="1dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/ivEventDetailsCategoryIcon"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:contentDescription="Event category"
+                    android:padding="15dp"
+                    android:src="@drawable/ic_task_category_default"
+                    app:tint="@color/sp_teal_dark" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="18dp">
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tvEventDetailsTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:textColor="@color/sp_text_primary"
+                        android:textSize="19sp"
+                        android:textStyle="bold" />
 
-                        <ImageView
-                            android:id="@+id/ivEventDetailsCategoryIcon"
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            android:contentDescription="Category"
-                            android:padding="10dp"
-                            android:src="@drawable/ic_task_category_default"
-                            app:tint="@color/sp_teal_dark" />
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:overScrollMode="never"
+                        android:scrollbars="none">
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
 
                             <TextView
-                                android:id="@+id/tvEventDetailsTitle"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="@color/sp_text_primary"
-                                android:textSize="22sp"
-                                android:textStyle="bold" />
-
-                            <LinearLayout
+                                android:id="@+id/tvEventDetailsCategory"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
+                                android:layout_height="30dp"
+                                android:gravity="center"
+                                android:paddingStart="13dp"
+                                android:paddingEnd="13dp"
+                                android:text="No category"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:visibility="gone" />
 
-                                <TextView
-                                    android:id="@+id/tvEventDetailsCategory"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="28dp"
-                                    android:gravity="center"
-                                    android:paddingStart="10dp"
-                                    android:paddingEnd="10dp"
-                                    android:text="No category"
-                                    android:textColor="@color/white"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold"
-                                    android:visibility="gone" />
-
-                                <TextView
-                                    android:id="@+id/tvEventDetailsStatus"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="28dp"
-                                    android:layout_marginStart="6dp"
-                                    android:gravity="center"
-                                    android:paddingStart="10dp"
-                                    android:paddingEnd="10dp"
-                                    android:text="Upcoming"
-                                    android:textSize="12sp"
-                                    android:textStyle="bold" />
-
-                            </LinearLayout>
+                            <TextView
+                                android:id="@+id/tvEventDetailsStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="30dp"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_task_filter_chip"
+                                android:gravity="center"
+                                android:paddingStart="13dp"
+                                android:paddingEnd="13dp"
+                                android:text="Upcoming"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
 
                         </LinearLayout>
 
-                    </LinearLayout>
+                    </HorizontalScrollView>
 
                 </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:id="@+id/tvEventDetailsImportant"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:gravity="center"
+                    android:text="☆"
+                    android:textColor="@color/sp_teal_dark"
+                    android:textSize="27sp" />
 
-            <!-- INFORMATION -->
+            </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="EVENT INFORMATION"
-                android:textColor="@color/sp_text_secondary"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+            <!-- EVENT INFORMATION -->
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="18dp"
                 app:cardBackgroundColor="@color/sp_surface"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
@@ -260,54 +229,83 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:paddingStart="16dp"
-                    android:paddingTop="14dp"
+                    android:paddingTop="4dp"
                     android:paddingEnd="16dp"
-                    android:paddingBottom="14dp">
+                    android:paddingBottom="4dp">
 
                     <!-- START -->
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Starts"
-                        android:textColor="@color/sp_text_secondary"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tvEventDetailsStart"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:textColor="@color/sp_text_primary"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
+                        android:layout_height="56dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="Starts"
+                            android:src="@drawable/ic_task_calendar_small"
+                            app:tint="@color/sp_text_secondary" />
+
+                        <TextView
+                            android:layout_width="92dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:text="Starts"
+                            android:textColor="@color/sp_text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvEventDetailsStart"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginStart="34dp"
                         android:background="@color/sp_border" />
 
                     <!-- END -->
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Ends"
-                        android:textColor="@color/sp_text_secondary"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tvEventDetailsEnd"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:textColor="@color/sp_text_primary"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
+                        android:layout_height="56dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <!-- LOCATION BLOCK -->
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="Ends"
+                            android:src="@drawable/ic_task_clock_small"
+                            app:tint="@color/sp_text_secondary" />
+
+                        <TextView
+                            android:layout_width="92dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:text="Ends"
+                            android:textColor="@color/sp_text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvEventDetailsEnd"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                    <!-- LOCATION -->
 
                     <LinearLayout
                         android:id="@+id/layoutEventDetailsLocation"
@@ -319,53 +317,83 @@
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="1dp"
-                            android:layout_marginTop="12dp"
-                            android:layout_marginBottom="12dp"
+                            android:layout_marginStart="34dp"
                             android:background="@color/sp_border" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Location"
-                            android:textColor="@color/sp_text_secondary"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:id="@+id/tvEventDetailsLocation"
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
+                            android:layout_height="56dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:contentDescription="Location"
+                                android:src="@drawable/ic_event_location"
+                                app:tint="@color/sp_text_secondary" />
+
+                            <TextView
+                                android:layout_width="92dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="14dp"
+                                android:text="Location"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tvEventDetailsLocation"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:ellipsize="end"
+                                android:maxLines="2"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="14sp" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginStart="34dp"
                         android:background="@color/sp_border" />
 
                     <!-- REMINDER -->
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Reminder"
-                        android:textColor="@color/sp_text_secondary"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tvEventDetailsReminder"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:text="No reminder"
-                        android:textColor="@color/sp_text_primary"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
+                        android:layout_height="56dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="Reminder"
+                            android:src="@drawable/ic_task_details_reminder"
+                            app:tint="@color/sp_text_secondary" />
+
+                        <TextView
+                            android:layout_width="92dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:text="Reminder"
+                            android:textColor="@color/sp_text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvEventDetailsReminder"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="No reminder"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -380,33 +408,40 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:text="DESCRIPTION"
-                    android:textColor="@color/sp_text_secondary"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="14dp"
                     app:cardBackgroundColor="@color/sp_surface"
                     app:cardCornerRadius="18dp"
                     app:cardElevation="0dp"
                     app:strokeColor="@color/sp_border"
                     app:strokeWidth="1dp">
 
-                    <TextView
-                        android:id="@+id/tvEventDetailsDescription"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:textColor="@color/sp_text_primary"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="2dp" />
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Description"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvEventDetailsDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="7dp"
+                            android:lineSpacingExtra="2dp"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
@@ -416,15 +451,15 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- BOTTOM ACTIONS -->
+    <!-- FIXED BOTTOM ACTIONS -->
 
     <LinearLayout
         android:id="@+id/layoutEventDetailsActions"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/sp_background"
-        android:gravity="center"
-        android:orientation="horizontal"
+        android:elevation="8dp"
+        android:orientation="vertical"
         android:paddingStart="20dp"
         android:paddingTop="10dp"
         android:paddingEnd="20dp"
@@ -433,33 +468,38 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDeleteEvent"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="54dp"
-            android:layout_weight="1"
-            android:text="Delete"
-            android:textAllCaps="false"
-            android:textColor="#C84A4A"
-            android:textSize="15sp"
-            app:cornerRadius="16dp"
-            app:strokeColor="#C84A4A"
-            app:strokeWidth="1dp" />
+        <!-- EDIT -->
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEditEvent"
-            android:layout_width="0dp"
-            android:layout_height="54dp"
-            android:layout_marginStart="10dp"
-            android:layout_weight="1"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
             android:text="Edit Event"
             android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="15sp"
+            android:textColor="@color/sp_teal_dark"
+            android:textSize="14sp"
             android:textStyle="bold"
-            app:backgroundTint="@color/sp_teal"
-            app:cornerRadius="16dp" />
+            app:cornerRadius="14dp"
+            app:strokeColor="@color/sp_teal_dark"
+            app:strokeWidth="1dp" />
+
+        <!-- DELETE -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteEvent"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:text="Delete Event"
+            android:textAllCaps="false"
+            android:textColor="@color/sp_error"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:cornerRadius="14dp"
+            app:strokeColor="@color/sp_error"
+            app:strokeWidth="1dp" />
 
     </LinearLayout>
 

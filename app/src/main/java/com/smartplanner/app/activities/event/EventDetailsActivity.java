@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -13,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
@@ -35,11 +35,18 @@ import java.util.Map;
 
 public class EventDetailsActivity extends AppCompatActivity {
 
-    public static final String EXTRA_EVENT_ID =
-            "event_id";
+    public static final String EXTRA_EVENT_ID = "event_id";
+
+    // =========================================================
+    // VIEW MODELS
+    // =========================================================
 
     private EventsViewModel eventsViewModel;
     private CategoriesViewModel categoriesViewModel;
+
+    // =========================================================
+    // DATA
+    // =========================================================
 
     private String eventId;
 
@@ -48,7 +55,11 @@ public class EventDetailsActivity extends AppCompatActivity {
     private final Map<String, Category> categoryMap =
             new HashMap<>();
 
-    private ImageButton btnBackEventDetails;
+    // =========================================================
+    // VIEWS
+    // =========================================================
+
+    private MaterialButton btnBackEventDetails;
 
     private ProgressBar progressEventDetails;
 
@@ -56,7 +67,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private LinearLayout layoutEventDetailsLocation;
     private LinearLayout layoutEventDetailsDescription;
 
-    private androidx.core.widget.NestedScrollView scrollEventDetails;
+    private NestedScrollView scrollEventDetails;
 
     private TextView tvEventDetailsError;
     private TextView tvEventDetailsImportant;
@@ -75,14 +86,14 @@ public class EventDetailsActivity extends AppCompatActivity {
     private MaterialButton btnDeleteEvent;
     private MaterialButton btnEditEvent;
 
-    @Override
-    protected void onCreate(
-            Bundle savedInstanceState
-    ) {
+    // =========================================================
+    // LIFECYCLE
+    // =========================================================
 
-        super.onCreate(
-                savedInstanceState
-        );
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
 
         setContentView(
                 R.layout.activity_event_details
@@ -130,7 +141,8 @@ public class EventDetailsActivity extends AppCompatActivity {
         super.onResume();
 
         if (eventsViewModel != null
-                && eventId != null) {
+                && eventId != null
+                && !eventId.trim().isEmpty()) {
 
             eventsViewModel.loadEvent(
                     eventId
@@ -139,7 +151,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // INIT
+    // INIT VIEWS
     // =========================================================
 
     private void initViews() {
@@ -245,6 +257,10 @@ public class EventDetailsActivity extends AppCompatActivity {
                 );
     }
 
+    // =========================================================
+    // VIEW MODELS
+    // =========================================================
+
     private void setupViewModels() {
 
         eventsViewModel =
@@ -267,7 +283,9 @@ public class EventDetailsActivity extends AppCompatActivity {
     private void setupListeners() {
 
         btnBackEventDetails.setOnClickListener(
-                view -> getOnBackPressedDispatcher().onBackPressed()
+                view ->
+                        getOnBackPressedDispatcher()
+                                .onBackPressed()
         );
 
         btnRetryEventDetails.setOnClickListener(
@@ -278,17 +296,21 @@ public class EventDetailsActivity extends AppCompatActivity {
         );
 
         btnEditEvent.setOnClickListener(
-                view -> openEditEvent()
+                view ->
+                        openEditEvent()
         );
 
         btnDeleteEvent.setOnClickListener(
-                view -> showDeleteConfirmation()
+                view ->
+                        showDeleteConfirmation()
         );
 
         tvEventDetailsImportant.setOnClickListener(
                 view -> {
 
-                    if (currentEvent == null) {
+                    if (currentEvent == null
+                            || currentEvent.getId() == null) {
+
                         return;
                     }
 
@@ -355,7 +377,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // CATEGORIES
+    // CATEGORIES OBSERVER
     // =========================================================
 
     private void observeCategories() {
@@ -402,7 +424,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // IMPORTANT
+    // IMPORTANT OBSERVER
     // =========================================================
 
     private void observeImportantAction() {
@@ -464,7 +486,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // DELETE
+    // DELETE OBSERVER
     // =========================================================
 
     private void observeDeleteAction() {
@@ -551,8 +573,17 @@ public class EventDetailsActivity extends AppCompatActivity {
                 View.VISIBLE
         );
 
+        String title =
+                currentEvent.getTitle();
+
+        if (title == null
+                || title.trim().isEmpty()) {
+
+            title = "Untitled Event";
+        }
+
         tvEventDetailsTitle.setText(
-                currentEvent.getTitle()
+                title
         );
 
         tvEventDetailsStart.setText(
@@ -580,6 +611,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         updateReminder();
     }
 
+    // =========================================================
+    // CATEGORY
+    // =========================================================
+
     private void updateCategory() {
 
         if (currentEvent == null) {
@@ -596,13 +631,24 @@ public class EventDetailsActivity extends AppCompatActivity {
                     View.GONE
             );
 
+            int defaultColor =
+                    Color.parseColor(
+                            "#46C8BE"
+                    );
+
             ivEventDetailsCategoryIcon.setImageResource(
                     R.drawable.ic_task_category_default
             );
 
             ivEventDetailsCategoryIcon.setColorFilter(
-                    Color.parseColor(
-                            "#46C8BE"
+                    defaultColor
+            );
+
+            ivEventDetailsCategoryIcon.setBackground(
+                    createRoundedBackground(
+                            makePastelColor(
+                                    defaultColor
+                            )
                     )
             );
 
@@ -620,8 +666,25 @@ public class EventDetailsActivity extends AppCompatActivity {
                     View.GONE
             );
 
+            int defaultColor =
+                    Color.parseColor(
+                            "#46C8BE"
+                    );
+
             ivEventDetailsCategoryIcon.setImageResource(
                     R.drawable.ic_task_category_default
+            );
+
+            ivEventDetailsCategoryIcon.setColorFilter(
+                    defaultColor
+            );
+
+            ivEventDetailsCategoryIcon.setBackground(
+                    createRoundedBackground(
+                            makePastelColor(
+                                    defaultColor
+                            )
+                    )
             );
 
             return;
@@ -638,6 +701,10 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         tvEventDetailsCategory.setText(
                 category.getName()
+        );
+
+        tvEventDetailsCategory.setTextColor(
+                Color.WHITE
         );
 
         tvEventDetailsCategory.setBackground(
@@ -664,6 +731,10 @@ public class EventDetailsActivity extends AppCompatActivity {
                 )
         );
     }
+
+    // =========================================================
+    // STATUS
+    // =========================================================
 
     private void updateStatus() {
 
@@ -748,6 +819,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         );
     }
 
+    // =========================================================
+    // IMPORTANT
+    // =========================================================
+
     private void updateImportant() {
 
         if (currentEvent == null) {
@@ -776,7 +851,15 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
+    // =========================================================
+    // LOCATION
+    // =========================================================
+
     private void updateLocation() {
+
+        if (currentEvent == null) {
+            return;
+        }
 
         String location =
                 currentEvent.getLocation();
@@ -800,7 +883,15 @@ public class EventDetailsActivity extends AppCompatActivity {
         );
     }
 
+    // =========================================================
+    // DESCRIPTION
+    // =========================================================
+
     private void updateDescription() {
+
+        if (currentEvent == null) {
+            return;
+        }
 
         String description =
                 currentEvent.getDescription();
@@ -824,7 +915,15 @@ public class EventDetailsActivity extends AppCompatActivity {
         );
     }
 
+    // =========================================================
+    // REMINDER
+    // =========================================================
+
     private void updateReminder() {
+
+        if (currentEvent == null) {
+            return;
+        }
 
         ReminderType reminderType =
                 currentEvent.getReminderType();
@@ -881,13 +980,14 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // EDIT
+    // EDIT EVENT
     // =========================================================
 
     private void openEditEvent() {
 
         if (currentEvent == null
-                || currentEvent.getId() == null) {
+                || currentEvent.getId() == null
+                || currentEvent.getId().trim().isEmpty()) {
 
             return;
         }
@@ -909,12 +1009,14 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // DELETE CONFIRMATION
+    // DELETE EVENT
     // =========================================================
 
     private void showDeleteConfirmation() {
 
-        if (currentEvent == null) {
+        if (currentEvent == null
+                || currentEvent.getId() == null) {
+
             return;
         }
 
@@ -962,9 +1064,7 @@ public class EventDetailsActivity extends AppCompatActivity {
         );
     }
 
-    private void showError(
-            String message
-    ) {
+    private void showError(String message) {
 
         progressEventDetails.setVisibility(
                 View.GONE
@@ -991,7 +1091,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // DATE FORMAT
+    // DATE
     // =========================================================
 
     private String formatDisplayDate(
@@ -1057,7 +1157,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // CATEGORY HELPERS
+    // CATEGORY ICON
     // =========================================================
 
     private int getCategoryIcon(
@@ -1083,18 +1183,23 @@ public class EventDetailsActivity extends AppCompatActivity {
             ) {
 
                 case "work":
+
                     return R.drawable.ic_task_category_work;
 
                 case "personal":
+
                     return R.drawable.ic_task_category_personal;
 
                 case "health":
+
                     return R.drawable.ic_task_category_health;
 
                 case "study":
+
                     return R.drawable.ic_task_category_study;
 
                 case "shopping":
+
                     return R.drawable.ic_task_category_shopping;
             }
         }
@@ -1102,7 +1207,8 @@ public class EventDetailsActivity extends AppCompatActivity {
         String name =
                 category.getName();
 
-        if (name == null) {
+        if (name == null
+                || name.trim().isEmpty()) {
 
             return R.drawable.ic_task_category_default;
         }
@@ -1151,6 +1257,10 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         return R.drawable.ic_task_category_default;
     }
+
+    // =========================================================
+    // CATEGORY COLOR
+    // =========================================================
 
     private int parseCategoryColor(
             String color
@@ -1230,6 +1340,10 @@ public class EventDetailsActivity extends AppCompatActivity {
                 blue
         );
     }
+
+    // =========================================================
+    // BACKGROUND
+    // =========================================================
 
     private GradientDrawable createRoundedBackground(
             int color
