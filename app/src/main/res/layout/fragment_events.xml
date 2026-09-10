@@ -269,7 +269,7 @@
             android:layout_height="54dp"
             android:alpha="0.55"
             android:contentDescription="No events"
-            android:src="@drawable/ic_task_calendar_small"
+            android:src="@drawable/ic_nav_events"
             app:tint="@color/sp_teal_dark" />
 
         <TextView
