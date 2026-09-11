@@ -1,10 +1,12 @@
 package com.smartplanner.app.activities.event;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -49,7 +52,6 @@ public class EventDetailsActivity extends AppCompatActivity {
     // =========================================================
 
     private String eventId;
-
     private Event currentEvent;
 
     private final Map<String, Category> categoryMap =
@@ -80,6 +82,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private TextView tvEventDetailsReminder;
     private TextView tvEventDetailsDescription;
 
+    private FrameLayout layoutEventCategoryIcon;
     private ImageView ivEventDetailsCategoryIcon;
 
     private MaterialButton btnRetryEventDetails;
@@ -119,17 +122,12 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
 
         initViews();
-
         setupViewModels();
-
         setupListeners();
 
         observeEvent();
-
         observeCategories();
-
         observeImportantAction();
-
         observeDeleteAction();
 
         categoriesViewModel.loadCategories();
@@ -234,6 +232,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         tvEventDetailsDescription =
                 findViewById(
                         R.id.tvEventDetailsDescription
+                );
+
+        layoutEventCategoryIcon =
+                findViewById(
+                        R.id.layoutEventCategoryIcon
                 );
 
         ivEventDetailsCategoryIcon =
@@ -579,7 +582,8 @@ public class EventDetailsActivity extends AppCompatActivity {
         if (title == null
                 || title.trim().isEmpty()) {
 
-            title = "Untitled Event";
+            title =
+                    "Untitled Event";
         }
 
         tvEventDetailsTitle.setText(
@@ -599,15 +603,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         );
 
         updateCategory();
-
         updateStatus();
-
         updateImportant();
-
         updateLocation();
-
         updateDescription();
-
         updateReminder();
     }
 
@@ -631,26 +630,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                     View.GONE
             );
 
-            int defaultColor =
-                    Color.parseColor(
-                            "#46C8BE"
-                    );
-
-            ivEventDetailsCategoryIcon.setImageResource(
-                    R.drawable.ic_task_category_default
-            );
-
-            ivEventDetailsCategoryIcon.setColorFilter(
-                    defaultColor
-            );
-
-            ivEventDetailsCategoryIcon.setBackground(
-                    createRoundedBackground(
-                            makePastelColor(
-                                    defaultColor
-                            )
-                    )
-            );
+            setDefaultCategoryAppearance();
 
             return;
         }
@@ -666,26 +646,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                     View.GONE
             );
 
-            int defaultColor =
-                    Color.parseColor(
-                            "#46C8BE"
-                    );
-
-            ivEventDetailsCategoryIcon.setImageResource(
-                    R.drawable.ic_task_category_default
-            );
-
-            ivEventDetailsCategoryIcon.setColorFilter(
-                    defaultColor
-            );
-
-            ivEventDetailsCategoryIcon.setBackground(
-                    createRoundedBackground(
-                            makePastelColor(
-                                    defaultColor
-                            )
-                    )
-            );
+            setDefaultCategoryAppearance();
 
             return;
         }
@@ -699,8 +660,18 @@ public class EventDetailsActivity extends AppCompatActivity {
                 View.VISIBLE
         );
 
+        String categoryName =
+                category.getName();
+
+        if (categoryName == null
+                || categoryName.trim().isEmpty()) {
+
+            categoryName =
+                    "Category";
+        }
+
         tvEventDetailsCategory.setText(
-                category.getName()
+                categoryName
         );
 
         tvEventDetailsCategory.setTextColor(
@@ -709,7 +680,8 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         tvEventDetailsCategory.setBackground(
                 createRoundedBackground(
-                        categoryColor
+                        categoryColor,
+                        50
                 )
         );
 
@@ -723,11 +695,39 @@ public class EventDetailsActivity extends AppCompatActivity {
                 categoryColor
         );
 
-        ivEventDetailsCategoryIcon.setBackground(
+        layoutEventCategoryIcon.setBackground(
                 createRoundedBackground(
                         makePastelColor(
                                 categoryColor
-                        )
+                        ),
+                        17
+                )
+        );
+    }
+
+    private void setDefaultCategoryAppearance() {
+
+        int defaultColor =
+                ContextCompat.getColor(
+                        this,
+                        R.color.sp_teal_dark
+                );
+
+        ivEventDetailsCategoryIcon.setImageResource(
+                R.drawable.ic_task_category_default
+        );
+
+        ivEventDetailsCategoryIcon.setColorFilter(
+                defaultColor
+        );
+
+        layoutEventCategoryIcon.setBackground(
+                createRoundedBackground(
+                        ContextCompat.getColor(
+                                this,
+                                R.color.sp_home_tasks_icon_bg
+                        ),
+                        17
                 )
         );
     }
@@ -755,15 +755,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         String status =
                 "Upcoming";
 
-        int backgroundColor =
-                Color.parseColor(
-                        "#E4F2FF"
-                );
+        int backgroundColorResource =
+                R.color.sp_home_events_icon_bg;
 
-        int textColor =
-                Color.parseColor(
-                        "#287AB8"
-                );
+        int textColorResource =
+                R.color.sp_home_blue;
 
         if (start != null
                 && end != null) {
@@ -777,30 +773,22 @@ public class EventDetailsActivity extends AppCompatActivity {
                 status =
                         "Ongoing";
 
-                backgroundColor =
-                        Color.parseColor(
-                                "#DDF7E9"
-                        );
+                backgroundColorResource =
+                        R.color.sp_home_tasks_icon_bg;
 
-                textColor =
-                        Color.parseColor(
-                                "#258A5B"
-                        );
+                textColorResource =
+                        R.color.sp_teal_dark;
 
             } else if (now.after(end)) {
 
                 status =
                         "Past";
 
-                backgroundColor =
-                        Color.parseColor(
-                                "#F1F4F6"
-                        );
+                backgroundColorResource =
+                        R.color.sp_border;
 
-                textColor =
-                        Color.parseColor(
-                                "#718294"
-                        );
+                textColorResource =
+                        R.color.sp_text_secondary;
             }
         }
 
@@ -808,14 +796,37 @@ public class EventDetailsActivity extends AppCompatActivity {
                 status
         );
 
-        tvEventDetailsStatus.setTextColor(
-                textColor
+        applyStatusBadgeColors(
+                backgroundColorResource,
+                textColorResource
         );
+    }
 
-        tvEventDetailsStatus.setBackground(
-                createRoundedBackground(
+    private void applyStatusBadgeColors(
+            int backgroundColorResource,
+            int textColorResource
+    ) {
+
+        int backgroundColor =
+                ContextCompat.getColor(
+                        this,
+                        backgroundColorResource
+                );
+
+        int textColor =
+                ContextCompat.getColor(
+                        this,
+                        textColorResource
+                );
+
+        tvEventDetailsStatus.setBackgroundTintList(
+                ColorStateList.valueOf(
                         backgroundColor
                 )
+        );
+
+        tvEventDetailsStatus.setTextColor(
+                textColor
         );
     }
 
@@ -846,7 +857,7 @@ public class EventDetailsActivity extends AppCompatActivity {
             );
 
             tvEventDetailsImportant.setAlpha(
-                    0.75f
+                    0.70f
             );
         }
     }
@@ -1035,12 +1046,10 @@ public class EventDetailsActivity extends AppCompatActivity {
                 )
                 .setPositiveButton(
                         "Delete",
-                        (dialog, which) -> {
-
-                            eventsViewModel.deleteEvent(
-                                    currentEvent.getId()
-                            );
-                        }
+                        (dialog, which) ->
+                                eventsViewModel.deleteEvent(
+                                        currentEvent.getId()
+                                )
                 )
                 .show();
     }
@@ -1064,7 +1073,9 @@ public class EventDetailsActivity extends AppCompatActivity {
         );
     }
 
-    private void showError(String message) {
+    private void showError(
+            String message
+    ) {
 
         progressEventDetails.setVisibility(
                 View.GONE
@@ -1342,11 +1353,12 @@ public class EventDetailsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // BACKGROUND
+    // BACKGROUND HELPERS
     // =========================================================
 
     private GradientDrawable createRoundedBackground(
-            int color
+            int color,
+            int radiusDp
     ) {
 
         GradientDrawable drawable =
@@ -1362,7 +1374,7 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         drawable.setCornerRadius(
                 dpToPx(
-                        50
+                        radiusDp
                 )
         );
 

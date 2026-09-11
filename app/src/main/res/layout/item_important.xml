@@ -12,6 +12,7 @@
     android:layout_marginBottom="6dp"
     android:clickable="true"
     android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/sp_surface"
     app:cardCornerRadius="18dp"
     app:cardElevation="0dp"
@@ -23,35 +24,35 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:padding="14dp">
 
-        <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp">
+        <!-- ICON BACKGROUND -->
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                app:cardBackgroundColor="@color/sp_background"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="0dp">
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardImportantIcon"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            app:cardBackgroundColor="@color/sp_home_tasks_icon_bg"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="0dp">
 
-                <ImageView
-                    android:id="@+id/ivImportantType"
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:layout_gravity="center"
-                    android:contentDescription="Important item type"
-                    app:tint="@color/sp_teal_dark" />
+            <ImageView
+                android:id="@+id/ivImportantType"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:contentDescription="Important item type"
+                android:src="@drawable/ic_nav_tasks"
+                app:tint="@color/sp_teal_dark" />
 
-            </com.google.android.material.card.MaterialCardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        </FrameLayout>
+        <!-- TEXT -->
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
+            android:layout_marginStart="13dp"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -61,41 +62,54 @@
                 android:layout_height="wrap_content"
                 android:text="TASK"
                 android:textColor="@color/sp_teal_dark"
-                android:textSize="11sp"
+                android:textSize="10sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvImportantItemTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
+                android:layout_marginTop="2dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="Important item"
                 android:textColor="@color/sp_text_primary"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvImportantItemInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="4dp"
                 android:ellipsize="end"
-                android:maxLines="2"
+                android:maxLines="1"
                 android:text="Due in 2 days"
                 android:textColor="@color/sp_text_secondary"
-                android:textSize="13sp" />
+                android:textSize="12sp" />
 
         </LinearLayout>
 
-        <ImageView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:layout_marginStart="10dp"
-            android:contentDescription="Open"
-            android:src="@drawable/ic_profile_chevron_right"
-            app:tint="@color/sp_text_secondary" />
+        <!-- CHEVRON -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardImportantChevron"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="8dp"
+            app:cardBackgroundColor="@color/sp_surface"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp">
+
+            <ImageView
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_gravity="center"
+                android:contentDescription="Open"
+                android:src="@drawable/ic_profile_chevron_right"
+                app:tint="@color/sp_teal_dark" />
+
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
