@@ -42,7 +42,7 @@ import java.util.Locale;
 
 public class HomeFragment extends Fragment {
 
-    private static final int MAX_TODAY_TASKS = 3;
+    private static final int MAX_TODAY_TASKS = 2;
 
     // =========================================================
     // UI - HEADER

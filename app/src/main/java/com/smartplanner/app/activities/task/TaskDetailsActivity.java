@@ -1,6 +1,7 @@
 package com.smartplanner.app.activities.task;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -123,9 +125,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         taskId = getIntent().getStringExtra(EXTRA_TASK_ID);
 
         if (taskId == null || taskId.trim().isEmpty()) {
-
             finish();
-
             return;
         }
 
@@ -294,9 +294,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 subtaskAdapter
         );
 
-        recyclerSubtasks.setNestedScrollingEnabled(
-                true
-        );
+        recyclerSubtasks.setNestedScrollingEnabled(true);
     }
 
     private void setupViewModels() {
@@ -527,17 +525,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case LOADING:
 
-                setActionButtonsEnabled(
-                        false
-                );
+                setActionButtonsEnabled(false);
 
                 break;
 
             case SUCCESS:
 
-                setActionButtonsEnabled(
-                        true
-                );
+                setActionButtonsEnabled(true);
 
                 currentTask =
                         state.getData();
@@ -559,9 +553,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case ERROR:
 
-                setActionButtonsEnabled(
-                        true
-                );
+                setActionButtonsEnabled(true);
 
                 String message =
                         state.getMessage();
@@ -595,9 +587,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case LOADING:
 
-                setActionButtonsEnabled(
-                        false
-                );
+                setActionButtonsEnabled(false);
 
                 break;
 
@@ -619,9 +609,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case ERROR:
 
-                setActionButtonsEnabled(
-                        true
-                );
+                setActionButtonsEnabled(true);
 
                 String message =
                         state.getMessage();
@@ -778,31 +766,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
             List<Subtask> subtasks
     ) {
 
-        if (subtasks == null
-                || subtasks.isEmpty()) {
-
-            tvSubtasksTitle.setText(
-                    "Subtasks"
-            );
-
-            return;
-        }
-
-        int total =
-                subtasks.size();
-
-        int completed =
-                0;
-
-        for (Subtask subtask : subtasks) {
-
-            if (subtask != null
-                    && subtask.isCompleted()) {
-
-                completed++;
-            }
-        }
-
         tvSubtasksTitle.setText(
                 "Subtasks"
         );
@@ -879,17 +842,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case LOADING:
 
-                btnAddSubtask.setEnabled(
-                        false
-                );
+                btnAddSubtask.setEnabled(false);
 
                 break;
 
             case SUCCESS:
 
-                btnAddSubtask.setEnabled(
-                        true
-                );
+                btnAddSubtask.setEnabled(true);
 
                 if (subtaskCompletionUpdateInProgress) {
 
@@ -915,9 +874,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case ERROR:
 
-                btnAddSubtask.setEnabled(
-                        true
-                );
+                btnAddSubtask.setEnabled(true);
 
                 String message =
                         state.getMessage();
@@ -966,17 +923,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case LOADING:
 
-                btnAddSubtask.setEnabled(
-                        false
-                );
+                btnAddSubtask.setEnabled(false);
 
                 break;
 
             case SUCCESS:
 
-                btnAddSubtask.setEnabled(
-                        true
-                );
+                btnAddSubtask.setEnabled(true);
 
                 Toast.makeText(
                         this,
@@ -988,9 +941,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case ERROR:
 
-                btnAddSubtask.setEnabled(
-                        true
-                );
+                btnAddSubtask.setEnabled(true);
 
                 String message =
                         state.getMessage();
@@ -1125,13 +1076,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
                         inputLayout.getContext()
                 );
 
-        input.setSingleLine(
-                true
-        );
-
-        input.setMaxLines(
-                1
-        );
+        input.setSingleLine(true);
+        input.setMaxLines(1);
 
         inputLayout.addView(
                 input
@@ -1258,9 +1204,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 taskId
         );
 
-        startActivity(
-                intent
-        );
+        startActivity(intent);
     }
 
     private void showDeleteConfirmation() {
@@ -1363,29 +1307,12 @@ public class TaskDetailsActivity extends AppCompatActivity {
             boolean enabled
     ) {
 
-        btnStartTask.setEnabled(
-                enabled
-        );
-
-        btnCompleteTask.setEnabled(
-                enabled
-        );
-
-        btnReopenTask.setEnabled(
-                enabled
-        );
-
-        btnEditTask.setEnabled(
-                enabled
-        );
-
-        btnDeleteTask.setEnabled(
-                enabled
-        );
-
-        btnAddSubtask.setEnabled(
-                enabled
-        );
+        btnStartTask.setEnabled(enabled);
+        btnCompleteTask.setEnabled(enabled);
+        btnReopenTask.setEnabled(enabled);
+        btnEditTask.setEnabled(enabled);
+        btnDeleteTask.setEnabled(enabled);
+        btnAddSubtask.setEnabled(enabled);
     }
 
     private void updateStatusButtons(
@@ -1528,6 +1455,17 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 priority
         );
 
+        // NEW:
+        // Apply semantic colors to hero badges.
+
+        updateStatusBadgeAppearance(
+                task
+        );
+
+        updatePriorityBadgeAppearance(
+                task
+        );
+
         Integer estimatedDuration =
                 task.getEstimatedDuration();
 
@@ -1556,6 +1494,148 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         updateStatusButtons(
                 task
+        );
+    }
+
+    // =========================================================
+    // HERO BADGE COLORS
+    // =========================================================
+
+    private void updateStatusBadgeAppearance(
+            Task task
+    ) {
+
+        if (isOverdue(task)) {
+
+            applyBadgeColors(
+                    tvTaskDetailsStatusBadge,
+                    R.color.sp_home_overdue_bg,
+                    R.color.sp_home_overdue
+            );
+
+            return;
+        }
+
+        if (task.getStatus() == null) {
+
+            applyBadgeColors(
+                    tvTaskDetailsStatusBadge,
+                    R.color.sp_home_events_bg,
+                    R.color.sp_text_secondary
+            );
+
+            return;
+        }
+
+        switch (task.getStatus()) {
+
+            case TO_DO:
+
+                applyBadgeColors(
+                        tvTaskDetailsStatusBadge,
+                        R.color.sp_home_events_bg,
+                        R.color.sp_home_blue
+                );
+
+                break;
+
+            case IN_PROGRESS:
+
+                applyBadgeColors(
+                        tvTaskDetailsStatusBadge,
+                        R.color.sp_home_deadline_bg,
+                        R.color.sp_home_deadline
+                );
+
+                break;
+
+            case COMPLETED:
+
+                applyBadgeColors(
+                        tvTaskDetailsStatusBadge,
+                        R.color.sp_home_tasks_bg,
+                        R.color.sp_teal_dark
+                );
+
+                break;
+        }
+    }
+
+    private void updatePriorityBadgeAppearance(
+            Task task
+    ) {
+
+        if (task.getPriority() == null) {
+
+            applyBadgeColors(
+                    tvTaskDetailsPriorityBadge,
+                    R.color.sp_home_events_bg,
+                    R.color.sp_text_secondary
+            );
+
+            return;
+        }
+
+        switch (task.getPriority()) {
+
+            case HIGH:
+
+                applyBadgeColors(
+                        tvTaskDetailsPriorityBadge,
+                        R.color.sp_home_overdue_bg,
+                        R.color.sp_home_overdue
+                );
+
+                break;
+
+            case MEDIUM:
+
+                applyBadgeColors(
+                        tvTaskDetailsPriorityBadge,
+                        R.color.sp_home_deadline_bg,
+                        R.color.sp_home_deadline
+                );
+
+                break;
+
+            case LOW:
+
+                applyBadgeColors(
+                        tvTaskDetailsPriorityBadge,
+                        R.color.sp_home_events_bg,
+                        R.color.sp_home_blue
+                );
+
+                break;
+        }
+    }
+
+    private void applyBadgeColors(
+            TextView badge,
+            int backgroundColorResource,
+            int textColorResource
+    ) {
+
+        int backgroundColor =
+                ContextCompat.getColor(
+                        this,
+                        backgroundColorResource
+                );
+
+        int textColor =
+                ContextCompat.getColor(
+                        this,
+                        textColorResource
+                );
+
+        badge.setBackgroundTintList(
+                ColorStateList.valueOf(
+                        backgroundColor
+                )
+        );
+
+        badge.setTextColor(
+                textColor
         );
     }
 
@@ -1673,9 +1753,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         );
 
         background.setCornerRadius(
-                dpToPx(
-                        16
-                )
+                dpToPx(16)
         );
 
         background.setColor(
@@ -1711,23 +1789,18 @@ public class TaskDetailsActivity extends AppCompatActivity {
             ) {
 
                 case "work":
-
                     return R.drawable.ic_task_category_work;
 
                 case "personal":
-
                     return R.drawable.ic_task_category_personal;
 
                 case "health":
-
                     return R.drawable.ic_task_category_health;
 
                 case "study":
-
                     return R.drawable.ic_task_category_study;
 
                 case "shopping":
-
                     return R.drawable.ic_task_category_shopping;
             }
         }
@@ -1806,9 +1879,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
                             .trim();
 
             if (!color.startsWith("#")) {
-
-                color =
-                        "#" + color;
+                color = "#" + color;
             }
 
             return Color.parseColor(
@@ -1828,19 +1899,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
     ) {
 
         int red =
-                Color.red(
-                        color
-                );
+                Color.red(color);
 
         int green =
-                Color.green(
-                        color
-                );
+                Color.green(color);
 
         int blue =
-                Color.blue(
-                        color
-                );
+                Color.blue(color);
 
         red =
                 (int) (
@@ -1907,10 +1972,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
             Task task
     ) {
 
-        if (isOverdue(
-                task
-        )) {
-
+        if (isOverdue(task)) {
             return "Overdue";
         }
 
@@ -2109,6 +2171,12 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private Date parseSupabaseDate(
             String value
     ) {
+
+        if (value == null
+                || value.trim().isEmpty()) {
+
+            return null;
+        }
 
         String[] formats = {
                 "yyyy-MM-dd'T'HH:mm:ssXXX",

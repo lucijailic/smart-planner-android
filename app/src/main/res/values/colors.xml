@@ -30,4 +30,25 @@
     <color name="sp_error">#D84C4C</color>
     <color name="sp_outline">#D9DEE7</color>
 
+    <!-- Home Dashboard -->
+
+    <color name="sp_home_tasks_bg">#E8F8F5</color>
+    <color name="sp_home_tasks_icon_bg">#D3F2ED</color>
+
+    <color name="sp_home_events_bg">#EDF6FF</color>
+    <color name="sp_home_events_icon_bg">#DDEEFF</color>
+    <color name="sp_home_blue">#3789D8</color>
+
+    <color name="sp_home_overdue_bg">#FFF0F0</color>
+    <color name="sp_home_overdue_icon_bg">#FFE0E0</color>
+    <color name="sp_home_overdue">#E55656</color>
+
+    <color name="sp_home_deadline_bg">#FFF8E9</color>
+    <color name="sp_home_deadline_icon_bg">#FFECC4</color>
+    <color name="sp_home_deadline">#D89420</color>
+
+    <color name="sp_home_important_bg">#E9F8F5</color>
+
+    <color name="sp_home_progress_bg">#FFFFFF</color>
+
 </resources>

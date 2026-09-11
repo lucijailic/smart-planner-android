@@ -7,13 +7,16 @@
     android:layout_height="match_parent"
     android:background="@color/sp_background">
 
-    <!-- HEADER -->
+    <!-- ================================================= -->
+    <!-- FIXED HEADER -->
+    <!-- ================================================= -->
+
     <LinearLayout
         android:id="@+id/layoutTaskDetailsHeader"
         android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="28dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="30dp"
         android:layout_marginEnd="20dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -35,27 +38,34 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="2dp"
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:text="Task Details"
             android:textColor="@color/sp_text_primary"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
     </LinearLayout>
 
+    <!-- ================================================= -->
     <!-- LOADING -->
+    <!-- ================================================= -->
+
     <ProgressBar
         android:id="@+id/progressTaskDetails"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:indeterminateTint="@color/sp_teal"
         app:layout_constraintBottom_toTopOf="@id/layoutTaskBottomActions"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layoutTaskDetailsHeader" />
 
+    <!-- ================================================= -->
     <!-- ERROR -->
+    <!-- ================================================= -->
+
     <LinearLayout
         android:id="@+id/layoutTaskDetailsError"
         android:layout_width="0dp"
@@ -88,17 +98,21 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             app:backgroundTint="@color/sp_teal"
-            app:cornerRadius="14dp" />
+            app:cornerRadius="15dp" />
 
     </LinearLayout>
 
-    <!-- SCROLLABLE MAIN CONTENT -->
+    <!-- ================================================= -->
+    <!-- SCROLL -->
+    <!-- ================================================= -->
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollTaskDetails"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:fillViewport="false"
+        android:overScrollMode="never"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/layoutTaskBottomActions"
         app:layout_constraintEnd_toEndOf="parent"
@@ -110,130 +124,161 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="20dp"
-            android:paddingTop="8dp"
+            android:paddingTop="6dp"
             android:paddingEnd="20dp"
-            android:paddingBottom="16dp">
+            android:paddingBottom="20dp">
 
+            <!-- ================================================= -->
             <!-- TASK HERO -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+            <!-- ================================================= -->
 
-                <FrameLayout
-                    android:id="@+id/layoutTaskCategoryIcon"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:background="@drawable/bg_task_category_icon">
-
-                    <ImageView
-                        android:id="@+id/ivTaskCategoryIcon"
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="Task category"
-                        android:src="@drawable/ic_task_category_default"
-                        app:tint="@color/sp_teal_dark" />
-
-                </FrameLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tvTaskDetailsTitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:maxLines="2"
-                        android:textColor="@color/sp_text_primary"
-                        android:textSize="19sp"
-                        android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="7dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/tvTaskDetailsStatusBadge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="30dp"
-                            android:background="@drawable/bg_task_filter_chip"
-                            android:gravity="center"
-                            android:paddingStart="13dp"
-                            android:paddingEnd="13dp"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/tvTaskDetailsPriorityBadge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="30dp"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_task_filter_chip"
-                            android:gravity="center"
-                            android:paddingStart="13dp"
-                            android:paddingEnd="13dp"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <LinearLayout
-                            android:id="@+id/layoutTaskHeroDuration"
-                            android:layout_width="wrap_content"
-                            android:layout_height="30dp"
-                            android:layout_marginStart="10dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:layout_width="17dp"
-                                android:layout_height="17dp"
-                                android:contentDescription="Duration"
-                                android:src="@drawable/ic_task_clock_small"
-                                app:tint="@color/sp_text_secondary" />
-
-                            <TextView
-                                android:id="@+id/tvTaskHeroDuration"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="5dp"
-                                android:textColor="@color/sp_text_secondary"
-                                android:textSize="12sp" />
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tvTaskDetailsImportant"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:gravity="center"
-                    android:text="★"
-                    android:textColor="@color/sp_teal_dark"
-                    android:textSize="27sp"
-                    android:visibility="gone" />
-
-            </LinearLayout>
-
-            <!-- DETAILS CARD -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                app:cardBackgroundColor="@color/sp_home_tasks_bg"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingTop="15dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="15dp">
+
+                    <FrameLayout
+                        android:id="@+id/layoutTaskCategoryIcon"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/bg_task_category_icon">
+
+                        <ImageView
+                            android:id="@+id/ivTaskCategoryIcon"
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="Task category"
+                            android:src="@drawable/ic_task_category_default"
+                            app:tint="@color/sp_teal_dark" />
+
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvTaskDetailsTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:textColor="@color/sp_text_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <HorizontalScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:overScrollMode="never"
+                            android:scrollbars="none">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/tvTaskDetailsStatusBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="28dp"
+                                    android:background="@drawable/bg_task_filter_chip"
+                                    android:gravity="center"
+                                    android:paddingStart="11dp"
+                                    android:paddingEnd="11dp"
+                                    android:textColor="@color/sp_text_primary"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/tvTaskDetailsPriorityBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="28dp"
+                                    android:layout_marginStart="7dp"
+                                    android:background="@drawable/bg_task_filter_chip"
+                                    android:gravity="center"
+                                    android:paddingStart="11dp"
+                                    android:paddingEnd="11dp"
+                                    android:textColor="@color/sp_text_primary"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+
+                                <LinearLayout
+                                    android:id="@+id/layoutTaskHeroDuration"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="28dp"
+                                    android:layout_marginStart="10dp"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingStart="3dp"
+                                    android:paddingEnd="3dp">
+
+                                    <ImageView
+                                        android:layout_width="16dp"
+                                        android:layout_height="16dp"
+                                        android:contentDescription="Duration"
+                                        android:src="@drawable/ic_task_clock_small"
+                                        app:tint="@color/sp_text_secondary" />
+
+                                    <TextView
+                                        android:id="@+id/tvTaskHeroDuration"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="5dp"
+                                        android:textColor="@color/sp_text_secondary"
+                                        android:textSize="11sp" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </HorizontalScrollView>
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvTaskDetailsImportant"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:gravity="center"
+                        android:text="★"
+                        android:textColor="@color/sp_teal_dark"
+                        android:textSize="27sp"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ================================================= -->
+            <!-- DETAILS CARD -->
+            <!-- ================================================= -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 app:cardBackgroundColor="@color/sp_surface"
-                app:cardCornerRadius="18dp"
+                app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/sp_border"
                 app:strokeWidth="1dp">
@@ -243,229 +288,343 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:paddingStart="16dp"
-                    android:paddingTop="4dp"
+                    android:paddingTop="8dp"
                     android:paddingEnd="16dp"
-                    android:paddingBottom="4dp">
+                    android:paddingBottom="8dp">
 
                     <!-- DEADLINE -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="58dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:contentDescription="Deadline"
-                            android:src="@drawable/ic_task_calendar_small"
-                            app:tint="@color/sp_text_secondary" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            app:cardBackgroundColor="@color/sp_home_deadline_bg"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                        <TextView
-                            android:layout_width="92dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:text="Deadline"
-                            android:textColor="@color/sp_text_secondary"
-                            android:textSize="12sp" />
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_task_calendar_small"
+                                app:tint="@color/sp_home_deadline" />
 
-                        <TextView
-                            android:id="@+id/tvTaskDetailsDeadline"
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="14sp" />
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Deadline"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvTaskDetailsDeadline"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginStart="34dp"
+                        android:layout_marginStart="48dp"
                         android:background="@color/sp_border" />
 
                     <!-- CATEGORY -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="58dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:contentDescription="Category"
-                            android:src="@drawable/ic_task_category_default"
-                            app:tint="@color/sp_text_secondary" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            app:cardBackgroundColor="@color/sp_home_tasks_bg"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                        <TextView
-                            android:layout_width="92dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:text="Category"
-                            android:textColor="@color/sp_text_secondary"
-                            android:textSize="12sp" />
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_task_category_default"
+                                app:tint="@color/sp_teal_dark" />
 
-                        <TextView
-                            android:id="@+id/tvTaskDetailsCategory"
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="14sp" />
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Category"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvTaskDetailsCategory"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginStart="34dp"
+                        android:layout_marginStart="48dp"
                         android:background="@color/sp_border" />
 
                     <!-- STATUS -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="58dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:contentDescription="Status"
-                            android:src="@drawable/ic_task_details_status"
-                            app:tint="@color/sp_text_secondary" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            app:cardBackgroundColor="@color/sp_home_events_bg"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                        <TextView
-                            android:layout_width="92dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:text="Status"
-                            android:textColor="@color/sp_text_secondary"
-                            android:textSize="12sp" />
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_task_details_status"
+                                app:tint="@color/sp_home_blue" />
 
-                        <TextView
-                            android:id="@+id/tvTaskDetailsStatus"
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="14sp" />
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Status"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvTaskDetailsStatus"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginStart="34dp"
+                        android:layout_marginStart="48dp"
                         android:background="@color/sp_border" />
 
                     <!-- PRIORITY -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="58dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:contentDescription="Priority"
-                            android:src="@drawable/ic_task_details_priority"
-                            app:tint="@color/sp_text_secondary" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            app:cardBackgroundColor="@color/sp_home_overdue_bg"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                        <TextView
-                            android:layout_width="92dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:text="Priority"
-                            android:textColor="@color/sp_text_secondary"
-                            android:textSize="12sp" />
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_task_details_priority"
+                                app:tint="@color/sp_home_overdue" />
 
-                        <TextView
-                            android:id="@+id/tvTaskDetailsPriority"
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="14sp" />
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Priority"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvTaskDetailsPriority"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginStart="34dp"
+                        android:layout_marginStart="48dp"
                         android:background="@color/sp_border" />
 
                     <!-- DURATION -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="58dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:contentDescription="Duration"
-                            android:src="@drawable/ic_task_clock_small"
-                            app:tint="@color/sp_text_secondary" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            app:cardBackgroundColor="@color/sp_home_tasks_bg"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                        <TextView
-                            android:layout_width="92dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:text="Duration"
-                            android:textColor="@color/sp_text_secondary"
-                            android:textSize="12sp" />
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_task_clock_small"
+                                app:tint="@color/sp_teal_dark" />
 
-                        <TextView
-                            android:id="@+id/tvTaskDetailsDuration"
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="14sp" />
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Duration"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvTaskDetailsDuration"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginStart="34dp"
+                        android:layout_marginStart="48dp"
                         android:background="@color/sp_border" />
 
                     <!-- REMINDER -->
+
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
+                        android:layout_height="58dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:contentDescription="Reminder"
-                            android:src="@drawable/ic_task_details_reminder"
-                            app:tint="@color/sp_text_secondary" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            app:cardBackgroundColor="@color/sp_home_deadline_bg"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp">
 
-                        <TextView
-                            android:layout_width="92dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="14dp"
-                            android:text="Reminder"
-                            android:textColor="@color/sp_text_secondary"
-                            android:textSize="12sp" />
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_task_details_reminder"
+                                app:tint="@color/sp_home_deadline" />
 
-                        <TextView
-                            android:id="@+id/tvTaskDetailsReminder"
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
                             android:layout_weight="1"
-                            android:textColor="@color/sp_text_primary"
-                            android:textSize="14sp" />
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Reminder"
+                                android:textColor="@color/sp_text_secondary"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:id="@+id/tvTaskDetailsReminder"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@color/sp_text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
@@ -474,16 +633,16 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- DESCRIPTION -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTaskDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                app:cardBackgroundColor="@color/sp_surface"
-                app:cardCornerRadius="18dp"
+                app:cardBackgroundColor="@color/sp_home_events_bg"
+                app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
-                app:strokeColor="@color/sp_border"
-                app:strokeWidth="1dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -496,7 +655,7 @@
                         android:layout_height="wrap_content"
                         android:text="Description"
                         android:textColor="@color/sp_text_primary"
-                        android:textSize="15sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -513,16 +672,16 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- SUBTASKS -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTaskSubtasks"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                app:cardBackgroundColor="@color/sp_surface"
-                app:cardCornerRadius="18dp"
+                app:cardBackgroundColor="@color/sp_home_tasks_bg"
+                app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
-                app:strokeColor="@color/sp_border"
-                app:strokeWidth="1dp">
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -546,7 +705,7 @@
                             android:layout_weight="1"
                             android:text="Subtasks"
                             android:textColor="@color/sp_text_primary"
-                            android:textSize="15sp"
+                            android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <com.google.android.material.button.MaterialButton
@@ -570,7 +729,7 @@
                         android:id="@+id/layoutSubtaskProgress"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="5dp"
                         android:orientation="vertical"
                         android:visibility="gone">
 
@@ -595,7 +754,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="0%"
                                 android:textColor="@color/sp_teal_dark"
-                                android:textSize="12sp"
+                                android:textSize="13sp"
                                 android:textStyle="bold" />
 
                         </LinearLayout>
@@ -608,9 +767,9 @@
                             android:max="100"
                             android:progress="0"
                             app:indicatorColor="@color/sp_teal"
-                            app:trackColor="@color/sp_border"
-                            app:trackCornerRadius="3dp"
-                            app:trackThickness="5dp" />
+                            app:trackColor="@color/sp_surface"
+                            app:trackCornerRadius="4dp"
+                            app:trackThickness="6dp" />
 
                     </LinearLayout>
 
@@ -620,12 +779,13 @@
                         android:layout_height="30dp"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="12dp"
+                        android:indeterminateTint="@color/sp_teal"
                         android:visibility="gone" />
 
                     <TextView
                         android:id="@+id/tvSubtasksEmpty"
                         android:layout_width="match_parent"
-                        android:layout_height="72dp"
+                        android:layout_height="74dp"
                         android:gravity="center"
                         android:text="No subtasks yet."
                         android:textColor="@color/sp_text_secondary"
@@ -635,18 +795,13 @@
                     <TextView
                         android:id="@+id/tvSubtasksError"
                         android:layout_width="match_parent"
-                        android:layout_height="72dp"
+                        android:layout_height="74dp"
                         android:gravity="center"
                         android:text="Unable to load subtasks."
                         android:textColor="@color/sp_error"
                         android:textSize="13sp"
                         android:visibility="gone" />
 
-                    <!--
-                         IMPORTANT:
-                         RecyclerView has a maximum visible height.
-                         More subtasks scroll INSIDE this area.
-                    -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerSubtasks"
                         android:layout_width="match_parent"
@@ -665,7 +820,10 @@
 
     </androidx.core.widget.NestedScrollView>
 
+    <!-- ================================================= -->
     <!-- FIXED BOTTOM ACTIONS -->
+    <!-- ================================================= -->
+
     <LinearLayout
         android:id="@+id/layoutTaskBottomActions"
         android:layout_width="0dp"
@@ -691,7 +849,7 @@
             android:textColor="@color/sp_teal_dark"
             android:textSize="14sp"
             android:textStyle="bold"
-            app:cornerRadius="14dp"
+            app:cornerRadius="16dp"
             app:strokeColor="@color/sp_teal_dark"
             app:strokeWidth="1dp" />
 
@@ -716,7 +874,7 @@
                 android:textStyle="bold"
                 android:visibility="gone"
                 app:backgroundTint="@color/sp_teal"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCompleteTask"
@@ -732,7 +890,7 @@
                 android:textStyle="bold"
                 android:visibility="gone"
                 app:backgroundTint="@color/sp_teal_dark"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnReopenTask"
@@ -747,7 +905,7 @@
                 android:textStyle="bold"
                 android:visibility="gone"
                 app:backgroundTint="@color/sp_teal"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDeleteTask"
@@ -761,7 +919,7 @@
                 android:textColor="@color/sp_error"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                app:cornerRadius="14dp"
+                app:cornerRadius="16dp"
                 app:strokeColor="@color/sp_error"
                 app:strokeWidth="1dp" />
 

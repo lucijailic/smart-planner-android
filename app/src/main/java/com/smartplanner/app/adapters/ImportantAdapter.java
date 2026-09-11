@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
@@ -25,47 +26,25 @@ public class ImportantAdapter
         extends RecyclerView.Adapter<ImportantAdapter.ImportantViewHolder> {
 
     public interface ImportantItemListener {
-
-        void onImportantItemClick(
-                ImportantItem item
-        );
+        void onImportantItemClick(ImportantItem item);
     }
 
-    private final List<ImportantItem> items =
-            new ArrayList<>();
-
+    private final List<ImportantItem> items = new ArrayList<>();
     private final ImportantItemListener listener;
 
-    public ImportantAdapter(
-            ImportantItemListener listener
-    ) {
-
+    public ImportantAdapter(ImportantItemListener listener) {
         this.listener = listener;
     }
 
-    // =========================================================
-    // DATA
-    // =========================================================
-
-    public void setItems(
-            List<ImportantItem> newItems
-    ) {
-
+    public void setItems(List<ImportantItem> newItems) {
         items.clear();
 
         if (newItems != null) {
-
-            items.addAll(
-                    newItems
-            );
+            items.addAll(newItems);
         }
 
         notifyDataSetChanged();
     }
-
-    // =========================================================
-    // RECYCLER
-    // =========================================================
 
     @NonNull
     @Override
@@ -73,21 +52,15 @@ public class ImportantAdapter
             @NonNull ViewGroup parent,
             int viewType
     ) {
+        View view = LayoutInflater
+                .from(parent.getContext())
+                .inflate(
+                        R.layout.item_important,
+                        parent,
+                        false
+                );
 
-        View view =
-                LayoutInflater
-                        .from(
-                                parent.getContext()
-                        )
-                        .inflate(
-                                R.layout.item_important,
-                                parent,
-                                false
-                        );
-
-        return new ImportantViewHolder(
-                view
-        );
+        return new ImportantViewHolder(view);
     }
 
     @Override
@@ -95,31 +68,20 @@ public class ImportantAdapter
             @NonNull ImportantViewHolder holder,
             int position
     ) {
-
-        ImportantItem item =
-                items.get(
-                        position
-                );
-
-        holder.bind(
-                item
-        );
+        holder.bind(items.get(position));
     }
 
     @Override
     public int getItemCount() {
-
         return items.size();
     }
-
-    // =========================================================
-    // VIEW HOLDER
-    // =========================================================
 
     class ImportantViewHolder
             extends RecyclerView.ViewHolder {
 
         private final MaterialCardView cardImportantItem;
+        private final MaterialCardView cardImportantIcon;
+        private final MaterialCardView cardImportantChevron;
 
         private final ImageView ivImportantType;
 
@@ -130,12 +92,21 @@ public class ImportantAdapter
         ImportantViewHolder(
                 @NonNull View itemView
         ) {
-
             super(itemView);
 
             cardImportantItem =
                     itemView.findViewById(
                             R.id.cardImportantItem
+                    );
+
+            cardImportantIcon =
+                    itemView.findViewById(
+                            R.id.cardImportantIcon
+                    );
+
+            cardImportantChevron =
+                    itemView.findViewById(
+                            R.id.cardImportantChevron
                     );
 
             ivImportantType =
@@ -162,29 +133,20 @@ public class ImportantAdapter
         void bind(
                 ImportantItem item
         ) {
-
             if (item.getType()
                     == ImportantItem.Type.TASK) {
 
-                bindTask(
-                        item.getTask()
-                );
+                bindTask(item.getTask());
 
             } else {
 
-                bindEvent(
-                        item.getEvent()
-                );
+                bindEvent(item.getEvent());
             }
 
             cardImportantItem.setOnClickListener(
                     v -> {
-
                         if (listener != null) {
-
-                            listener.onImportantItemClick(
-                                    item
-                            );
+                            listener.onImportantItemClick(item);
                         }
                     }
             );
@@ -193,17 +155,48 @@ public class ImportantAdapter
         private void bindTask(
                 Task task
         ) {
+            tvImportantItemType.setText("TASK");
 
-            tvImportantItemType.setText(
-                    "TASK"
+            tvImportantItemType.setTextColor(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_teal_dark
+                    )
             );
 
             ivImportantType.setImageResource(
                     R.drawable.ic_nav_tasks
             );
 
-            if (task == null) {
+            ivImportantType.setColorFilter(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_teal_dark
+                    )
+            );
 
+            cardImportantItem.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_home_tasks_bg
+                    )
+            );
+
+            cardImportantIcon.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_home_tasks_icon_bg
+                    )
+            );
+
+            cardImportantChevron.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_surface
+                    )
+            );
+
+            if (task == null) {
                 tvImportantItemTitle.setText(
                         "Untitled task"
                 );
@@ -215,19 +208,15 @@ public class ImportantAdapter
                 return;
             }
 
-            String title =
-                    task.getTitle();
+            String title = task.getTitle();
 
             if (title == null
                     || title.trim().isEmpty()) {
 
-                title =
-                        "Untitled task";
+                title = "Untitled task";
             }
 
-            tvImportantItemTitle.setText(
-                    title
-            );
+            tvImportantItemTitle.setText(title);
 
             Date deadline =
                     parseDate(
@@ -235,7 +224,6 @@ public class ImportantAdapter
                     );
 
             if (deadline == null) {
-
                 tvImportantItemInfo.setText(
                         "Important task • No deadline"
                 );
@@ -254,17 +242,48 @@ public class ImportantAdapter
         private void bindEvent(
                 Event event
         ) {
+            tvImportantItemType.setText("EVENT");
 
-            tvImportantItemType.setText(
-                    "EVENT"
+            tvImportantItemType.setTextColor(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_home_blue
+                    )
             );
 
             ivImportantType.setImageResource(
                     R.drawable.ic_nav_events
             );
 
-            if (event == null) {
+            ivImportantType.setColorFilter(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_home_blue
+                    )
+            );
 
+            cardImportantItem.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_home_events_bg
+                    )
+            );
+
+            cardImportantIcon.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_home_events_icon_bg
+                    )
+            );
+
+            cardImportantChevron.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                            itemView.getContext(),
+                            R.color.sp_surface
+                    )
+            );
+
+            if (event == null) {
                 tvImportantItemTitle.setText(
                         "Untitled event"
                 );
@@ -276,19 +295,15 @@ public class ImportantAdapter
                 return;
             }
 
-            String title =
-                    event.getTitle();
+            String title = event.getTitle();
 
             if (title == null
                     || title.trim().isEmpty()) {
 
-                title =
-                        "Untitled event";
+                title = "Untitled event";
             }
 
-            tvImportantItemTitle.setText(
-                    title
-            );
+            tvImportantItemTitle.setText(title);
 
             Date start =
                     parseDate(
@@ -316,7 +331,6 @@ public class ImportantAdapter
             }
 
             if (start == null) {
-
                 tvImportantItemInfo.setText(
                         "Important event"
                 );
@@ -332,35 +346,26 @@ public class ImportantAdapter
             );
         }
 
-        // =====================================================
-        // COUNTDOWN
-        // =====================================================
-
         private String buildCountdown(
                 Date targetDate,
                 boolean task
         ) {
-
-            Date now =
-                    new Date();
+            Date now = new Date();
 
             long difference =
                     targetDate.getTime()
                             - now.getTime();
 
             if (difference < 0) {
-
                 long overdueMinutes =
-                        Math.abs(
-                                difference
-                        ) / (60 * 1000);
+                        Math.abs(difference)
+                                / (60 * 1000);
 
                 long overdueDays =
                         overdueMinutes
                                 / (24 * 60);
 
                 if (overdueDays > 0) {
-
                     return "Overdue by "
                             + overdueDays
                             + (
@@ -371,11 +376,9 @@ public class ImportantAdapter
                 }
 
                 long overdueHours =
-                        overdueMinutes
-                                / 60;
+                        overdueMinutes / 60;
 
                 if (overdueHours > 0) {
-
                     return "Overdue by "
                             + overdueHours
                             + (
@@ -403,8 +406,7 @@ public class ImportantAdapter
                     ) / 60;
 
             long minutes =
-                    totalMinutes
-                            % 60;
+                    totalMinutes % 60;
 
             String prefix =
                     task
@@ -412,7 +414,6 @@ public class ImportantAdapter
                             : "Starts in ";
 
             if (days > 0) {
-
                 return prefix
                         + days
                         + (
@@ -428,7 +429,6 @@ public class ImportantAdapter
             }
 
             if (hours > 0) {
-
                 return prefix
                         + hours
                         + " h "
@@ -444,14 +444,9 @@ public class ImportantAdapter
                     + " min";
         }
 
-        // =====================================================
-        // DATE
-        // =====================================================
-
         private Date parseDate(
                 String value
         ) {
-
             if (value == null
                     || value.trim().isEmpty()) {
 
@@ -465,18 +460,14 @@ public class ImportantAdapter
             };
 
             for (String format : formats) {
-
                 try {
-
                     SimpleDateFormat parser =
                             new SimpleDateFormat(
                                     format,
                                     Locale.US
                             );
 
-                    return parser.parse(
-                            value
-                    );
+                    return parser.parse(value);
 
                 } catch (Exception ignored) {
                 }
