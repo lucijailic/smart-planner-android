@@ -94,6 +94,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.important.ImportantActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
