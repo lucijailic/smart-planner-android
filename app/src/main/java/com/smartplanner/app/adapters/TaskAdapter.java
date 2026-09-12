@@ -1,6 +1,7 @@
 package com.smartplanner.app.adapters;
 
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.checkbox.MaterialCheckBox;
 import com.smartplanner.app.R;
 import com.smartplanner.app.models.Category;
 import com.smartplanner.app.models.Task;
@@ -42,6 +44,14 @@ public class TaskAdapter
         void onTaskClick(Task task);
     }
 
+    public interface OnTaskCompletedClickListener {
+
+        void onTaskCompletedClick(
+                Task task,
+                boolean completed
+        );
+    }
+
     private final List<Task> tasks =
             new ArrayList<>();
 
@@ -50,6 +60,7 @@ public class TaskAdapter
 
     private OnImportantClickListener importantClickListener;
     private OnTaskClickListener taskClickListener;
+    private OnTaskCompletedClickListener taskCompletedClickListener;
 
     public void setTasks(
             List<Task> newTasks
@@ -104,6 +115,14 @@ public class TaskAdapter
     ) {
 
         importantClickListener =
+                listener;
+    }
+
+    public void setOnTaskCompletedClickListener(
+            OnTaskCompletedClickListener listener
+    ) {
+
+        taskCompletedClickListener =
                 listener;
     }
 
@@ -171,6 +190,11 @@ public class TaskAdapter
                 task
         );
 
+        bindCompleted(
+                holder,
+                task
+        );
+
         holder.tvTaskImportant.setOnClickListener(
                 view -> {
 
@@ -206,6 +230,88 @@ public class TaskAdapter
 
         return tasks.size();
     }
+
+    // =========================================================
+    // COMPLETION
+    // =========================================================
+
+    private void bindCompleted(
+            TaskViewHolder holder,
+            Task task
+    ) {
+
+        boolean completed =
+                task.getStatus()
+                        == TaskStatus.COMPLETED;
+
+        /*
+         * Listener prvo uklanjamo jer RecyclerView ponovno
+         * koristi ViewHolder i setChecked() ne smije slučajno
+         * pozvati prethodni listener.
+         */
+        holder.checkTaskCompleted
+                .setOnCheckedChangeListener(
+                        null
+                );
+
+        holder.checkTaskCompleted.setChecked(
+                completed
+        );
+
+        if (completed) {
+
+            holder.tvTaskTitle.setPaintFlags(
+                    holder.tvTaskTitle.getPaintFlags()
+                            | Paint.STRIKE_THRU_TEXT_FLAG
+            );
+
+            holder.tvTaskTitle.setAlpha(
+                    0.60f
+            );
+
+        } else {
+
+            holder.tvTaskTitle.setPaintFlags(
+                    holder.tvTaskTitle.getPaintFlags()
+                            & ~Paint.STRIKE_THRU_TEXT_FLAG
+            );
+
+            holder.tvTaskTitle.setAlpha(
+                    1f
+            );
+        }
+
+        holder.checkTaskCompleted
+                .setOnCheckedChangeListener(
+                        (buttonView, isChecked) -> {
+
+                            if (!buttonView.isPressed()) {
+                                return;
+                            }
+
+                            if (taskCompletedClickListener != null) {
+
+                                taskCompletedClickListener
+                                        .onTaskCompletedClick(
+                                                task,
+                                                isChecked
+                                        );
+                            }
+                        }
+                );
+
+        /*
+         * Klik na checkbox ne smije otvoriti TaskDetails.
+         */
+        holder.checkTaskCompleted.setOnClickListener(
+                view -> {
+                }
+        );
+    }
+
+    // =========================================================
+    // CATEGORY
+    // =========================================================
 
     private void bindCategory(
             TaskViewHolder holder,
@@ -313,7 +419,8 @@ public class TaskAdapter
         if (name.contains("university")
                 || name.contains("school")
                 || name.contains("study")
-                || name.contains("college")) {
+                || name.contains("college")
+                || name.contains("faculty")) {
 
             return R.drawable.ic_task_category_study;
         }
@@ -341,6 +448,10 @@ public class TaskAdapter
 
         return R.drawable.ic_task_category_default;
     }
+
+    // =========================================================
+    // STATUS
+    // =========================================================
 
     private void bindStatus(
             TaskViewHolder holder,
@@ -418,6 +529,10 @@ public class TaskAdapter
                 textColor
         );
     }
+
+    // =========================================================
+    // PRIORITY
+    // =========================================================
 
     private void bindPriority(
             TaskViewHolder holder,
@@ -506,6 +621,10 @@ public class TaskAdapter
         );
     }
 
+    // =========================================================
+    // DEADLINE
+    // =========================================================
+
     private void bindDeadline(
             TaskViewHolder holder,
             Task task
@@ -537,6 +656,10 @@ public class TaskAdapter
         }
     }
 
+    // =========================================================
+    // DURATION
+    // =========================================================
+
     private void bindDuration(
             TaskViewHolder holder,
             Task task
@@ -565,6 +688,10 @@ public class TaskAdapter
         );
     }
 
+    // =========================================================
+    // IMPORTANT
+    // =========================================================
+
     private void bindImportant(
             TaskViewHolder holder,
             Task task
@@ -591,6 +718,10 @@ public class TaskAdapter
             );
         }
     }
+
+    // =========================================================
+    // TEXT HELPERS
+    // =========================================================
 
     private String getStatusText(
             Task task
@@ -701,6 +832,10 @@ public class TaskAdapter
                 + " min";
     }
 
+    // =========================================================
+    // OVERDUE
+    // =========================================================
+
     private boolean isOverdue(
             Task task
     ) {
@@ -768,6 +903,10 @@ public class TaskAdapter
 
         return null;
     }
+
+    // =========================================================
+    // COLOR HELPERS
+    // =========================================================
 
     private int parseCategoryColor(
             String color
@@ -884,8 +1023,14 @@ public class TaskAdapter
                 .density;
     }
 
+    // =========================================================
+    // VIEW HOLDER
+    // =========================================================
+
     static class TaskViewHolder
             extends RecyclerView.ViewHolder {
+
+        MaterialCheckBox checkTaskCompleted;
 
         ImageView ivTaskCategoryIcon;
 
@@ -908,6 +1053,11 @@ public class TaskAdapter
             super(
                     itemView
             );
+
+            checkTaskCompleted =
+                    itemView.findViewById(
+                            R.id.checkTaskCompleted
+                    );
 
             ivTaskCategoryIcon =
                     itemView.findViewById(

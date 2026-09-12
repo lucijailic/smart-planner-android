@@ -1,14 +1,19 @@
 package com.smartplanner.app.fragments;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -26,6 +31,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.smartplanner.app.R;
 import com.smartplanner.app.activities.task.AddEditTaskActivity;
@@ -36,6 +42,7 @@ import com.smartplanner.app.models.Task;
 import com.smartplanner.app.models.UiState;
 import com.smartplanner.app.models.enums.TaskPriority;
 import com.smartplanner.app.models.enums.TaskStatus;
+import com.smartplanner.app.notifications.TaskReminderManager;
 import com.smartplanner.app.viewmodels.CategoriesViewModel;
 import com.smartplanner.app.viewmodels.TasksViewModel;
 
@@ -47,6 +54,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class TasksFragment extends Fragment {
 
@@ -141,6 +149,24 @@ public class TasksFragment extends Fragment {
     private TextView chipOverdue;
 
     // =========================================================
+    // CALENDAR VIEWS
+    // =========================================================
+
+    private TextView tvTaskCalendarMonth;
+    private TextView tvSelectedTaskDate;
+    private TextView tvViewAllTasks;
+
+    private TextView btnPreviousTaskWeek;
+    private TextView btnNextTaskWeek;
+
+    private ImageButton btnTaskCalendarPicker;
+
+    private LinearLayout layoutTaskWeekDays;
+
+    private TextView tvEmptyTasksTitle;
+    private TextView tvEmptyTasksMessage;
+
+    // =========================================================
     // DATA
     // =========================================================
 
@@ -176,6 +202,30 @@ public class TasksFragment extends Fragment {
             null;
 
     // =========================================================
+    // CALENDAR STATE
+    // =========================================================
+
+    private final Calendar selectedTaskDate =
+            Calendar.getInstance();
+
+    private final Calendar displayedWeekStart =
+            Calendar.getInstance();
+
+    private boolean showAllTaskDates =
+            false;
+
+    // =========================================================
+    // QUICK COMPLETE STATE
+    // =========================================================
+
+    private Task pendingStatusTask;
+
+    private TaskStatus pendingPreviousStatus;
+
+    private boolean pendingStatusUndo =
+            false;
+
+    // =========================================================
     // CONSTRUCTOR
     // =========================================================
 
@@ -205,6 +255,8 @@ public class TasksFragment extends Fragment {
                 view
         );
 
+        setupTaskCalendar();
+
         setupRecyclerView();
 
         setupViewModels();
@@ -216,6 +268,8 @@ public class TasksFragment extends Fragment {
         observeCategories();
 
         observeImportantAction();
+
+        observeStatusAction();
 
         updateQuickFilterSelection();
 
@@ -324,6 +378,51 @@ public class TasksFragment extends Fragment {
                 view.findViewById(
                         R.id.chipOverdue
                 );
+
+        tvTaskCalendarMonth =
+                view.findViewById(
+                        R.id.tvTaskCalendarMonth
+                );
+
+        tvSelectedTaskDate =
+                view.findViewById(
+                        R.id.tvSelectedTaskDate
+                );
+
+        tvViewAllTasks =
+                view.findViewById(
+                        R.id.tvViewAllTasks
+                );
+
+        btnPreviousTaskWeek =
+                view.findViewById(
+                        R.id.btnPreviousTaskWeek
+                );
+
+        btnNextTaskWeek =
+                view.findViewById(
+                        R.id.btnNextTaskWeek
+                );
+
+        btnTaskCalendarPicker =
+                view.findViewById(
+                        R.id.btnTaskCalendarPicker
+                );
+
+        layoutTaskWeekDays =
+                view.findViewById(
+                        R.id.layoutTaskWeekDays
+                );
+
+        tvEmptyTasksTitle =
+                view.findViewById(
+                        R.id.tvEmptyTasksTitle
+                );
+
+        tvEmptyTasksMessage =
+                view.findViewById(
+                        R.id.tvEmptyTasksMessage
+                );
     }
 
     private void setupRecyclerView() {
@@ -359,6 +458,922 @@ public class TasksFragment extends Fragment {
                         .get(
                                 CategoriesViewModel.class
                         );
+    }
+
+    // =========================================================
+    // TASK CALENDAR
+    // =========================================================
+
+    private void setupTaskCalendar() {
+
+        Calendar today =
+                Calendar.getInstance();
+
+        selectedTaskDate.setTimeInMillis(
+                today.getTimeInMillis()
+        );
+
+        normalizeCalendarDay(
+                selectedTaskDate
+        );
+
+        displayedWeekStart.setTimeInMillis(
+                selectedTaskDate.getTimeInMillis()
+        );
+
+        moveToMonday(
+                displayedWeekStart
+        );
+
+        showAllTaskDates =
+                false;
+
+        renderTaskWeek();
+
+        updateSelectedTaskDateLabel();
+    }
+
+    private void moveToMonday(
+            Calendar calendar
+    ) {
+
+        while (calendar.get(
+                Calendar.DAY_OF_WEEK
+        ) != Calendar.MONDAY) {
+
+            calendar.add(
+                    Calendar.DAY_OF_MONTH,
+                    -1
+            );
+        }
+
+        normalizeCalendarDay(
+                calendar
+        );
+    }
+
+    private void normalizeCalendarDay(
+            Calendar calendar
+    ) {
+
+        calendar.set(
+                Calendar.HOUR_OF_DAY,
+                0
+        );
+
+        calendar.set(
+                Calendar.MINUTE,
+                0
+        );
+
+        calendar.set(
+                Calendar.SECOND,
+                0
+        );
+
+        calendar.set(
+                Calendar.MILLISECOND,
+                0
+        );
+    }
+
+    private String getDisplayedMonthTitle() {
+
+        Calendar firstDay =
+                (Calendar) displayedWeekStart.clone();
+
+        Calendar lastDay =
+                (Calendar) displayedWeekStart.clone();
+
+        lastDay.add(
+                Calendar.DAY_OF_MONTH,
+                6
+        );
+
+        SimpleDateFormat monthFormat =
+                new SimpleDateFormat(
+                        "MMMM",
+                        Locale.ENGLISH
+                );
+
+        SimpleDateFormat monthYearFormat =
+                new SimpleDateFormat(
+                        "MMMM yyyy",
+                        Locale.ENGLISH
+                );
+
+        int firstYear =
+                firstDay.get(
+                        Calendar.YEAR
+                );
+
+        int lastYear =
+                lastDay.get(
+                        Calendar.YEAR
+                );
+
+        int firstMonth =
+                firstDay.get(
+                        Calendar.MONTH
+                );
+
+        int lastMonth =
+                lastDay.get(
+                        Calendar.MONTH
+                );
+
+        if (firstYear == lastYear
+                && firstMonth == lastMonth) {
+
+            return monthYearFormat.format(
+                    firstDay.getTime()
+            );
+        }
+
+        if (firstYear == lastYear) {
+
+            return monthFormat.format(
+                    firstDay.getTime()
+            )
+                    + " – "
+                    + monthYearFormat.format(
+                    lastDay.getTime()
+            );
+        }
+
+        return monthYearFormat.format(
+                firstDay.getTime()
+        )
+                + " – "
+                + monthYearFormat.format(
+                lastDay.getTime()
+        );
+    }
+
+    private void renderTaskWeek() {
+
+        if (layoutTaskWeekDays == null) {
+            return;
+        }
+
+        layoutTaskWeekDays.removeAllViews();
+
+        tvTaskCalendarMonth.setText(
+                getDisplayedMonthTitle()
+        );
+
+        Calendar day =
+                (Calendar) displayedWeekStart.clone();
+
+        for (int i = 0;
+             i < 7;
+             i++) {
+
+            Calendar calendarDay =
+                    (Calendar) day.clone();
+
+            View dayView =
+                    createTaskDayView(
+                            calendarDay
+                    );
+
+            layoutTaskWeekDays.addView(
+                    dayView
+            );
+
+            day.add(
+                    Calendar.DAY_OF_MONTH,
+                    1
+            );
+        }
+    }
+
+    private View createTaskDayView(
+            Calendar day
+    ) {
+
+        LinearLayout container =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        container.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        container.setGravity(
+                Gravity.CENTER
+        );
+
+        LinearLayout.LayoutParams containerParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        dpToPxInt(64),
+                        1f
+                );
+
+        containerParams.setMargins(
+                dpToPxInt(1),
+                0,
+                dpToPxInt(1),
+                0
+        );
+
+        container.setLayoutParams(
+                containerParams
+        );
+
+        boolean selected =
+                !showAllTaskDates
+                        && isSameDay(
+                        day,
+                        selectedTaskDate
+                );
+
+        boolean today =
+                isSameDay(
+                        day,
+                        Calendar.getInstance()
+                );
+
+        boolean hasTasks =
+                hasTasksOnDate(
+                        day
+                );
+
+        container.setBackground(
+                createCalendarDayBackground(
+                        selected
+                )
+        );
+
+        TextView dayName =
+                new TextView(
+                        requireContext()
+                );
+
+        dayName.setGravity(
+                Gravity.CENTER
+        );
+
+        dayName.setTextSize(
+                9
+        );
+
+        dayName.setText(
+                new SimpleDateFormat(
+                        "EEE",
+                        Locale.ENGLISH
+                )
+                        .format(
+                                day.getTime()
+                        )
+                        .toUpperCase(
+                                Locale.ENGLISH
+                        )
+        );
+
+        dayName.setTextColor(
+                requireContext().getColor(
+                        selected
+                                ? R.color.white
+                                : R.color.sp_text_secondary
+                )
+        );
+
+        TextView dayNumber =
+                new TextView(
+                        requireContext()
+                );
+
+        dayNumber.setGravity(
+                Gravity.CENTER
+        );
+
+        dayNumber.setTextSize(
+                16
+        );
+
+        dayNumber.setTypeface(
+                dayNumber.getTypeface(),
+                android.graphics.Typeface.BOLD
+        );
+
+        dayNumber.setText(
+                String.valueOf(
+                        day.get(
+                                Calendar.DAY_OF_MONTH
+                        )
+                )
+        );
+
+        if (selected) {
+
+            dayNumber.setTextColor(
+                    requireContext()
+                            .getColor(
+                                    R.color.white
+                            )
+            );
+
+        } else if (today) {
+
+            dayNumber.setTextColor(
+                    requireContext()
+                            .getColor(
+                                    R.color.sp_teal_dark
+                            )
+            );
+
+        } else {
+
+            dayNumber.setTextColor(
+                    requireContext()
+                            .getColor(
+                                    R.color.sp_text_primary
+                            )
+            );
+        }
+
+        View taskDot =
+                new View(
+                        requireContext()
+                );
+
+        LinearLayout.LayoutParams dotParams =
+                new LinearLayout.LayoutParams(
+                        dpToPxInt(5),
+                        dpToPxInt(5)
+                );
+
+        dotParams.topMargin =
+                dpToPxInt(1);
+
+        taskDot.setLayoutParams(
+                dotParams
+        );
+
+        taskDot.setBackground(
+                createCalendarDotBackground(
+                        selected
+                )
+        );
+
+        taskDot.setVisibility(
+                hasTasks
+                        ? View.VISIBLE
+                        : View.INVISIBLE
+        );
+
+        LinearLayout.LayoutParams dayNameParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dpToPxInt(18)
+                );
+
+        LinearLayout.LayoutParams dayNumberParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dpToPxInt(25)
+                );
+
+        container.addView(
+                dayName,
+                dayNameParams
+        );
+
+        container.addView(
+                dayNumber,
+                dayNumberParams
+        );
+
+        container.addView(
+                taskDot
+        );
+
+        container.setOnClickListener(
+                view -> {
+
+                    selectedTaskDate.setTimeInMillis(
+                            day.getTimeInMillis()
+                    );
+
+                    normalizeCalendarDay(
+                            selectedTaskDate
+                    );
+
+                    showAllTaskDates =
+                            false;
+
+                    selectedAdvancedDate =
+                            AdvancedDateFilter.ANY;
+
+                    updateAdvancedFilterButton();
+
+                    updateSelectedTaskDateLabel();
+
+                    renderTaskWeek();
+
+                    applyFiltersAndSorting();
+                }
+        );
+
+        return container;
+    }
+
+    private boolean hasTasksOnDate(
+            Calendar targetDate
+    ) {
+
+        if (targetDate == null) {
+            return false;
+        }
+
+        for (Task task : allTasks) {
+
+            if (task == null) {
+                continue;
+            }
+
+            String deadline =
+                    task.getDeadline();
+
+            if (deadline == null
+                    || deadline.trim().isEmpty()) {
+
+                continue;
+            }
+
+            Date deadlineDate =
+                    parseSupabaseDate(
+                            deadline
+                    );
+
+            if (deadlineDate == null) {
+                continue;
+            }
+
+            Calendar taskCalendar =
+                    Calendar.getInstance();
+
+            taskCalendar.setTime(
+                    deadlineDate
+            );
+
+            if (isSameDay(
+                    taskCalendar,
+                    targetDate
+            )) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private GradientDrawable createCalendarDotBackground(
+            boolean selected
+    ) {
+
+        GradientDrawable drawable =
+                new GradientDrawable();
+
+        drawable.setShape(
+                GradientDrawable.OVAL
+        );
+
+        drawable.setColor(
+                requireContext()
+                        .getColor(
+                                selected
+                                        ? R.color.white
+                                        : R.color.sp_teal
+                        )
+        );
+
+        return drawable;
+    }
+
+    private GradientDrawable createCalendarDayBackground(
+            boolean selected
+    ) {
+
+        GradientDrawable drawable =
+                new GradientDrawable();
+
+        drawable.setShape(
+                GradientDrawable.RECTANGLE
+        );
+
+        drawable.setCornerRadius(
+                dpToPxInt(14)
+        );
+
+        if (selected) {
+
+            drawable.setColor(
+                    requireContext()
+                            .getColor(
+                                    R.color.sp_teal
+                            )
+            );
+
+        } else {
+
+            drawable.setColor(
+                    Color.TRANSPARENT
+            );
+        }
+
+        return drawable;
+    }
+
+    // =========================================================
+    // SELECTED DATE INFO
+    // =========================================================
+
+    private void updateSelectedTaskDateLabel() {
+
+        if (tvSelectedTaskDate == null
+                || tvViewAllTasks == null) {
+
+            return;
+        }
+
+        if (showAllTaskDates) {
+
+            int total =
+                    allTasks.size();
+
+            int completed =
+                    countCompletedTasks(
+                            allTasks
+                    );
+
+            StringBuilder text =
+                    new StringBuilder();
+
+            text.append(
+                    total
+            );
+
+            text.append(
+                    total == 1
+                            ? " task"
+                            : " tasks"
+            );
+
+            if (completed > 0) {
+
+                text.append(
+                        " · "
+                );
+
+                text.append(
+                        completed
+                );
+
+                text.append(
+                        " completed"
+                );
+            }
+
+            tvSelectedTaskDate.setText(
+                    text.toString()
+            );
+
+            tvViewAllTasks.setText(
+                    "Today"
+            );
+
+            return;
+        }
+
+        SimpleDateFormat format =
+                new SimpleDateFormat(
+                        "EEEE, MMMM d",
+                        Locale.ENGLISH
+                );
+
+        List<Task> tasksForDay =
+                getTasksForDate(
+                        selectedTaskDate
+                );
+
+        int total =
+                tasksForDay.size();
+
+        int completed =
+                countCompletedTasks(
+                        tasksForDay
+                );
+
+        StringBuilder text =
+                new StringBuilder();
+
+        text.append(
+                format.format(
+                        selectedTaskDate.getTime()
+                )
+        );
+
+        text.append(
+                " · "
+        );
+
+        text.append(
+                total
+        );
+
+        text.append(
+                total == 1
+                        ? " task"
+                        : " tasks"
+        );
+
+        if (completed > 0) {
+
+            text.append(
+                    " · "
+            );
+
+            text.append(
+                    completed
+            );
+
+            text.append(
+                    " completed"
+            );
+        }
+
+        tvSelectedTaskDate.setText(
+                text.toString()
+        );
+
+        tvViewAllTasks.setText(
+                "View all"
+        );
+    }
+
+    private List<Task> getTasksForDate(
+            Calendar date
+    ) {
+
+        List<Task> result =
+                new ArrayList<>();
+
+        if (date == null) {
+            return result;
+        }
+
+        for (Task task : allTasks) {
+
+            if (task == null) {
+                continue;
+            }
+
+            String deadline =
+                    task.getDeadline();
+
+            if (deadline == null
+                    || deadline.trim().isEmpty()) {
+
+                continue;
+            }
+
+            Date deadlineDate =
+                    parseSupabaseDate(
+                            deadline
+                    );
+
+            if (deadlineDate == null) {
+                continue;
+            }
+
+            Calendar taskDate =
+                    Calendar.getInstance();
+
+            taskDate.setTime(
+                    deadlineDate
+            );
+
+            if (isSameDay(
+                    taskDate,
+                    date
+            )) {
+
+                result.add(
+                        task
+                );
+            }
+        }
+
+        return result;
+    }
+
+    private int countCompletedTasks(
+            List<Task> tasks
+    ) {
+
+        int completed =
+                0;
+
+        if (tasks == null) {
+            return completed;
+        }
+
+        for (Task task : tasks) {
+
+            if (task != null
+                    && task.getStatus()
+                    == TaskStatus.COMPLETED) {
+
+                completed++;
+            }
+        }
+
+        return completed;
+    }
+
+    // =========================================================
+    // WEEK NAVIGATION
+    // =========================================================
+
+    private void showPreviousTaskWeek() {
+
+        displayedWeekStart.add(
+                Calendar.DAY_OF_MONTH,
+                -7
+        );
+
+        renderTaskWeek();
+    }
+
+    private void showNextTaskWeek() {
+
+        displayedWeekStart.add(
+                Calendar.DAY_OF_MONTH,
+                7
+        );
+
+        renderTaskWeek();
+    }
+
+    // =========================================================
+    // DATE PICKER
+    // =========================================================
+
+    private void showTaskDatePicker() {
+
+        DatePickerDialog datePickerDialog =
+                new DatePickerDialog(
+                        requireContext(),
+                        (view,
+                         year,
+                         month,
+                         dayOfMonth) -> {
+
+                            selectedTaskDate.set(
+                                    Calendar.YEAR,
+                                    year
+                            );
+
+                            selectedTaskDate.set(
+                                    Calendar.MONTH,
+                                    month
+                            );
+
+                            selectedTaskDate.set(
+                                    Calendar.DAY_OF_MONTH,
+                                    dayOfMonth
+                            );
+
+                            normalizeCalendarDay(
+                                    selectedTaskDate
+                            );
+
+                            displayedWeekStart.setTimeInMillis(
+                                    selectedTaskDate.getTimeInMillis()
+                            );
+
+                            moveToMonday(
+                                    displayedWeekStart
+                            );
+
+                            showAllTaskDates =
+                                    false;
+
+                            selectedAdvancedDate =
+                                    AdvancedDateFilter.ANY;
+
+                            updateAdvancedFilterButton();
+
+                            updateSelectedTaskDateLabel();
+
+                            renderTaskWeek();
+
+                            applyFiltersAndSorting();
+                        },
+                        selectedTaskDate.get(
+                                Calendar.YEAR
+                        ),
+                        selectedTaskDate.get(
+                                Calendar.MONTH
+                        ),
+                        selectedTaskDate.get(
+                                Calendar.DAY_OF_MONTH
+                        )
+                );
+
+        datePickerDialog.show();
+    }
+
+    private void toggleAllTaskDates() {
+
+        if (showAllTaskDates) {
+
+            Calendar today =
+                    Calendar.getInstance();
+
+            selectedTaskDate.setTimeInMillis(
+                    today.getTimeInMillis()
+            );
+
+            normalizeCalendarDay(
+                    selectedTaskDate
+            );
+
+            displayedWeekStart.setTimeInMillis(
+                    selectedTaskDate.getTimeInMillis()
+            );
+
+            moveToMonday(
+                    displayedWeekStart
+            );
+
+            showAllTaskDates =
+                    false;
+
+        } else {
+
+            showAllTaskDates =
+                    true;
+        }
+
+        selectedAdvancedDate =
+                AdvancedDateFilter.ANY;
+
+        updateAdvancedFilterButton();
+
+        updateSelectedTaskDateLabel();
+
+        renderTaskWeek();
+
+        applyFiltersAndSorting();
+    }
+
+    private boolean matchesCalendarDate(
+            Task task
+    ) {
+
+        if (showAllTaskDates) {
+            return true;
+        }
+
+        if (task == null) {
+            return false;
+        }
+
+        String deadline =
+                task.getDeadline();
+
+        if (deadline == null
+                || deadline.trim().isEmpty()) {
+
+            return false;
+        }
+
+        Date deadlineDate =
+                parseSupabaseDate(
+                        deadline
+                );
+
+        if (deadlineDate == null) {
+            return false;
+        }
+
+        Calendar deadlineCalendar =
+                Calendar.getInstance();
+
+        deadlineCalendar.setTime(
+                deadlineDate
+        );
+
+        return isSameDay(
+                deadlineCalendar,
+                selectedTaskDate
+        );
     }
 
     // =========================================================
@@ -401,6 +1416,31 @@ public class TasksFragment extends Fragment {
                         showSortDialog()
         );
 
+        btnPreviousTaskWeek.setOnClickListener(
+                view ->
+                        showPreviousTaskWeek()
+        );
+
+        btnNextTaskWeek.setOnClickListener(
+                view ->
+                        showNextTaskWeek()
+        );
+
+        btnTaskCalendarPicker.setOnClickListener(
+                view ->
+                        showTaskDatePicker()
+        );
+
+        tvTaskCalendarMonth.setOnClickListener(
+                view ->
+                        showTaskDatePicker()
+        );
+
+        tvViewAllTasks.setOnClickListener(
+                view ->
+                        toggleAllTaskDates()
+        );
+
         taskAdapter.setOnImportantClickListener(
                 (task, newImportantState) -> {
 
@@ -424,6 +1464,10 @@ public class TasksFragment extends Fragment {
                             newImportantState
                     );
                 }
+        );
+
+        taskAdapter.setOnTaskCompletedClickListener(
+                this::handleQuickCompletion
         );
 
         taskAdapter.setOnTaskClickListener(
@@ -523,6 +1567,149 @@ public class TasksFragment extends Fragment {
     }
 
     // =========================================================
+    // QUICK COMPLETE
+    // =========================================================
+
+    private void handleQuickCompletion(
+            Task task,
+            boolean completed
+    ) {
+
+        if (task == null
+                || task.getId() == null
+                || task.getId()
+                .trim()
+                .isEmpty()) {
+
+            return;
+        }
+
+        pendingStatusTask =
+                task;
+
+        pendingPreviousStatus =
+                task.getStatus() != null
+                        ? task.getStatus()
+                        : TaskStatus.TO_DO;
+
+        pendingStatusUndo =
+                false;
+
+        if (completed) {
+
+            viewModel.updateTaskStatus(
+                    task.getId(),
+                    TaskStatus.COMPLETED,
+                    getCurrentTimestamp()
+            );
+
+        } else {
+
+            viewModel.updateTaskStatus(
+                    task.getId(),
+                    TaskStatus.TO_DO,
+                    null
+            );
+        }
+    }
+
+    private void showQuickCompletionSnackbar(
+            Task updatedTask
+    ) {
+
+        if (getView() == null
+                || updatedTask == null) {
+
+            return;
+        }
+
+        boolean completed =
+                updatedTask.getStatus()
+                        == TaskStatus.COMPLETED;
+
+        String message =
+                completed
+                        ? "Task completed."
+                        : "Task reopened.";
+
+        Snackbar snackbar =
+                Snackbar.make(
+                        requireView(),
+                        message,
+                        Snackbar.LENGTH_LONG
+                );
+
+        snackbar.setAction(
+                "UNDO",
+                view ->
+                        undoQuickCompletion()
+        );
+
+        snackbar.show();
+    }
+
+    private void undoQuickCompletion() {
+
+        if (pendingStatusTask == null
+                || pendingStatusTask.getId() == null
+                || pendingStatusTask.getId()
+                .trim()
+                .isEmpty()
+                || pendingPreviousStatus == null) {
+
+            return;
+        }
+
+        pendingStatusUndo =
+                true;
+
+        if (pendingPreviousStatus
+                == TaskStatus.COMPLETED) {
+
+            viewModel.updateTaskStatus(
+                    pendingStatusTask.getId(),
+                    TaskStatus.COMPLETED,
+                    pendingStatusTask.getCompletedAt()
+            );
+
+        } else {
+
+            viewModel.updateTaskStatus(
+                    pendingStatusTask.getId(),
+                    pendingPreviousStatus,
+                    null
+            );
+        }
+    }
+
+    // =========================================================
+    // TIMESTAMP
+    // =========================================================
+
+    private String getCurrentTimestamp() {
+
+        /*
+         * Isti format i UTC princip kao u
+         * TaskDetailsActivity.
+         */
+        SimpleDateFormat formatter =
+                new SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+                        Locale.US
+                );
+
+        formatter.setTimeZone(
+                TimeZone.getTimeZone(
+                        "UTC"
+                )
+        );
+
+        return formatter.format(
+                new Date()
+        );
+    }
+
+    // =========================================================
     // OBSERVERS
     // =========================================================
 
@@ -553,6 +1740,16 @@ public class TasksFragment extends Fragment {
                 .observe(
                         getViewLifecycleOwner(),
                         this::handleImportantActionState
+                );
+    }
+
+    private void observeStatusAction() {
+
+        viewModel
+                .getStatusActionState()
+                .observe(
+                        getViewLifecycleOwner(),
+                        this::handleStatusActionState
                 );
     }
 
@@ -620,12 +1817,101 @@ public class TasksFragment extends Fragment {
                         state.getMessage();
 
                 if (message == null
-                        || message
-                        .trim()
-                        .isEmpty()) {
+                        || message.trim().isEmpty()) {
 
                     message =
                             "Unable to update important status.";
+                }
+
+                Toast.makeText(
+                        requireContext(),
+                        message,
+                        Toast.LENGTH_LONG
+                ).show();
+
+                break;
+        }
+    }
+
+    private void handleStatusActionState(
+            UiState<Task> state
+    ) {
+
+        if (state == null) {
+            return;
+        }
+
+        switch (state.getStatus()) {
+
+            case LOADING:
+                break;
+
+            case SUCCESS:
+
+                Task updatedTask =
+                        state.getData();
+
+                if (updatedTask != null) {
+
+                    /*
+                     * ISTA NOTIFICATION LOGIKA KAO U
+                     * TaskDetailsActivity.
+                     *
+                     * COMPLETED:
+                     * updateTaskReminder() prvo cancelira alarm,
+                     * vidi COMPLETED i više ga ne zakazuje.
+                     *
+                     * TO_DO / IN_PROGRESS:
+                     * postojeći alarm se prvo briše pa se,
+                     * ako je reminder još u budućnosti,
+                     * ponovno zakazuje.
+                     */
+                    TaskReminderManager.updateTaskReminder(
+                            requireContext(),
+                            updatedTask
+                    );
+                }
+
+                if (!pendingStatusUndo
+                        && updatedTask != null) {
+
+                    showQuickCompletionSnackbar(
+                            updatedTask
+                    );
+                }
+
+                pendingStatusUndo =
+                        false;
+
+                /*
+                 * ViewModel već radi loadTasks(),
+                 * ali dodatno osvježavanje ovdje osigurava da
+                 * calendar count, dots i filter prikaz odmah
+                 * odgovaraju novom statusu.
+                 */
+                viewModel.loadTasks();
+
+                break;
+
+            case ERROR:
+
+                pendingStatusUndo =
+                        false;
+
+                /*
+                 * Checkbox se na UI-u možda već promijenio.
+                 * Ponovno učitavanje vraća stvarno stanje iz baze.
+                 */
+                viewModel.loadTasks();
+
+                String message =
+                        state.getMessage();
+
+                if (message == null
+                        || message.trim().isEmpty()) {
+
+                    message =
+                            "Unable to update task status.";
                 }
 
                 Toast.makeText(
@@ -664,6 +1950,10 @@ public class TasksFragment extends Fragment {
                             state.getData()
                     );
                 }
+
+                renderTaskWeek();
+
+                updateSelectedTaskDateLabel();
 
                 applyFiltersAndSorting();
 
@@ -800,10 +2090,6 @@ public class TasksFragment extends Fragment {
                 dialogView
         );
 
-        // -----------------------------------------------------
-        // CARDS
-        // -----------------------------------------------------
-
         MaterialCardView cardDefault =
                 dialogView.findViewById(
                         R.id.cardSortDefault
@@ -838,10 +2124,6 @@ public class TasksFragment extends Fragment {
                 dialogView.findViewById(
                         R.id.cardSortTitle
                 );
-
-        // -----------------------------------------------------
-        // RADIO BUTTONS
-        // -----------------------------------------------------
 
         RadioButton radioDefault =
                 dialogView.findViewById(
@@ -878,18 +2160,10 @@ public class TasksFragment extends Fragment {
                         R.id.radioSortTitle
                 );
 
-        // -----------------------------------------------------
-        // APPLY BUTTON
-        // -----------------------------------------------------
-
         MaterialButton btnApplySort =
                 dialogView.findViewById(
                         R.id.btnApplySort
                 );
-
-        // -----------------------------------------------------
-        // ARRAYS
-        // -----------------------------------------------------
 
         MaterialCardView[] cards = {
                 cardDefault,
@@ -921,10 +2195,6 @@ public class TasksFragment extends Fragment {
                 SortOption.TITLE_A_Z
         };
 
-        // -----------------------------------------------------
-        // TEMPORARY STATE
-        // -----------------------------------------------------
-
         final SortOption[] tempSort = {
                 selectedSortOption
         };
@@ -935,10 +2205,6 @@ public class TasksFragment extends Fragment {
                 options,
                 tempSort[0]
         );
-
-        // -----------------------------------------------------
-        // CARD LISTENERS
-        // -----------------------------------------------------
 
         for (int i = 0;
              i < cards.length;
@@ -962,10 +2228,6 @@ public class TasksFragment extends Fragment {
                     }
             );
         }
-
-        // -----------------------------------------------------
-        // APPLY
-        // -----------------------------------------------------
 
         btnApplySort.setOnClickListener(
                 view -> {
@@ -1110,7 +2372,7 @@ public class TasksFragment extends Fragment {
     }
 
     // =========================================================
-    // ADVANCED FILTERS BOTTOM SHEET
+    // ADVANCED FILTERS
     // =========================================================
 
     private void showAdvancedFiltersDialog() {
@@ -1134,10 +2396,6 @@ public class TasksFragment extends Fragment {
                 dialogView
         );
 
-        // -----------------------------------------------------
-        // STATUS
-        // -----------------------------------------------------
-
         TextView chipStatusAny =
                 dialogView.findViewById(
                         R.id.chipFilterStatusAny
@@ -1157,10 +2415,6 @@ public class TasksFragment extends Fragment {
                 dialogView.findViewById(
                         R.id.chipFilterStatusCompleted
                 );
-
-        // -----------------------------------------------------
-        // PRIORITY
-        // -----------------------------------------------------
 
         TextView chipPriorityAny =
                 dialogView.findViewById(
@@ -1182,10 +2436,6 @@ public class TasksFragment extends Fragment {
                         R.id.chipFilterPriorityHigh
                 );
 
-        // -----------------------------------------------------
-        // IMPORTANT
-        // -----------------------------------------------------
-
         TextView chipImportantAny =
                 dialogView.findViewById(
                         R.id.chipFilterImportantAny
@@ -1201,10 +2451,6 @@ public class TasksFragment extends Fragment {
                         R.id.chipFilterImportantNot
                 );
 
-        // -----------------------------------------------------
-        // DROPDOWNS
-        // -----------------------------------------------------
-
         MaterialAutoCompleteTextView dropdownCategory =
                 dialogView.findViewById(
                         R.id.dropdownFilterCategory
@@ -1215,10 +2461,6 @@ public class TasksFragment extends Fragment {
                         R.id.dropdownFilterDate
                 );
 
-        // -----------------------------------------------------
-        // BUTTONS
-        // -----------------------------------------------------
-
         TextView btnClearFilters =
                 dialogView.findViewById(
                         R.id.btnClearFilters
@@ -1228,10 +2470,6 @@ public class TasksFragment extends Fragment {
                 dialogView.findViewById(
                         R.id.btnApplyFilters
                 );
-
-        // -----------------------------------------------------
-        // TEMPORARY FILTER STATE
-        // -----------------------------------------------------
 
         final AdvancedStatusFilter[] tempStatus = {
                 selectedAdvancedStatus
@@ -1253,10 +2491,6 @@ public class TasksFragment extends Fragment {
                 selectedCategoryId
         };
 
-        // -----------------------------------------------------
-        // CATEGORY OPTIONS
-        // -----------------------------------------------------
-
         List<String> categoryOptions =
                 new ArrayList<>();
 
@@ -1264,13 +2498,11 @@ public class TasksFragment extends Fragment {
                 "Any category"
         );
 
-        for (Category category
-                : allCategories) {
+        for (Category category : allCategories) {
 
             if (category != null
                     && category.getName() != null
-                    && !category
-                    .getName()
+                    && !category.getName()
                     .trim()
                     .isEmpty()) {
 
@@ -1311,10 +2543,6 @@ public class TasksFragment extends Fragment {
                 }
         );
 
-        // -----------------------------------------------------
-        // DATE OPTIONS
-        // -----------------------------------------------------
-
         String[] dateOptions = {
                 "Any date",
                 "Today",
@@ -1345,47 +2573,33 @@ public class TasksFragment extends Fragment {
                     switch (position) {
 
                         case 1:
-
                             tempDate[0] =
                                     AdvancedDateFilter.TODAY;
-
                             break;
 
                         case 2:
-
                             tempDate[0] =
                                     AdvancedDateFilter.TOMORROW;
-
                             break;
 
                         case 3:
-
                             tempDate[0] =
                                     AdvancedDateFilter.THIS_WEEK;
-
                             break;
 
                         case 4:
-
                             tempDate[0] =
                                     AdvancedDateFilter.NO_DEADLINE;
-
                             break;
 
                         case 0:
                         default:
-
                             tempDate[0] =
                                     AdvancedDateFilter.ANY;
-
                             break;
                     }
                 }
         );
-
-        // -----------------------------------------------------
-        // INITIAL CHIP STATE
-        // -----------------------------------------------------
 
         updateStatusDialogChips(
                 chipStatusAny,
@@ -1409,10 +2623,6 @@ public class TasksFragment extends Fragment {
                 chipImportantNot,
                 tempImportant[0]
         );
-
-        // -----------------------------------------------------
-        // STATUS LISTENERS
-        // -----------------------------------------------------
 
         chipStatusAny.setOnClickListener(
                 view -> {
@@ -1478,10 +2688,6 @@ public class TasksFragment extends Fragment {
                 }
         );
 
-        // -----------------------------------------------------
-        // PRIORITY LISTENERS
-        // -----------------------------------------------------
-
         chipPriorityAny.setOnClickListener(
                 view -> {
 
@@ -1546,10 +2752,6 @@ public class TasksFragment extends Fragment {
                 }
         );
 
-        // -----------------------------------------------------
-        // IMPORTANT LISTENERS
-        // -----------------------------------------------------
-
         chipImportantAny.setOnClickListener(
                 view -> {
 
@@ -1594,10 +2796,6 @@ public class TasksFragment extends Fragment {
                     );
                 }
         );
-
-        // -----------------------------------------------------
-        // CLEAR
-        // -----------------------------------------------------
 
         btnClearFilters.setOnClickListener(
                 view -> {
@@ -1652,10 +2850,6 @@ public class TasksFragment extends Fragment {
                 }
         );
 
-        // -----------------------------------------------------
-        // APPLY
-        // -----------------------------------------------------
-
         btnApplyFilters.setOnClickListener(
                 view -> {
 
@@ -1671,15 +2865,23 @@ public class TasksFragment extends Fragment {
                     selectedAdvancedDate =
                             tempDate[0];
 
-                    tempCategoryId[0] =
+                    selectedCategoryId =
                             findCategoryIdByName(
                                     dropdownCategory
                                             .getText()
                                             .toString()
                             );
 
-                    selectedCategoryId =
-                            tempCategoryId[0];
+                    if (selectedAdvancedDate
+                            != AdvancedDateFilter.ANY) {
+
+                        showAllTaskDates =
+                                true;
+
+                        updateSelectedTaskDateLabel();
+
+                        renderTaskWeek();
+                    }
 
                     updateAdvancedFilterButton();
 
@@ -1851,7 +3053,6 @@ public class TasksFragment extends Fragment {
         }
 
         if (selectedCategoryId != null) {
-
             activeFilters++;
         }
 
@@ -1873,18 +3074,11 @@ public class TasksFragment extends Fragment {
             activeFilters++;
         }
 
-        if (activeFilters == 0) {
-
-            btnAdvancedFilters.setText(
-                    "Filters"
-            );
-
-        } else {
-
-            btnAdvancedFilters.setText(
-                    "Filters (" + activeFilters + ")"
-            );
-        }
+        btnAdvancedFilters.setText(
+                activeFilters == 0
+                        ? "Filters"
+                        : "Filters (" + activeFilters + ")"
+        );
     }
 
     // =========================================================
@@ -1896,9 +3090,7 @@ public class TasksFragment extends Fragment {
     ) {
 
         if (categoryName == null
-                || categoryName
-                .trim()
-                .isEmpty()
+                || categoryName.trim().isEmpty()
                 || categoryName.equals(
                 "Any category"
         )) {
@@ -1906,15 +3098,13 @@ public class TasksFragment extends Fragment {
             return null;
         }
 
-        for (Category category
-                : allCategories) {
+        for (Category category : allCategories) {
 
             if (category != null
                     && category.getName() != null
-                    && category.getName()
-                    .equals(
-                            categoryName
-                    )) {
+                    && category.getName().equals(
+                    categoryName
+            )) {
 
                 return category.getId();
             }
@@ -1926,12 +3116,10 @@ public class TasksFragment extends Fragment {
     private String getSelectedCategoryText() {
 
         if (selectedCategoryId == null) {
-
             return "Any category";
         }
 
-        for (Category category
-                : allCategories) {
+        for (Category category : allCategories) {
 
             if (category != null
                     && selectedCategoryId.equals(
@@ -1996,10 +3184,16 @@ public class TasksFragment extends Fragment {
         List<Task> filteredTasks =
                 new ArrayList<>();
 
-        for (Task task
-                : allTasks) {
+        for (Task task : allTasks) {
 
             if (task == null) {
+                continue;
+            }
+
+            if (!matchesCalendarDate(
+                    task
+            )) {
+
                 continue;
             }
 
@@ -2094,8 +3288,7 @@ public class TasksFragment extends Fragment {
 
                 Collections.sort(
                         tasks,
-                        (first,
-                         second) ->
+                        (first, second) ->
                                 compareDeadline(
                                         first,
                                         second,
@@ -2109,8 +3302,7 @@ public class TasksFragment extends Fragment {
 
                 Collections.sort(
                         tasks,
-                        (first,
-                         second) ->
+                        (first, second) ->
                                 compareDeadline(
                                         first,
                                         second,
@@ -2124,8 +3316,7 @@ public class TasksFragment extends Fragment {
 
                 Collections.sort(
                         tasks,
-                        (first,
-                         second) ->
+                        (first, second) ->
                                 Integer.compare(
                                         getPriorityValue(
                                                 second
@@ -2142,8 +3333,7 @@ public class TasksFragment extends Fragment {
 
                 Collections.sort(
                         tasks,
-                        (first,
-                         second) ->
+                        (first, second) ->
                                 compareCreatedAt(
                                         first,
                                         second,
@@ -2157,8 +3347,7 @@ public class TasksFragment extends Fragment {
 
                 Collections.sort(
                         tasks,
-                        (first,
-                         second) ->
+                        (first, second) ->
                                 compareCreatedAt(
                                         first,
                                         second,
@@ -2172,8 +3361,7 @@ public class TasksFragment extends Fragment {
 
                 Collections.sort(
                         tasks,
-                        (first,
-                         second) -> {
+                        (first, second) -> {
 
                             String firstTitle =
                                     first.getTitle() == null
@@ -2185,10 +3373,9 @@ public class TasksFragment extends Fragment {
                                             ? ""
                                             : second.getTitle();
 
-                            return firstTitle
-                                    .compareToIgnoreCase(
-                                            secondTitle
-                                    );
+                            return firstTitle.compareToIgnoreCase(
+                                    secondTitle
+                            );
                         }
                 );
 
@@ -2420,23 +3607,19 @@ public class TasksFragment extends Fragment {
         switch (selectedAdvancedStatus) {
 
             case TO_DO:
-
                 return task.getStatus()
                         == TaskStatus.TO_DO;
 
             case IN_PROGRESS:
-
                 return task.getStatus()
                         == TaskStatus.IN_PROGRESS;
 
             case COMPLETED:
-
                 return task.getStatus()
                         == TaskStatus.COMPLETED;
 
             case ANY:
             default:
-
                 return true;
         }
     }
@@ -2446,7 +3629,6 @@ public class TasksFragment extends Fragment {
     ) {
 
         if (selectedCategoryId == null) {
-
             return true;
         }
 
@@ -2462,23 +3644,19 @@ public class TasksFragment extends Fragment {
         switch (selectedAdvancedPriority) {
 
             case LOW:
-
                 return task.getPriority()
                         == TaskPriority.LOW;
 
             case MEDIUM:
-
                 return task.getPriority()
                         == TaskPriority.MEDIUM;
 
             case HIGH:
-
                 return task.getPriority()
                         == TaskPriority.HIGH;
 
             case ANY:
             default:
-
                 return true;
         }
     }
@@ -2490,16 +3668,13 @@ public class TasksFragment extends Fragment {
         switch (selectedAdvancedImportant) {
 
             case IMPORTANT:
-
                 return task.isImportant();
 
             case NOT_IMPORTANT:
-
                 return !task.isImportant();
 
             case ANY:
             default:
-
                 return true;
         }
     }
@@ -2540,7 +3715,6 @@ public class TasksFragment extends Fragment {
                 );
 
         if (deadlineDate == null) {
-
             return false;
         }
 
@@ -2620,32 +3794,13 @@ public class TasksFragment extends Fragment {
         Calendar start =
                 Calendar.getInstance();
 
-        start.set(
-                Calendar.HOUR_OF_DAY,
-                0
+        normalizeCalendarDay(
+                start
         );
-
-        start.set(
-                Calendar.MINUTE,
-                0
-        );
-
-        start.set(
-                Calendar.SECOND,
-                0
-        );
-
-        start.set(
-                Calendar.MILLISECOND,
-                0
-        );
-
-        int firstDay =
-                start.getFirstDayOfWeek();
 
         while (start.get(
                 Calendar.DAY_OF_WEEK
-        ) != firstDay) {
+        ) != Calendar.MONDAY) {
 
             start.add(
                     Calendar.DAY_OF_MONTH,
@@ -2687,9 +3842,7 @@ public class TasksFragment extends Fragment {
                 task.getDeadline();
 
         if (deadline == null
-                || deadline
-                .trim()
-                .isEmpty()) {
+                || deadline.trim().isEmpty()) {
 
             return false;
         }
@@ -2700,7 +3853,6 @@ public class TasksFragment extends Fragment {
                 );
 
         if (deadlineDate == null) {
-
             return false;
         }
 
@@ -2713,14 +3865,19 @@ public class TasksFragment extends Fragment {
             String value
     ) {
 
+        if (value == null
+                || value.trim().isEmpty()) {
+
+            return null;
+        }
+
         String[] formats = {
                 "yyyy-MM-dd'T'HH:mm:ssXXX",
                 "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
                 "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
         };
 
-        for (String format
-                : formats) {
+        for (String format : formats) {
 
             try {
 
@@ -2729,6 +3886,10 @@ public class TasksFragment extends Fragment {
                                 format,
                                 Locale.US
                         );
+
+                parser.setLenient(
+                        false
+                );
 
                 return parser.parse(
                         value
@@ -2806,6 +3967,39 @@ public class TasksFragment extends Fragment {
         layoutEmptyTasks.setVisibility(
                 View.VISIBLE
         );
+
+        if (!showAllTaskDates
+                && selectedAdvancedDate
+                == AdvancedDateFilter.ANY) {
+
+            SimpleDateFormat format =
+                    new SimpleDateFormat(
+                            "EEEE, MMMM d",
+                            Locale.ENGLISH
+                    );
+
+            tvEmptyTasksTitle.setText(
+                    "No tasks for this day"
+            );
+
+            tvEmptyTasksMessage.setText(
+                    "There are no tasks due on "
+                            + format.format(
+                            selectedTaskDate.getTime()
+                    )
+                            + "."
+            );
+
+        } else {
+
+            tvEmptyTasksTitle.setText(
+                    "No matching tasks"
+            );
+
+            tvEmptyTasksMessage.setText(
+                    "Try changing your search or filters."
+            );
+        }
 
         taskAdapter.setTasks(
                 new ArrayList<>()
