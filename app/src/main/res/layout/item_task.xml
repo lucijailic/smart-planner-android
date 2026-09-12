@@ -23,24 +23,44 @@
         android:layout_height="wrap_content"
         android:gravity="top"
         android:orientation="horizontal"
-        android:paddingStart="14dp"
+        android:paddingStart="12dp"
         android:paddingTop="12dp"
         android:paddingEnd="12dp"
         android:paddingBottom="12dp">
+
+        <!-- QUICK COMPLETE -->
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkTaskCompleted"
+            android:layout_width="36dp"
+            android:layout_height="42dp"
+            android:buttonTint="@color/sp_teal"
+            android:contentDescription="Mark task as completed"
+            android:gravity="center"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp" />
+
+        <!-- CATEGORY ICON -->
 
         <ImageView
             android:id="@+id/ivTaskCategoryIcon"
             android:layout_width="42dp"
             android:layout_height="42dp"
+            android:layout_marginStart="4dp"
             android:contentDescription="Task category"
             android:padding="10dp" />
+
+        <!-- CONTENT -->
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="10dp"
             android:layout_weight="1"
             android:orientation="vertical">
+
+            <!-- TITLE + IMPORTANT -->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -70,6 +90,8 @@
                     android:textSize="23sp" />
 
             </LinearLayout>
+
+            <!-- CHIPS -->
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -121,6 +143,8 @@
                 </LinearLayout>
 
             </HorizontalScrollView>
+
+            <!-- DEADLINE + DURATION -->
 
             <LinearLayout
                 android:layout_width="match_parent"
