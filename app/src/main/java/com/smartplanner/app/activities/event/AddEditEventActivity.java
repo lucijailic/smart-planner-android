@@ -24,6 +24,8 @@ import com.smartplanner.app.models.Category;
 import com.smartplanner.app.models.Event;
 import com.smartplanner.app.models.UiState;
 import com.smartplanner.app.models.enums.ReminderType;
+import com.smartplanner.app.notifications.EventReminderManager;
+import com.smartplanner.app.notifications.NotificationSettingsManager;
 import com.smartplanner.app.viewmodels.CategoriesViewModel;
 import com.smartplanner.app.viewmodels.EventsViewModel;
 
@@ -335,9 +337,45 @@ public class AddEditEventActivity extends AppCompatActivity {
                 adapter
         );
 
-        actEventReminder.setText(
-                "No reminder",
-                false
+        /*
+         * NEW EVENT:
+         * Učitavamo default Event reminder iz lokalnih
+         * Notification Settings postavki.
+         *
+         * EDIT EVENT:
+         * Reminder će kasnije doći iz Event objekta
+         * kroz populateEvent().
+         */
+        if (!editMode) {
+
+            selectedReminder =
+                    NotificationSettingsManager
+                            .getDefaultEventReminder(
+                                    this
+                            );
+
+            if (selectedReminder == null) {
+
+                selectedReminder =
+                        ReminderType.NONE;
+            }
+
+            updateReminderText();
+
+        } else {
+
+            selectedReminder =
+                    ReminderType.NONE;
+
+            actEventReminder.setText(
+                    "No reminder",
+                    false
+            );
+        }
+
+        actEventReminder.setOnClickListener(
+                view ->
+                        actEventReminder.showDropDown()
         );
 
         actEventReminder.setOnItemClickListener(
@@ -588,7 +626,6 @@ public class AddEditEventActivity extends AppCompatActivity {
             return R.drawable.ic_task_category_default;
         }
 
-        // Prvo pokušaj preko spremljene icon vrijednosti
         String icon =
                 category.getIcon();
 
@@ -603,24 +640,27 @@ public class AddEditEventActivity extends AppCompatActivity {
             ) {
 
                 case "work":
+
                     return R.drawable.ic_task_category_work;
 
                 case "personal":
+
                     return R.drawable.ic_task_category_personal;
 
                 case "health":
+
                     return R.drawable.ic_task_category_health;
 
                 case "study":
+
                     return R.drawable.ic_task_category_study;
 
                 case "shopping":
+
                     return R.drawable.ic_task_category_shopping;
             }
         }
 
-        // Ako icon vrijednost nije jedna od standardnih,
-        // pokušaj prepoznati kategoriju prema nazivu
         String name =
                 category.getName();
 
@@ -923,6 +963,10 @@ public class AddEditEventActivity extends AppCompatActivity {
                 event.isImportant()
         );
 
+        /*
+         * EDIT EVENT koristi reminder spremljen
+         * baš na tom Event objektu.
+         */
         selectedReminder =
                 event.getReminderType() != null
                         ? event.getReminderType()
@@ -958,6 +1002,12 @@ public class AddEditEventActivity extends AppCompatActivity {
     }
 
     private void updateReminderText() {
+
+        if (selectedReminder == null) {
+
+            selectedReminder =
+                    ReminderType.NONE;
+        }
 
         switch (selectedReminder) {
 
@@ -1152,6 +1202,18 @@ public class AddEditEventActivity extends AppCompatActivity {
                                             true
                                     );
 
+                                    Event savedEvent =
+                                            state.getData();
+
+                                    if (savedEvent != null) {
+
+                                        EventReminderManager
+                                                .updateEventReminder(
+                                                        this,
+                                                        savedEvent
+                                                );
+                                    }
+
                                     Toast.makeText(
                                             this,
                                             editMode
@@ -1332,6 +1394,10 @@ public class AddEditEventActivity extends AppCompatActivity {
                                 format,
                                 Locale.US
                         );
+
+                parser.setLenient(
+                        false
+                );
 
                 return parser.parse(
                         value

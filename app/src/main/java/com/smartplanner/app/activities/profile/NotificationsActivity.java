@@ -1,6 +1,9 @@
 package com.smartplanner.app.activities.profile;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -11,6 +14,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -75,29 +80,43 @@ public class NotificationsActivity
 
     private NotificationPreferencesViewModel viewModel;
 
+    private ActivityResultLauncher<String>
+            notificationPermissionLauncher;
+
     private final Map<String, String> reminderLabelToValue =
             new LinkedHashMap<>();
 
     private final Map<String, String> reminderValueToLabel =
             new LinkedHashMap<>();
 
-    private boolean preferencesLoaded = false;
+    private boolean preferencesLoaded =
+            false;
 
     @Override
     protected void onCreate(
             Bundle savedInstanceState
     ) {
+
         super.onCreate(savedInstanceState);
 
         setContentView(
                 R.layout.activity_notifications
         );
 
+        setupNotificationPermissionLauncher();
+
         initViews();
+
         setupReminderOptions();
+
         setupViewModel();
+
         setupListeners();
     }
+
+    // =========================================================
+    // INIT VIEWS
+    // =========================================================
 
     private void initViews() {
 
@@ -192,30 +211,88 @@ public class NotificationsActivity
                 );
     }
 
+    // =========================================================
+    // NOTIFICATION PERMISSION
+    // =========================================================
+
+    private void setupNotificationPermissionLauncher() {
+
+        notificationPermissionLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.RequestPermission(),
+                        isGranted -> {
+
+                            if (!isGranted) {
+
+                                Toast.makeText(
+                                        this,
+                                        "Notification permission is required to receive reminders.",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
+                        }
+                );
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+
+        if (Build.VERSION.SDK_INT
+                < Build.VERSION_CODES.TIRAMISU) {
+
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED) {
+
+            return;
+        }
+
+        notificationPermissionLauncher.launch(
+                Manifest.permission.POST_NOTIFICATIONS
+        );
+    }
+
+    // =========================================================
+    // REMINDER OPTIONS
+    // =========================================================
+
     private void setupReminderOptions() {
 
         addReminderOption(
-                getString(R.string.reminder_none),
+                getString(
+                        R.string.reminder_none
+                ),
                 REMINDER_NONE
         );
 
         addReminderOption(
-                getString(R.string.reminder_10_minutes),
+                getString(
+                        R.string.reminder_10_minutes
+                ),
                 REMINDER_TEN_MINUTES
         );
 
         addReminderOption(
-                getString(R.string.reminder_30_minutes),
+                getString(
+                        R.string.reminder_30_minutes
+                ),
                 REMINDER_THIRTY_MINUTES
         );
 
         addReminderOption(
-                getString(R.string.reminder_1_hour),
+                getString(
+                        R.string.reminder_1_hour
+                ),
                 REMINDER_ONE_HOUR
         );
 
         addReminderOption(
-                getString(R.string.reminder_1_day),
+                getString(
+                        R.string.reminder_1_day
+                ),
                 REMINDER_ONE_DAY
         );
 
@@ -265,6 +342,10 @@ public class NotificationsActivity
         );
     }
 
+    // =========================================================
+    // VIEW MODEL
+    // =========================================================
+
     private void setupViewModel() {
 
         viewModel =
@@ -290,6 +371,10 @@ public class NotificationsActivity
         viewModel.loadPreferences();
     }
 
+    // =========================================================
+    // LISTENERS
+    // =========================================================
+
     private void setupListeners() {
 
         btnRetryNotifications.setOnClickListener(
@@ -308,15 +393,26 @@ public class NotificationsActivity
                     updateNotificationUi(
                             isChecked
                     );
+
+                    if (isChecked) {
+
+                        requestNotificationPermissionIfNeeded();
+                    }
                 }
         );
     }
+
+    // =========================================================
+    // UI STATE
+    // =========================================================
 
     private void updateNotificationUi(
             boolean enabled
     ) {
 
-        updateHeroState(enabled);
+        updateHeroState(
+                enabled
+        );
 
         updateReminderFieldsEnabledState(
                 enabled
@@ -375,6 +471,10 @@ public class NotificationsActivity
         }
     }
 
+    // =========================================================
+    // PREFERENCES STATE
+    // =========================================================
+
     private void renderPreferencesState(
             UiState<NotificationPreferences> state
     ) {
@@ -386,22 +486,32 @@ public class NotificationsActivity
         switch (state.getStatus()) {
 
             case LOADING:
+
                 showLoading();
+
                 break;
 
             case SUCCESS:
+
                 showPreferences(
                         state.getData()
                 );
+
                 break;
 
             case ERROR:
+
                 showError(
                         state.getMessage()
                 );
+
                 break;
         }
     }
+
+    // =========================================================
+    // UPDATE STATE
+    // =========================================================
 
     private void renderUpdateState(
             UiState<NotificationPreferences> state
@@ -414,12 +524,18 @@ public class NotificationsActivity
         switch (state.getStatus()) {
 
             case LOADING:
-                setSaving(true);
+
+                setSaving(
+                        true
+                );
+
                 break;
 
             case SUCCESS:
 
-                setSaving(false);
+                setSaving(
+                        false
+                );
 
                 Toast.makeText(
                         this,
@@ -431,7 +547,9 @@ public class NotificationsActivity
 
             case ERROR:
 
-                setSaving(false);
+                setSaving(
+                        false
+                );
 
                 String message =
                         state.getMessage();
@@ -455,6 +573,10 @@ public class NotificationsActivity
         }
     }
 
+    // =========================================================
+    // LOADING
+    // =========================================================
+
     private void showLoading() {
 
         progressNotificationsLoading.setVisibility(
@@ -470,13 +592,20 @@ public class NotificationsActivity
         );
     }
 
+    // =========================================================
+    // SHOW PREFERENCES
+    // =========================================================
+
     private void showPreferences(
             NotificationPreferences preferences
     ) {
 
         if (preferences == null) {
 
-            showError(null);
+            showError(
+                    null
+            );
+
             return;
         }
 
@@ -536,8 +665,18 @@ public class NotificationsActivity
                 preferences.isNotificationsEnabled()
         );
 
-        preferencesLoaded = true;
+        preferencesLoaded =
+                true;
+
+        if (preferences.isNotificationsEnabled()) {
+
+            requestNotificationPermissionIfNeeded();
+        }
     }
+
+    // =========================================================
+    // ERROR
+    // =========================================================
 
     private void showError(
             String message
@@ -570,9 +709,14 @@ public class NotificationsActivity
         }
     }
 
+    // =========================================================
+    // SAVE
+    // =========================================================
+
     private void savePreferences() {
 
         if (!preferencesLoaded) {
+
             return;
         }
 
@@ -609,6 +753,10 @@ public class NotificationsActivity
                 eventReminder
         );
     }
+
+    // =========================================================
+    // ENABLE / DISABLE REMINDER FIELDS
+    // =========================================================
 
     private void updateReminderFieldsEnabledState(
             boolean enabled
@@ -659,6 +807,10 @@ public class NotificationsActivity
                 cardAlpha
         );
     }
+
+    // =========================================================
+    // SAVING STATE
+    // =========================================================
 
     private void setSaving(
             boolean saving
