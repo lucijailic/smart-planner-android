@@ -119,6 +119,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.smartplan.AvailabilityActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
