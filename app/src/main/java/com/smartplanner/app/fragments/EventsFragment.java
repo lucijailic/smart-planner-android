@@ -1,16 +1,20 @@
 package com.smartplanner.app.fragments;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -120,6 +124,24 @@ public class EventsFragment extends Fragment {
 
     private FloatingActionButton fabAddEvent;
 
+    private TextView tvEmptyEventsTitle;
+    private TextView tvEmptyEventsMessage;
+
+    // =========================================================
+    // CALENDAR VIEWS
+    // =========================================================
+
+    private TextView tvEventCalendarMonth;
+    private TextView tvSelectedEventDate;
+    private TextView tvViewAllEvents;
+
+    private TextView btnPreviousEventWeek;
+    private TextView btnNextEventWeek;
+
+    private ImageButton btnEventCalendarPicker;
+
+    private LinearLayout layoutEventWeekDays;
+
     // =========================================================
     // DATA
     // =========================================================
@@ -164,6 +186,23 @@ public class EventsFragment extends Fragment {
     private String searchQuery =
             "";
 
+    // =========================================================
+    // CALENDAR STATE
+    // =========================================================
+
+    private final Calendar selectedEventDate =
+            Calendar.getInstance();
+
+    private final Calendar displayedWeekStart =
+            Calendar.getInstance();
+
+    private boolean showAllEventDates =
+            false;
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
+
     public EventsFragment() {
 
         super(
@@ -203,6 +242,8 @@ public class EventsFragment extends Fragment {
         initViews(
                 view
         );
+
+        setupEventCalendar();
 
         setupRecyclerView();
 
@@ -321,6 +362,808 @@ public class EventsFragment extends Fragment {
                 view.findViewById(
                         R.id.fabAddEvent
                 );
+
+        tvEmptyEventsTitle =
+                view.findViewById(
+                        R.id.tvEmptyEventsTitle
+                );
+
+        tvEmptyEventsMessage =
+                view.findViewById(
+                        R.id.tvEmptyEventsMessage
+                );
+
+        tvEventCalendarMonth =
+                view.findViewById(
+                        R.id.tvEventCalendarMonth
+                );
+
+        tvSelectedEventDate =
+                view.findViewById(
+                        R.id.tvSelectedEventDate
+                );
+
+        tvViewAllEvents =
+                view.findViewById(
+                        R.id.tvViewAllEvents
+                );
+
+        btnPreviousEventWeek =
+                view.findViewById(
+                        R.id.btnPreviousEventWeek
+                );
+
+        btnNextEventWeek =
+                view.findViewById(
+                        R.id.btnNextEventWeek
+                );
+
+        btnEventCalendarPicker =
+                view.findViewById(
+                        R.id.btnEventCalendarPicker
+                );
+
+        layoutEventWeekDays =
+                view.findViewById(
+                        R.id.layoutEventWeekDays
+                );
+    }
+
+    // =========================================================
+    // EVENT CALENDAR
+    // =========================================================
+
+    private void setupEventCalendar() {
+
+        Calendar today =
+                Calendar.getInstance();
+
+        selectedEventDate.setTimeInMillis(
+                today.getTimeInMillis()
+        );
+
+        normalizeCalendarDay(
+                selectedEventDate
+        );
+
+        displayedWeekStart.setTimeInMillis(
+                selectedEventDate.getTimeInMillis()
+        );
+
+        moveToMonday(
+                displayedWeekStart
+        );
+
+        showAllEventDates =
+                false;
+
+        renderEventWeek();
+
+        updateSelectedEventDateLabel();
+    }
+
+    private void moveToMonday(
+            Calendar calendar
+    ) {
+
+        while (calendar.get(
+                Calendar.DAY_OF_WEEK
+        ) != Calendar.MONDAY) {
+
+            calendar.add(
+                    Calendar.DAY_OF_MONTH,
+                    -1
+            );
+        }
+
+        normalizeCalendarDay(
+                calendar
+        );
+    }
+
+    private void normalizeCalendarDay(
+            Calendar calendar
+    ) {
+
+        calendar.set(
+                Calendar.HOUR_OF_DAY,
+                0
+        );
+
+        calendar.set(
+                Calendar.MINUTE,
+                0
+        );
+
+        calendar.set(
+                Calendar.SECOND,
+                0
+        );
+
+        calendar.set(
+                Calendar.MILLISECOND,
+                0
+        );
+    }
+
+    private String getDisplayedMonthTitle() {
+
+        Calendar firstDay =
+                (Calendar) displayedWeekStart.clone();
+
+        Calendar lastDay =
+                (Calendar) displayedWeekStart.clone();
+
+        lastDay.add(
+                Calendar.DAY_OF_MONTH,
+                6
+        );
+
+        SimpleDateFormat monthFormat =
+                new SimpleDateFormat(
+                        "MMMM",
+                        Locale.ENGLISH
+                );
+
+        SimpleDateFormat monthYearFormat =
+                new SimpleDateFormat(
+                        "MMMM yyyy",
+                        Locale.ENGLISH
+                );
+
+        int firstYear =
+                firstDay.get(
+                        Calendar.YEAR
+                );
+
+        int lastYear =
+                lastDay.get(
+                        Calendar.YEAR
+                );
+
+        int firstMonth =
+                firstDay.get(
+                        Calendar.MONTH
+                );
+
+        int lastMonth =
+                lastDay.get(
+                        Calendar.MONTH
+                );
+
+        if (firstYear == lastYear
+                && firstMonth == lastMonth) {
+
+            return monthYearFormat.format(
+                    firstDay.getTime()
+            );
+        }
+
+        if (firstYear == lastYear) {
+
+            return monthFormat.format(
+                    firstDay.getTime()
+            )
+                    + " – "
+                    + monthYearFormat.format(
+                    lastDay.getTime()
+            );
+        }
+
+        return monthYearFormat.format(
+                firstDay.getTime()
+        )
+                + " – "
+                + monthYearFormat.format(
+                lastDay.getTime()
+        );
+    }
+
+    private void renderEventWeek() {
+
+        if (layoutEventWeekDays == null) {
+            return;
+        }
+
+        layoutEventWeekDays.removeAllViews();
+
+        tvEventCalendarMonth.setText(
+                getDisplayedMonthTitle()
+        );
+
+        Calendar day =
+                (Calendar) displayedWeekStart.clone();
+
+        for (int i = 0;
+             i < 7;
+             i++) {
+
+            Calendar calendarDay =
+                    (Calendar) day.clone();
+
+            View dayView =
+                    createEventDayView(
+                            calendarDay
+                    );
+
+            layoutEventWeekDays.addView(
+                    dayView
+            );
+
+            day.add(
+                    Calendar.DAY_OF_MONTH,
+                    1
+            );
+        }
+    }
+
+    private View createEventDayView(
+            Calendar day
+    ) {
+
+        LinearLayout container =
+                new LinearLayout(
+                        requireContext()
+                );
+
+        container.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        container.setGravity(
+                Gravity.CENTER
+        );
+
+        LinearLayout.LayoutParams containerParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        dpToPxInt(64),
+                        1f
+                );
+
+        containerParams.setMargins(
+                dpToPxInt(1),
+                0,
+                dpToPxInt(1),
+                0
+        );
+
+        container.setLayoutParams(
+                containerParams
+        );
+
+        boolean selected =
+                !showAllEventDates
+                        && isSameDay(
+                        day,
+                        selectedEventDate
+                );
+
+        boolean today =
+                isSameDay(
+                        day,
+                        Calendar.getInstance()
+                );
+
+        boolean hasEvents =
+                hasEventsOnDate(
+                        day
+                );
+
+        container.setBackground(
+                createCalendarDayBackground(
+                        selected
+                )
+        );
+
+        TextView dayName =
+                new TextView(
+                        requireContext()
+                );
+
+        dayName.setGravity(
+                Gravity.CENTER
+        );
+
+        dayName.setTextSize(
+                9
+        );
+
+        dayName.setText(
+                new SimpleDateFormat(
+                        "EEE",
+                        Locale.ENGLISH
+                )
+                        .format(
+                                day.getTime()
+                        )
+                        .toUpperCase(
+                                Locale.ENGLISH
+                        )
+        );
+
+        dayName.setTextColor(
+                requireContext().getColor(
+                        selected
+                                ? R.color.white
+                                : R.color.sp_text_secondary
+                )
+        );
+
+        TextView dayNumber =
+                new TextView(
+                        requireContext()
+                );
+
+        dayNumber.setGravity(
+                Gravity.CENTER
+        );
+
+        dayNumber.setTextSize(
+                16
+        );
+
+        dayNumber.setTypeface(
+                dayNumber.getTypeface(),
+                android.graphics.Typeface.BOLD
+        );
+
+        dayNumber.setText(
+                String.valueOf(
+                        day.get(
+                                Calendar.DAY_OF_MONTH
+                        )
+                )
+        );
+
+        if (selected) {
+
+            dayNumber.setTextColor(
+                    requireContext()
+                            .getColor(
+                                    R.color.white
+                            )
+            );
+
+        } else if (today) {
+
+            dayNumber.setTextColor(
+                    requireContext()
+                            .getColor(
+                                    R.color.sp_teal_dark
+                            )
+            );
+
+        } else {
+
+            dayNumber.setTextColor(
+                    requireContext()
+                            .getColor(
+                                    R.color.sp_text_primary
+                            )
+            );
+        }
+
+        View eventDot =
+                new View(
+                        requireContext()
+                );
+
+        LinearLayout.LayoutParams dotParams =
+                new LinearLayout.LayoutParams(
+                        dpToPxInt(5),
+                        dpToPxInt(5)
+                );
+
+        dotParams.topMargin =
+                dpToPxInt(1);
+
+        eventDot.setLayoutParams(
+                dotParams
+        );
+
+        eventDot.setBackground(
+                createCalendarDotBackground(
+                        selected
+                )
+        );
+
+        eventDot.setVisibility(
+                hasEvents
+                        ? View.VISIBLE
+                        : View.INVISIBLE
+        );
+
+        LinearLayout.LayoutParams dayNameParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dpToPxInt(18)
+                );
+
+        LinearLayout.LayoutParams dayNumberParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dpToPxInt(25)
+                );
+
+        container.addView(
+                dayName,
+                dayNameParams
+        );
+
+        container.addView(
+                dayNumber,
+                dayNumberParams
+        );
+
+        container.addView(
+                eventDot
+        );
+
+        container.setOnClickListener(
+                view -> {
+
+                    selectedEventDate.setTimeInMillis(
+                            day.getTimeInMillis()
+                    );
+
+                    normalizeCalendarDay(
+                            selectedEventDate
+                    );
+
+                    showAllEventDates =
+                            false;
+
+                    selectedDateFilter =
+                            DateFilter.ANY;
+
+                    updateFiltersButtonText();
+
+                    updateSelectedEventDateLabel();
+
+                    renderEventWeek();
+
+                    applyFilters();
+                }
+        );
+
+        return container;
+    }
+
+    private GradientDrawable createCalendarDayBackground(
+            boolean selected
+    ) {
+
+        GradientDrawable drawable =
+                new GradientDrawable();
+
+        drawable.setShape(
+                GradientDrawable.RECTANGLE
+        );
+
+        drawable.setCornerRadius(
+                dpToPxInt(14)
+        );
+
+        drawable.setColor(
+                selected
+                        ? requireContext().getColor(
+                        R.color.sp_teal
+                )
+                        : Color.TRANSPARENT
+        );
+
+        return drawable;
+    }
+
+    private GradientDrawable createCalendarDotBackground(
+            boolean selected
+    ) {
+
+        GradientDrawable drawable =
+                new GradientDrawable();
+
+        drawable.setShape(
+                GradientDrawable.OVAL
+        );
+
+        drawable.setColor(
+                requireContext().getColor(
+                        selected
+                                ? R.color.white
+                                : R.color.sp_teal
+                )
+        );
+
+        return drawable;
+    }
+
+    private boolean hasEventsOnDate(
+            Calendar date
+    ) {
+
+        for (Event event : allEvents) {
+
+            if (event != null
+                    && eventOccursOnDate(
+                    event,
+                    date
+            )) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean eventOccursOnDate(
+            Event event,
+            Calendar date
+    ) {
+
+        if (event == null
+                || date == null) {
+
+            return false;
+        }
+
+        Date start =
+                parseSupabaseDate(
+                        event.getStartAt()
+                );
+
+        Date end =
+                parseSupabaseDate(
+                        event.getEndAt()
+                );
+
+        if (start == null) {
+            return false;
+        }
+
+        if (end == null) {
+            end = start;
+        }
+
+        Calendar selectedDay =
+                (Calendar) date.clone();
+
+        Date startOfSelectedDay =
+                getStartOfDay(
+                        selectedDay
+                );
+
+        Date endOfSelectedDay =
+                getEndOfDay(
+                        selectedDay
+                );
+
+        return !end.before(
+                startOfSelectedDay
+        )
+                && !start.after(
+                endOfSelectedDay
+        );
+    }
+
+    private boolean matchesCalendarDate(
+            Event event
+    ) {
+
+        if (showAllEventDates) {
+            return true;
+        }
+
+        return eventOccursOnDate(
+                event,
+                selectedEventDate
+        );
+    }
+
+    private void updateSelectedEventDateLabel() {
+
+        if (tvSelectedEventDate == null
+                || tvViewAllEvents == null) {
+
+            return;
+        }
+
+        if (showAllEventDates) {
+
+            int count =
+                    allEvents.size();
+
+            tvSelectedEventDate.setText(
+                    count
+                            + (count == 1
+                            ? " event"
+                            : " events")
+            );
+
+            tvViewAllEvents.setText(
+                    "Today"
+            );
+
+            return;
+        }
+
+        SimpleDateFormat format =
+                new SimpleDateFormat(
+                        "EEEE, MMMM d",
+                        Locale.ENGLISH
+                );
+
+        int count =
+                countEventsOnDate(
+                        selectedEventDate
+                );
+
+        tvSelectedEventDate.setText(
+                format.format(
+                        selectedEventDate.getTime()
+                )
+                        + " · "
+                        + count
+                        + (count == 1
+                        ? " event"
+                        : " events")
+        );
+
+        tvViewAllEvents.setText(
+                "View all"
+        );
+    }
+
+    private int countEventsOnDate(
+            Calendar date
+    ) {
+
+        int count =
+                0;
+
+        for (Event event : allEvents) {
+
+            if (event != null
+                    && eventOccursOnDate(
+                    event,
+                    date
+            )) {
+
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private void showPreviousEventWeek() {
+
+        displayedWeekStart.add(
+                Calendar.DAY_OF_MONTH,
+                -7
+        );
+
+        renderEventWeek();
+    }
+
+    private void showNextEventWeek() {
+
+        displayedWeekStart.add(
+                Calendar.DAY_OF_MONTH,
+                7
+        );
+
+        renderEventWeek();
+    }
+
+    private void showEventDatePicker() {
+
+        DatePickerDialog dialog =
+                new DatePickerDialog(
+                        requireContext(),
+                        (view,
+                         year,
+                         month,
+                         dayOfMonth) -> {
+
+                            selectedEventDate.set(
+                                    Calendar.YEAR,
+                                    year
+                            );
+
+                            selectedEventDate.set(
+                                    Calendar.MONTH,
+                                    month
+                            );
+
+                            selectedEventDate.set(
+                                    Calendar.DAY_OF_MONTH,
+                                    dayOfMonth
+                            );
+
+                            normalizeCalendarDay(
+                                    selectedEventDate
+                            );
+
+                            displayedWeekStart.setTimeInMillis(
+                                    selectedEventDate.getTimeInMillis()
+                            );
+
+                            moveToMonday(
+                                    displayedWeekStart
+                            );
+
+                            showAllEventDates =
+                                    false;
+
+                            selectedDateFilter =
+                                    DateFilter.ANY;
+
+                            updateFiltersButtonText();
+
+                            renderEventWeek();
+
+                            updateSelectedEventDateLabel();
+
+                            applyFilters();
+                        },
+                        selectedEventDate.get(
+                                Calendar.YEAR
+                        ),
+                        selectedEventDate.get(
+                                Calendar.MONTH
+                        ),
+                        selectedEventDate.get(
+                                Calendar.DAY_OF_MONTH
+                        )
+                );
+
+        dialog.show();
+    }
+
+    private void toggleAllEventDates() {
+
+        if (showAllEventDates) {
+
+            Calendar today =
+                    Calendar.getInstance();
+
+            selectedEventDate.setTimeInMillis(
+                    today.getTimeInMillis()
+            );
+
+            normalizeCalendarDay(
+                    selectedEventDate
+            );
+
+            displayedWeekStart.setTimeInMillis(
+                    selectedEventDate.getTimeInMillis()
+            );
+
+            moveToMonday(
+                    displayedWeekStart
+            );
+
+            showAllEventDates =
+                    false;
+
+        } else {
+
+            showAllEventDates =
+                    true;
+        }
+
+        selectedDateFilter =
+                DateFilter.ANY;
+
+        updateFiltersButtonText();
+
+        renderEventWeek();
+
+        updateSelectedEventDateLabel();
+
+        applyFilters();
     }
 
     // =========================================================
@@ -449,33 +1292,38 @@ public class EventsFragment extends Fragment {
         );
 
         chipAll.setOnClickListener(
-                view -> selectQuickFilter(
-                        QuickFilter.ALL
-                )
+                view ->
+                        selectQuickFilter(
+                                QuickFilter.ALL
+                        )
         );
 
         chipToday.setOnClickListener(
-                view -> selectQuickFilter(
-                        QuickFilter.TODAY
-                )
+                view ->
+                        selectQuickFilter(
+                                QuickFilter.TODAY
+                        )
         );
 
         chipUpcoming.setOnClickListener(
-                view -> selectQuickFilter(
-                        QuickFilter.UPCOMING
-                )
+                view ->
+                        selectQuickFilter(
+                                QuickFilter.UPCOMING
+                        )
         );
 
         chipOngoing.setOnClickListener(
-                view -> selectQuickFilter(
-                        QuickFilter.ONGOING
-                )
+                view ->
+                        selectQuickFilter(
+                                QuickFilter.ONGOING
+                        )
         );
 
         chipPast.setOnClickListener(
-                view -> selectQuickFilter(
-                        QuickFilter.PAST
-                )
+                view ->
+                        selectQuickFilter(
+                                QuickFilter.PAST
+                        )
         );
 
         btnRetryEvents.setOnClickListener(
@@ -484,11 +1332,13 @@ public class EventsFragment extends Fragment {
         );
 
         btnEventFilters.setOnClickListener(
-                view -> showFiltersBottomSheet()
+                view ->
+                        showFiltersBottomSheet()
         );
 
         btnSortEvents.setOnClickListener(
-                view -> showSortBottomSheet()
+                view ->
+                        showSortBottomSheet()
         );
 
         fabAddEvent.setOnClickListener(
@@ -505,6 +1355,31 @@ public class EventsFragment extends Fragment {
                     );
                 }
         );
+
+        btnPreviousEventWeek.setOnClickListener(
+                view ->
+                        showPreviousEventWeek()
+        );
+
+        btnNextEventWeek.setOnClickListener(
+                view ->
+                        showNextEventWeek()
+        );
+
+        btnEventCalendarPicker.setOnClickListener(
+                view ->
+                        showEventDatePicker()
+        );
+
+        tvEventCalendarMonth.setOnClickListener(
+                view ->
+                        showEventDatePicker()
+        );
+
+        tvViewAllEvents.setOnClickListener(
+                view ->
+                        toggleAllEventDates()
+        );
     }
 
     private void selectQuickFilter(
@@ -520,7 +1395,7 @@ public class EventsFragment extends Fragment {
     }
 
     // =========================================================
-    // EVENTS
+    // EVENTS OBSERVER
     // =========================================================
 
     private void observeEvents() {
@@ -559,6 +1434,10 @@ public class EventsFragment extends Fragment {
                             state.getData()
                     );
                 }
+
+                renderEventWeek();
+
+                updateSelectedEventDateLabel();
 
                 applyFilters();
 
@@ -761,7 +1640,6 @@ public class EventsFragment extends Fragment {
                         R.id.btnApplyEventFilters
                 );
 
-        // Temporary selections.
         final String[] tempCategoryId = {
                 selectedCategoryFilterId
         };
@@ -774,10 +1652,6 @@ public class EventsFragment extends Fragment {
                 selectedDateFilter
         };
 
-        // -----------------------------------------------------
-        // CATEGORY
-        // -----------------------------------------------------
-
         List<String> categoryNames =
                 new ArrayList<>();
 
@@ -788,10 +1662,7 @@ public class EventsFragment extends Fragment {
         int currentCategoryIndex =
                 0;
 
-        for (int i = 0; i < categories.size(); i++) {
-
-            Category category =
-                    categories.get(i);
+        for (Category category : categories) {
 
             if (category == null) {
                 continue;
@@ -830,7 +1701,10 @@ public class EventsFragment extends Fragment {
         );
 
         actCategory.setOnItemClickListener(
-                (parent, view, position, id) -> {
+                (parent,
+                 view,
+                 position,
+                 id) -> {
 
                     if (position == 0) {
 
@@ -857,10 +1731,6 @@ public class EventsFragment extends Fragment {
                 }
         );
 
-        // -----------------------------------------------------
-        // INITIAL CHIP STATE
-        // -----------------------------------------------------
-
         updateImportanceFilterChips(
                 chipImportanceAll,
                 chipImportant,
@@ -875,10 +1745,6 @@ public class EventsFragment extends Fragment {
                 chipDate30,
                 tempDate[0]
         );
-
-        // -----------------------------------------------------
-        // IMPORTANCE
-        // -----------------------------------------------------
 
         chipImportanceAll.setOnClickListener(
                 view -> {
@@ -924,10 +1790,6 @@ public class EventsFragment extends Fragment {
                     );
                 }
         );
-
-        // -----------------------------------------------------
-        // DATE
-        // -----------------------------------------------------
 
         chipDateAny.setOnClickListener(
                 view -> {
@@ -993,10 +1855,6 @@ public class EventsFragment extends Fragment {
                 }
         );
 
-        // -----------------------------------------------------
-        // RESET
-        // -----------------------------------------------------
-
         btnReset.setOnClickListener(
                 view -> {
 
@@ -1031,10 +1889,6 @@ public class EventsFragment extends Fragment {
                 }
         );
 
-        // -----------------------------------------------------
-        // APPLY
-        // -----------------------------------------------------
-
         btnApply.setOnClickListener(
                 view -> {
 
@@ -1046,6 +1900,21 @@ public class EventsFragment extends Fragment {
 
                     selectedDateFilter =
                             tempDate[0];
+
+                    /*
+                     * Advanced date filter works independently
+                     * from the selected calendar day.
+                     */
+                    if (selectedDateFilter
+                            != DateFilter.ANY) {
+
+                        showAllEventDates =
+                                true;
+
+                        renderEventWeek();
+
+                        updateSelectedEventDateLabel();
+                    }
 
                     updateFiltersButtonText();
 
@@ -1071,17 +1940,20 @@ public class EventsFragment extends Fragment {
 
         setFilterChipSelected(
                 all,
-                selected == ImportanceFilter.ALL
+                selected
+                        == ImportanceFilter.ALL
         );
 
         setFilterChipSelected(
                 important,
-                selected == ImportanceFilter.IMPORTANT
+                selected
+                        == ImportanceFilter.IMPORTANT
         );
 
         setFilterChipSelected(
                 notImportant,
-                selected == ImportanceFilter.NOT_IMPORTANT
+                selected
+                        == ImportanceFilter.NOT_IMPORTANT
         );
     }
 
@@ -1095,22 +1967,26 @@ public class EventsFragment extends Fragment {
 
         setFilterChipSelected(
                 any,
-                selected == DateFilter.ANY
+                selected
+                        == DateFilter.ANY
         );
 
         setFilterChipSelected(
                 today,
-                selected == DateFilter.TODAY
+                selected
+                        == DateFilter.TODAY
         );
 
         setFilterChipSelected(
                 next7,
-                selected == DateFilter.NEXT_7_DAYS
+                selected
+                        == DateFilter.NEXT_7_DAYS
         );
 
         setFilterChipSelected(
                 next30,
-                selected == DateFilter.NEXT_30_DAYS
+                selected
+                        == DateFilter.NEXT_30_DAYS
         );
     }
 
@@ -1300,31 +2176,36 @@ public class EventsFragment extends Fragment {
     ) {
 
         soonest.setVisibility(
-                selectedSortOption == SortOption.START_SOONEST
+                selectedSortOption
+                        == SortOption.START_SOONEST
                         ? View.VISIBLE
                         : View.INVISIBLE
         );
 
         latest.setVisibility(
-                selectedSortOption == SortOption.START_LATEST
+                selectedSortOption
+                        == SortOption.START_LATEST
                         ? View.VISIBLE
                         : View.INVISIBLE
         );
 
         newest.setVisibility(
-                selectedSortOption == SortOption.NEWEST
+                selectedSortOption
+                        == SortOption.NEWEST
                         ? View.VISIBLE
                         : View.INVISIBLE
         );
 
         oldest.setVisibility(
-                selectedSortOption == SortOption.OLDEST
+                selectedSortOption
+                        == SortOption.OLDEST
                         ? View.VISIBLE
                         : View.INVISIBLE
         );
 
         title.setVisibility(
-                selectedSortOption == SortOption.TITLE_A_Z
+                selectedSortOption
+                        == SortOption.TITLE_A_Z
                         ? View.VISIBLE
                         : View.INVISIBLE
         );
@@ -1354,6 +2235,13 @@ public class EventsFragment extends Fragment {
         for (Event event : allEvents) {
 
             if (event == null) {
+                continue;
+            }
+
+            if (!matchesCalendarDate(
+                    event
+            )) {
+
                 continue;
             }
 
@@ -1423,6 +2311,8 @@ public class EventsFragment extends Fragment {
                     View.VISIBLE
             );
 
+            updateEmptyState();
+
         } else {
 
             layoutEmptyEvents.setVisibility(
@@ -1431,6 +2321,46 @@ public class EventsFragment extends Fragment {
 
             rvEvents.setVisibility(
                     View.VISIBLE
+            );
+        }
+    }
+
+    // =========================================================
+    // EMPTY STATE
+    // =========================================================
+
+    private void updateEmptyState() {
+
+        if (!showAllEventDates
+                && selectedDateFilter
+                == DateFilter.ANY) {
+
+            SimpleDateFormat format =
+                    new SimpleDateFormat(
+                            "EEEE, MMMM d",
+                            Locale.ENGLISH
+                    );
+
+            tvEmptyEventsTitle.setText(
+                    "No events for this day"
+            );
+
+            tvEmptyEventsMessage.setText(
+                    "There are no events on "
+                            + format.format(
+                            selectedEventDate.getTime()
+                    )
+                            + "."
+            );
+
+        } else {
+
+            tvEmptyEventsTitle.setText(
+                    "No matching events"
+            );
+
+            tvEmptyEventsMessage.setText(
+                    "Try changing your search or filters."
             );
         }
     }
@@ -1456,11 +2386,8 @@ public class EventsFragment extends Fragment {
                                 Locale.US
                         );
 
-        String title =
-                event.getTitle();
-
         if (containsText(
-                title,
+                event.getTitle(),
                 query
         )) {
 
@@ -1501,11 +2428,13 @@ public class EventsFragment extends Fragment {
     ) {
 
         return source != null
-                && source.toLowerCase(
-                Locale.US
-        ).contains(
-                query
-        );
+                && source
+                .toLowerCase(
+                        Locale.US
+                )
+                .contains(
+                        query
+                );
     }
 
     // =========================================================
@@ -1669,8 +2598,12 @@ public class EventsFragment extends Fragment {
                         limit
                 );
 
-        return !end.before(rangeStart)
-                && !start.after(rangeEnd);
+        return !end.before(
+                rangeStart
+        )
+                && !start.after(
+                rangeEnd
+        );
     }
 
     // =========================================================
@@ -1710,8 +2643,12 @@ public class EventsFragment extends Fragment {
                         today
                 );
 
-        return !end.before(startOfToday)
-                && !start.after(endOfToday);
+        return !end.before(
+                startOfToday
+        )
+                && !start.after(
+                endOfToday
+        );
     }
 
     private boolean isUpcoming(
@@ -1752,8 +2689,12 @@ public class EventsFragment extends Fragment {
         Date now =
                 new Date();
 
-        return !now.before(start)
-                && !now.after(end);
+        return !now.before(
+                start
+        )
+                && !now.after(
+                end
+        );
     }
 
     private boolean isPast(
@@ -1825,7 +2766,8 @@ public class EventsFragment extends Fragment {
                                 event ->
                                         event.getTitle() == null
                                                 ? ""
-                                                : event.getTitle()
+                                                : event
+                                                .getTitle()
                                                 .trim()
                                                 .toLowerCase(
                                                         Locale.US
@@ -2118,6 +3060,23 @@ public class EventsFragment extends Fragment {
     // DATE HELPERS
     // =========================================================
 
+    private boolean isSameDay(
+            Calendar first,
+            Calendar second
+    ) {
+
+        return first.get(
+                Calendar.YEAR
+        ) == second.get(
+                Calendar.YEAR
+        )
+                && first.get(
+                Calendar.DAY_OF_YEAR
+        ) == second.get(
+                Calendar.DAY_OF_YEAR
+        );
+    }
+
     private Date getStartOfDay(
             Calendar source
     ) {
@@ -2204,6 +3163,10 @@ public class EventsFragment extends Fragment {
                                 Locale.US
                         );
 
+                parser.setLenient(
+                        false
+                );
+
                 return parser.parse(
                         value
                 );
@@ -2213,5 +3176,21 @@ public class EventsFragment extends Fragment {
         }
 
         return null;
+    }
+
+    // =========================================================
+    // DP
+    // =========================================================
+
+    private int dpToPxInt(
+            int dp
+    ) {
+
+        return Math.round(
+                dp
+                        * getResources()
+                        .getDisplayMetrics()
+                        .density
+        );
     }
 }
