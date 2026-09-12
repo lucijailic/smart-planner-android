@@ -26,6 +26,8 @@ import com.smartplanner.app.models.UiState;
 import com.smartplanner.app.models.enums.ReminderType;
 import com.smartplanner.app.models.enums.TaskPriority;
 import com.smartplanner.app.models.enums.TaskStatus;
+import com.smartplanner.app.notifications.NotificationSettingsManager;
+import com.smartplanner.app.notifications.TaskReminderManager;
 import com.smartplanner.app.viewmodels.CategoriesViewModel;
 import com.smartplanner.app.viewmodels.TasksViewModel;
 
@@ -95,6 +97,20 @@ public class AddEditTaskActivity extends AppCompatActivity {
     private ReminderType selectedReminderType =
             ReminderType.NONE;
 
+    /*
+     * Default reminder dohvaćen iz Notification Settingsa.
+     * Koristi se samo za novi Task.
+     */
+    private ReminderType defaultTaskReminderType =
+            ReminderType.ONE_DAY;
+
+    /*
+     * Pratimo je li korisnik ručno promijenio reminder.
+     * Time sprječavamo da default prepiše korisnikov izbor.
+     */
+    private boolean reminderManuallySelected =
+            false;
+
     private Integer selectedEstimatedDuration =
             null;
 
@@ -124,7 +140,9 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         && !taskId.trim().isEmpty();
 
         initViews();
+
         setupViewModels();
+
         setupMode();
 
         setupGeneralListeners();
@@ -132,6 +150,9 @@ public class AddEditTaskActivity extends AppCompatActivity {
         setupPriorityListener();
         setupDurationDropdown();
         setupReminderDropdown();
+
+        setupDefaultReminder();
+
         setupDeadlinePicker();
 
         updatePriorityAppearance();
@@ -310,6 +331,29 @@ public class AddEditTaskActivity extends AppCompatActivity {
     }
 
     // =========================================================
+    // DEFAULT REMINDER
+    // =========================================================
+
+    private void setupDefaultReminder() {
+
+        if (editMode) {
+            return;
+        }
+
+        defaultTaskReminderType =
+                NotificationSettingsManager
+                        .getDefaultTaskReminder(
+                                this
+                        );
+
+        if (defaultTaskReminderType == null) {
+
+            defaultTaskReminderType =
+                    ReminderType.NONE;
+        }
+    }
+
+    // =========================================================
     // GENERAL LISTENERS
     // =========================================================
 
@@ -328,12 +372,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 view -> attemptSaveTask()
         );
 
-        /*
-         * CLEAR DEADLINE
-         *
-         * Ovo je pravi button listener.
-         * Ne koristimo end icon kao Clear.
-         */
         btnClearTaskDeadline.setOnClickListener(
                 view -> clearDeadline()
         );
@@ -421,9 +459,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
             return R.drawable.ic_task_category_default;
         }
 
-        /*
-         * 1. Prvo pokušavamo koristiti spremljeni icon.
-         */
         String icon =
                 category.getIcon();
 
@@ -455,10 +490,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
             }
         }
 
-        /*
-         * 2. Ako icon nije spremljen ili ima staru vrijednost,
-         * koristimo naziv kategorije kao fallback.
-         */
         String name =
                 category.getName();
 
@@ -869,6 +900,9 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         return;
                     }
 
+                    reminderManuallySelected =
+                            true;
+
                     switch (position) {
 
                         case 1:
@@ -949,9 +983,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 view -> showDatePicker()
         );
 
-        /*
-         * Calendar icon također otvara DatePicker.
-         */
         tilTaskDeadline.setEndIconOnClickListener(
                 view -> showDatePicker()
         );
@@ -1081,15 +1112,21 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
     private void clearDeadline() {
 
-        /*
-         * Ovo je cijela logika Clear akcije.
-         */
-
         selectedDeadline =
                 null;
 
         selectedReminderType =
                 ReminderType.NONE;
+
+        /*
+         * Ako korisnik ponovno doda deadline,
+         * default reminder se ponovno može primijeniti.
+         */
+        if (!editMode) {
+
+            reminderManuallySelected =
+                    false;
+        }
 
         etTaskDeadline.setText(
                 ""
@@ -1131,12 +1168,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
         );
     }
 
-    /*
-     * OVO JE KLJUČNI POPRAVAK.
-     *
-     * Prije smo button tijekom loadinga disableali,
-     * ali ga nakon loadinga nismo ponovno enableali.
-     */
     private void updateDeadlineClearButton() {
 
         boolean hasDeadline =
@@ -1169,6 +1200,21 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 selectedDeadline != null;
 
         if (hasDeadline) {
+
+            /*
+             * Za novi Task primjenjujemo default reminder
+             * samo dok korisnik nije ručno odabrao drugi.
+             */
+            if (!editMode
+                    && !reminderManuallySelected) {
+
+                selectedReminderType =
+                        defaultTaskReminderType != null
+                                ? defaultTaskReminderType
+                                : ReminderType.NONE;
+
+                populateReminder();
+            }
 
             tilTaskReminder.setEnabled(
                     true
@@ -1415,10 +1461,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         true
                 );
 
-                /*
-                 * Nakon što forma ponovno postane enabled,
-                 * ponovno postavljamo state Clear gumba.
-                 */
                 updateDeadlineClearButton();
 
                 updateReminderAvailability();
@@ -1712,11 +1754,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         false
                 );
 
-                /*
-                 * Važno:
-                 * ikona se postavlja i kod inicijalnog
-                 * učitavanja Edit Taska.
-                 */
                 updateCategoryIcon(
                         category
                 );
@@ -1901,6 +1938,17 @@ public class AddEditTaskActivity extends AppCompatActivity {
                         false
                 );
 
+                Task savedTask =
+                        state.getData();
+
+                if (savedTask != null) {
+
+                    TaskReminderManager.updateTaskReminder(
+                            this,
+                            savedTask
+                    );
+                }
+
                 Toast.makeText(
                         this,
                         editMode
@@ -2025,10 +2073,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
                 enabled
         );
 
-        /*
-         * Ako forma nije enabled,
-         * privremeno disableamo Clear.
-         */
         if (!enabled) {
 
             btnClearTaskDeadline.setEnabled(
@@ -2049,11 +2093,6 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
         } else {
 
-            /*
-             * KLJUČNO:
-             * nakon ponovnog enableanja forme
-             * vraćamo stvarni Clear state.
-             */
             updateDeadlineClearButton();
 
             updateReminderAvailability();

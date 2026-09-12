@@ -36,6 +36,7 @@ import com.smartplanner.app.models.enums.ReminderType;
 import com.smartplanner.app.models.enums.TaskStatus;
 import com.smartplanner.app.viewmodels.CategoriesViewModel;
 import com.smartplanner.app.viewmodels.TasksViewModel;
+import com.smartplanner.app.notifications.TaskReminderManager;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -525,18 +526,27 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case LOADING:
 
-                setActionButtonsEnabled(false);
+                setActionButtonsEnabled(
+                        false
+                );
 
                 break;
 
             case SUCCESS:
 
-                setActionButtonsEnabled(true);
+                setActionButtonsEnabled(
+                        true
+                );
 
                 currentTask =
                         state.getData();
 
                 if (currentTask != null) {
+
+                    TaskReminderManager.updateTaskReminder(
+                            this,
+                            currentTask
+                    );
 
                     showTask(
                             currentTask
@@ -553,7 +563,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case ERROR:
 
-                setActionButtonsEnabled(true);
+                setActionButtonsEnabled(
+                        true
+                );
 
                 String message =
                         state.getMessage();
@@ -587,11 +599,18 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case LOADING:
 
-                setActionButtonsEnabled(false);
+                setActionButtonsEnabled(
+                        false
+                );
 
                 break;
 
             case SUCCESS:
+
+                TaskReminderManager.cancelTaskReminder(
+                        this,
+                        taskId
+                );
 
                 Toast.makeText(
                         this,
@@ -609,7 +628,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
             case ERROR:
 
-                setActionButtonsEnabled(true);
+                setActionButtonsEnabled(
+                        true
+                );
 
                 String message =
                         state.getMessage();

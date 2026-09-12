@@ -25,6 +25,7 @@ import com.smartplanner.app.models.Category;
 import com.smartplanner.app.models.Event;
 import com.smartplanner.app.models.UiState;
 import com.smartplanner.app.models.enums.ReminderType;
+import com.smartplanner.app.notifications.EventReminderManager;
 import com.smartplanner.app.viewmodels.CategoriesViewModel;
 import com.smartplanner.app.viewmodels.EventsViewModel;
 
@@ -38,7 +39,8 @@ import java.util.Map;
 
 public class EventDetailsActivity extends AppCompatActivity {
 
-    public static final String EXTRA_EVENT_ID = "event_id";
+    public static final String EXTRA_EVENT_ID =
+            "event_id";
 
     // =========================================================
     // VIEW MODELS
@@ -94,9 +96,13 @@ public class EventDetailsActivity extends AppCompatActivity {
     // =========================================================
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(
+            Bundle savedInstanceState
+    ) {
 
-        super.onCreate(savedInstanceState);
+        super.onCreate(
+                savedInstanceState
+        );
 
         setContentView(
                 R.layout.activity_event_details
@@ -519,6 +525,18 @@ public class EventDetailsActivity extends AppCompatActivity {
                                     break;
 
                                 case SUCCESS:
+
+                                    /*
+                                     * Event je uspješno obrisan iz baze.
+                                     *
+                                     * Tek sada uklanjamo njegov Android
+                                     * reminder kako ne bismo izgubili alarm
+                                     * ako Supabase delete ne uspije.
+                                     */
+                                    EventReminderManager.cancelEventReminder(
+                                            this,
+                                            eventId
+                                    );
 
                                     Toast.makeText(
                                             this,

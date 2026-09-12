@@ -6,6 +6,7 @@ import com.smartplanner.app.api.ApiClient;
 import com.smartplanner.app.api.NotificationPreferencesApi;
 import com.smartplanner.app.models.NotificationPreferences;
 import com.smartplanner.app.models.NotificationPreferencesRequest;
+import com.smartplanner.app.notifications.NotificationSettingsManager;
 import com.smartplanner.app.storage.SessionManager;
 
 import java.util.List;
@@ -22,19 +23,26 @@ public class NotificationPreferencesRepository {
     private final NotificationPreferencesApi notificationPreferencesApi;
     private final SessionManager sessionManager;
 
+    private final Context appContext;
+
     public NotificationPreferencesRepository(
             Context context
     ) {
 
+        appContext =
+                context.getApplicationContext();
+
         notificationPreferencesApi =
                 ApiClient
-                        .getClient(context)
+                        .getClient(appContext)
                         .create(
                                 NotificationPreferencesApi.class
                         );
 
         sessionManager =
-                SessionManager.getInstance(context);
+                SessionManager.getInstance(
+                        appContext
+                );
     }
 
     public interface NotificationPreferencesCallback<T> {
@@ -44,6 +52,10 @@ public class NotificationPreferencesRepository {
         void onError(String message);
     }
 
+    // =========================================================
+    // GET CURRENT PREFERENCES
+    // =========================================================
+
     public void getCurrentPreferences(
             NotificationPreferencesCallback<NotificationPreferences> callback
     ) {
@@ -52,7 +64,7 @@ public class NotificationPreferencesRepository {
                 sessionManager.getUserId();
 
         if (userId == null
-                || userId.isEmpty()) {
+                || userId.trim().isEmpty()) {
 
             callback.onError(
                     "No active user session."
@@ -98,8 +110,17 @@ public class NotificationPreferencesRepository {
                                     return;
                                 }
 
+                                NotificationPreferences result =
+                                        preferences.get(0);
+
+
+                                NotificationSettingsManager.savePreferences(
+                                        appContext,
+                                        result
+                                );
+
                                 callback.onSuccess(
-                                        preferences.get(0)
+                                        result
                                 );
                             }
 
@@ -117,6 +138,10 @@ public class NotificationPreferencesRepository {
                 );
     }
 
+    // =========================================================
+    // UPDATE PREFERENCES
+    // =========================================================
+
     public void updatePreferences(
             boolean notificationsEnabled,
             String defaultTaskReminder,
@@ -128,7 +153,7 @@ public class NotificationPreferencesRepository {
                 sessionManager.getUserId();
 
         if (userId == null
-                || userId.isEmpty()) {
+                || userId.trim().isEmpty()) {
 
             callback.onError(
                     "No active user session."
@@ -181,8 +206,17 @@ public class NotificationPreferencesRepository {
                                     return;
                                 }
 
+                                NotificationPreferences result =
+                                        preferences.get(0);
+
+
+                                NotificationSettingsManager.savePreferences(
+                                        appContext,
+                                        result
+                                );
+
                                 callback.onSuccess(
-                                        preferences.get(0)
+                                        result
                                 );
                             }
 
