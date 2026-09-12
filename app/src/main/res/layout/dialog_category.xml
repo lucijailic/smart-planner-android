@@ -59,11 +59,9 @@
             android:layout_width="match_parent"
             android:layout_height="62dp"
             android:gravity="center_vertical"
-            android:hint="@string/category_name_example"
             android:inputType="textCapWords"
             android:maxLines="1"
             android:textColor="@color/sp_text_primary"
-            android:textColorHint="@color/sp_text_hint"
             android:textSize="15sp" />
 
     </com.google.android.material.textfield.TextInputLayout>
