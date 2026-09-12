@@ -115,6 +115,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.smartplan.PlanningPreferencesActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false" />
 
