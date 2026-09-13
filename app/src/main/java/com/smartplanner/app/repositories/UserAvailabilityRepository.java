@@ -29,6 +29,13 @@ public class UserAvailabilityRepository {
 
     private final SessionManager sessionManager;
 
+    private final SmartPlanInvalidationRepository
+            smartPlanInvalidationRepository;
+
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
 
     public UserAvailabilityRepository(
             Context context
@@ -50,8 +57,18 @@ public class UserAvailabilityRepository {
                 SessionManager.getInstance(
                         appContext
                 );
+
+
+        smartPlanInvalidationRepository =
+                new SmartPlanInvalidationRepository(
+                        appContext
+                );
     }
 
+
+    // =========================================================
+    // CALLBACK
+    // =========================================================
 
     public interface UserAvailabilityCallback<T> {
 
@@ -150,6 +167,10 @@ public class UserAvailabilityRepository {
     //
     // Missing rows -> INSERT
     // Existing rows -> UPDATE
+    //
+    // Availability directly defines when Smart Plan sessions
+    // are allowed to exist. After a successful save, an
+    // existing Smart Plan therefore becomes NEEDS_UPDATE.
     // =========================================================
 
     public void saveAvailability(
@@ -312,8 +333,19 @@ public class UserAvailabilityRepository {
                                 }
 
 
-                                callback.onSuccess(
-                                        availability
+                                /*
+                                 * Availability save already
+                                 * succeeded.
+                                 *
+                                 * Smart Plan invalidation is a
+                                 * secondary operation and must not
+                                 * turn this successful save into an
+                                 * Availability error.
+                                 */
+                                invalidateSmartPlanAfterAvailabilityChange(
+                                        () -> callback.onSuccess(
+                                                availability
+                                        )
                                 );
                             }
 
@@ -327,6 +359,52 @@ public class UserAvailabilityRepository {
                                 callback.onError(
                                         "Unable to connect. Please try again."
                                 );
+                            }
+                        }
+                );
+    }
+
+
+    // =========================================================
+    // SMART PLAN INVALIDATION
+    // =========================================================
+
+    private void invalidateSmartPlanAfterAvailabilityChange(
+            Runnable onFinished
+    ) {
+
+        smartPlanInvalidationRepository
+                .markCurrentPlanNeedsUpdate(
+                        new SmartPlanInvalidationRepository
+                                .InvalidationCallback() {
+
+                            @Override
+                            public void onComplete() {
+
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
+                            }
+
+
+                            @Override
+                            public void onError(
+                                    String message
+                            ) {
+
+                                /*
+                                 * Availability was already saved.
+                                 *
+                                 * Do not report that successful
+                                 * operation as failed only because
+                                 * secondary Smart Plan invalidation
+                                 * failed.
+                                 */
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
                             }
                         }
                 );
@@ -390,7 +468,6 @@ public class UserAvailabilityRepository {
 
         String value =
                 time.trim();
-
 
 
         if (value.length() >= 5) {

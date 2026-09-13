@@ -19,9 +19,18 @@ public class PlanningPreferencesRepository {
     private static final String PREFERENCES_SELECT =
             "user_id,max_daily_minutes,preferred_session_minutes,break_minutes,created_at,updated_at";
 
+
     private final PlanningPreferencesApi planningPreferencesApi;
+
     private final SessionManager sessionManager;
 
+    private final SmartPlanInvalidationRepository
+            smartPlanInvalidationRepository;
+
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
 
     public PlanningPreferencesRepository(
             Context context
@@ -30,6 +39,7 @@ public class PlanningPreferencesRepository {
         Context appContext =
                 context.getApplicationContext();
 
+
         planningPreferencesApi =
                 ApiClient
                         .getClient(appContext)
@@ -37,12 +47,23 @@ public class PlanningPreferencesRepository {
                                 PlanningPreferencesApi.class
                         );
 
+
         sessionManager =
                 SessionManager.getInstance(
                         appContext
                 );
+
+
+        smartPlanInvalidationRepository =
+                new SmartPlanInvalidationRepository(
+                        appContext
+                );
     }
 
+
+    // =========================================================
+    // CALLBACK
+    // =========================================================
 
     public interface PlanningPreferencesCallback<T> {
 
@@ -65,6 +86,7 @@ public class PlanningPreferencesRepository {
 
         String userId =
                 sessionManager.getUserId();
+
 
         if (userId == null
                 || userId.trim().isEmpty()) {
@@ -108,12 +130,13 @@ public class PlanningPreferencesRepository {
 
                                 /*
                                  * Unlike NotificationPreferences,
-                                 * PlanningPreferences are not created
-                                 * automatically during registration.
+                                 * PlanningPreferences are not
+                                 * created automatically during
+                                 * registration.
                                  *
-                                 * An empty result therefore means that
-                                 * the user has not completed Smart Plan
-                                 * setup yet.
+                                 * Empty result therefore means
+                                 * Smart Plan setup has not been
+                                 * completed yet.
                                  */
                                 if (preferences == null
                                         || preferences.isEmpty()) {
@@ -151,6 +174,11 @@ public class PlanningPreferencesRepository {
     // CREATE PREFERENCES
     //
     // Used during first Smart Plan setup.
+    //
+    // Usually there is no current Smart Plan at this point.
+    // Calling invalidation is still safe because the
+    // invalidation repository treats "no current plan" as a
+    // successful no-op.
     // =========================================================
 
     public void createPreferences(
@@ -162,6 +190,7 @@ public class PlanningPreferencesRepository {
 
         String userId =
                 sessionManager.getUserId();
+
 
         if (userId == null
                 || userId.trim().isEmpty()) {
@@ -222,8 +251,14 @@ public class PlanningPreferencesRepository {
                                 }
 
 
-                                callback.onSuccess(
-                                        preferences.get(0)
+                                PlanningPreferences createdPreferences =
+                                        preferences.get(0);
+
+
+                                invalidateSmartPlanAfterPreferencesChange(
+                                        () -> callback.onSuccess(
+                                                createdPreferences
+                                        )
                                 );
                             }
 
@@ -245,6 +280,15 @@ public class PlanningPreferencesRepository {
 
     // =========================================================
     // UPDATE PREFERENCES
+    //
+    // All three fields directly affect Smart Plan generation:
+    //
+    // max_daily_minutes
+    // preferred_session_minutes
+    // break_minutes
+    //
+    // Therefore an existing plan becomes NEEDS_UPDATE after a
+    // successful update.
     // =========================================================
 
     public void updatePreferences(
@@ -256,6 +300,7 @@ public class PlanningPreferencesRepository {
 
         String userId =
                 sessionManager.getUserId();
+
 
         if (userId == null
                 || userId.trim().isEmpty()) {
@@ -317,8 +362,14 @@ public class PlanningPreferencesRepository {
                                 }
 
 
-                                callback.onSuccess(
-                                        preferences.get(0)
+                                PlanningPreferences updatedPreferences =
+                                        preferences.get(0);
+
+
+                                invalidateSmartPlanAfterPreferencesChange(
+                                        () -> callback.onSuccess(
+                                                updatedPreferences
+                                        )
                                 );
                             }
 
@@ -332,6 +383,57 @@ public class PlanningPreferencesRepository {
                                 callback.onError(
                                         "Unable to connect. Please try again."
                                 );
+                            }
+                        }
+                );
+    }
+
+
+    // =========================================================
+    // SMART PLAN INVALIDATION
+    //
+    // Preferences operation has already succeeded when this
+    // helper runs.
+    //
+    // A secondary invalidation failure therefore must not turn
+    // a successful Preferences operation into an error.
+    // =========================================================
+
+    private void invalidateSmartPlanAfterPreferencesChange(
+            Runnable onFinished
+    ) {
+
+        smartPlanInvalidationRepository
+                .markCurrentPlanNeedsUpdate(
+                        new SmartPlanInvalidationRepository
+                                .InvalidationCallback() {
+
+                            @Override
+                            public void onComplete() {
+
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
+                            }
+
+
+                            @Override
+                            public void onError(
+                                    String message
+                            ) {
+
+                                /*
+                                 * Preferences were already saved.
+                                 *
+                                 * Preserve the successful result
+                                 * even if Smart Plan invalidation
+                                 * itself failed.
+                                 */
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
                             }
                         }
                 );
