@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -37,6 +38,14 @@ public class EventRepository {
     private final EventApi eventApi;
     private final SessionManager sessionManager;
 
+    private final SmartPlanInvalidationRepository
+            smartPlanInvalidationRepository;
+
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
+
     public EventRepository(
             Context context
     ) {
@@ -48,7 +57,17 @@ public class EventRepository {
 
         sessionManager =
                 SessionManager.getInstance(context);
+
+        smartPlanInvalidationRepository =
+                new SmartPlanInvalidationRepository(
+                        context.getApplicationContext()
+                );
     }
+
+
+    // =========================================================
+    // CALLBACK
+    // =========================================================
 
     public interface EventCallback<T> {
 
@@ -56,6 +75,7 @@ public class EventRepository {
 
         void onError(String message);
     }
+
 
     // =========================================================
     // GET EVENTS
@@ -132,6 +152,7 @@ public class EventRepository {
                 );
     }
 
+
     // =========================================================
     // GET SINGLE EVENT
     // =========================================================
@@ -204,6 +225,7 @@ public class EventRepository {
                         }
                 );
     }
+
 
     // =========================================================
     // CREATE EVENT
@@ -303,8 +325,18 @@ public class EventRepository {
                                     return;
                                 }
 
-                                callback.onSuccess(
-                                        events.get(0)
+                                Event createdEvent =
+                                        events.get(0);
+
+                                /*
+                                 * A new Event creates a new busy
+                                 * interval that may affect an
+                                 * existing Smart Plan.
+                                 */
+                                invalidateSmartPlanAfterEventChange(
+                                        () -> callback.onSuccess(
+                                                createdEvent
+                                        )
                                 );
                             }
 
@@ -322,8 +354,14 @@ public class EventRepository {
                 );
     }
 
+
     // =========================================================
     // UPDATE EVENT
+    //
+    // Only start_at / end_at are scheduling-relevant.
+    //
+    // Changing title, description, category, location,
+    // important or reminder does NOT invalidate Smart Plan.
     // =========================================================
 
     public void updateEvent(
@@ -370,8 +408,91 @@ public class EventRepository {
                         ? reminderType
                         : ReminderType.NONE;
 
+
+        /*
+         * Load the previous Event only so we can compare
+         * start_at and end_at after the successful PATCH.
+         *
+         * If this additional read fails, the original Event
+         * update is still allowed to continue.
+         */
+        getEvent(
+                eventId,
+                new EventCallback<Event>() {
+
+                    @Override
+                    public void onSuccess(
+                            Event originalEvent
+                    ) {
+
+                        performEventUpdate(
+                                eventId,
+                                categoryId,
+                                title,
+                                description,
+                                startAt,
+                                endAt,
+                                location,
+                                important,
+                                safeReminderType,
+                                originalEvent,
+                                callback
+                        );
+                    }
+
+
+                    @Override
+                    public void onError(
+                            String message
+                    ) {
+
+                        /*
+                         * Do not block existing Event update
+                         * behavior only because this comparison
+                         * read failed.
+                         */
+                        performEventUpdate(
+                                eventId,
+                                categoryId,
+                                title,
+                                description,
+                                startAt,
+                                endAt,
+                                location,
+                                important,
+                                safeReminderType,
+                                null,
+                                callback
+                        );
+                    }
+                }
+        );
+    }
+
+
+    // =========================================================
+    // PERFORM EVENT UPDATE
+    //
+    // Existing PATCH logic is kept unchanged here.
+    // =========================================================
+
+    private void performEventUpdate(
+            String eventId,
+            String categoryId,
+            String title,
+            String description,
+            String startAt,
+            String endAt,
+            String location,
+            boolean important,
+            ReminderType safeReminderType,
+            Event originalEvent,
+            EventCallback<Event> callback
+    ) {
+
         JsonObject request =
                 new JsonObject();
+
 
         // -----------------------------------------------------
         // CATEGORY
@@ -393,6 +514,7 @@ public class EventRepository {
             );
         }
 
+
         // -----------------------------------------------------
         // TITLE
         // -----------------------------------------------------
@@ -401,6 +523,7 @@ public class EventRepository {
                 "title",
                 title.trim()
         );
+
 
         // -----------------------------------------------------
         // DESCRIPTION
@@ -422,6 +545,7 @@ public class EventRepository {
             );
         }
 
+
         // -----------------------------------------------------
         // START
         // -----------------------------------------------------
@@ -431,6 +555,7 @@ public class EventRepository {
                 startAt.trim()
         );
 
+
         // -----------------------------------------------------
         // END
         // -----------------------------------------------------
@@ -439,6 +564,7 @@ public class EventRepository {
                 "end_at",
                 endAt.trim()
         );
+
 
         // -----------------------------------------------------
         // LOCATION
@@ -460,6 +586,7 @@ public class EventRepository {
             );
         }
 
+
         // -----------------------------------------------------
         // IMPORTANT
         // -----------------------------------------------------
@@ -468,6 +595,7 @@ public class EventRepository {
                 "is_important",
                 important
         );
+
 
         // -----------------------------------------------------
         // REMINDER
@@ -478,10 +606,12 @@ public class EventRepository {
                 safeReminderType.name()
         );
 
+
         RequestBody requestBody =
                 createJsonRequestBody(
                         request
                 );
+
 
         eventApi.updateEvent(
                         "eq." + eventId,
@@ -519,10 +649,64 @@ public class EventRepository {
                                     return;
                                 }
 
-                                callback.onSuccess(
-                                        events.get(0)
+
+                                Event updatedEvent =
+                                        events.get(0);
+
+
+                                /*
+                                 * If we successfully loaded the
+                                 * original Event, compare only
+                                 * scheduling-relevant fields.
+                                 */
+                                if (originalEvent != null) {
+
+                                    boolean schedulingChanged =
+                                            hasSchedulingRelevantEventChange(
+                                                    originalEvent,
+                                                    updatedEvent
+                                            );
+
+
+                                    if (schedulingChanged) {
+
+                                        invalidateSmartPlanAfterEventChange(
+                                                () -> callback.onSuccess(
+                                                        updatedEvent
+                                                )
+                                        );
+
+                                    } else {
+
+                                        /*
+                                         * Only non-scheduling
+                                         * fields changed.
+                                         */
+                                        callback.onSuccess(
+                                                updatedEvent
+                                        );
+                                    }
+
+                                    return;
+                                }
+
+
+                                /*
+                                 * Event PATCH succeeded, but the
+                                 * pre-update read was unavailable.
+                                 *
+                                 * In that rare case we invalidate
+                                 * conservatively so an existing
+                                 * plan cannot silently remain
+                                 * outdated.
+                                 */
+                                invalidateSmartPlanAfterEventChange(
+                                        () -> callback.onSuccess(
+                                                updatedEvent
+                                        )
                                 );
                             }
+
 
                             @Override
                             public void onFailure(
@@ -538,8 +722,13 @@ public class EventRepository {
                 );
     }
 
+
     // =========================================================
     // UPDATE IMPORTANT
+    //
+    // Event importance does not affect Smart Plan scheduling.
+    //
+    // Therefore this method remains functionally unchanged.
     // =========================================================
 
     public void updateImportant(
@@ -626,6 +815,7 @@ public class EventRepository {
                 );
     }
 
+
     // =========================================================
     // DELETE EVENT
     // =========================================================
@@ -659,8 +849,18 @@ public class EventRepository {
 
                                 if (response.isSuccessful()) {
 
-                                    callback.onSuccess(
-                                            null
+                                    /*
+                                     * Event was successfully
+                                     * removed.
+                                     *
+                                     * The busy-time structure has
+                                     * changed, therefore existing
+                                     * Smart Plan may be outdated.
+                                     */
+                                    invalidateSmartPlanAfterEventChange(
+                                            () -> callback.onSuccess(
+                                                    null
+                                            )
                                     );
 
                                 } else {
@@ -684,6 +884,127 @@ public class EventRepository {
                         }
                 );
     }
+
+
+    // =========================================================
+    // CHECK WHETHER EVENT UPDATE AFFECTS SCHEDULING
+    // =========================================================
+
+    private boolean hasSchedulingRelevantEventChange(
+            Event oldEvent,
+            Event newEvent
+    ) {
+
+        if (oldEvent == null
+                || newEvent == null) {
+
+            return true;
+        }
+
+
+        // -----------------------------------------------------
+        // START
+        // -----------------------------------------------------
+
+        String oldStart =
+                normalizeNullableString(
+                        oldEvent.getStartAt()
+                );
+
+        String newStart =
+                normalizeNullableString(
+                        newEvent.getStartAt()
+                );
+
+
+        if (!Objects.equals(
+                oldStart,
+                newStart
+        )) {
+
+            return true;
+        }
+
+
+        // -----------------------------------------------------
+        // END
+        // -----------------------------------------------------
+
+        String oldEnd =
+                normalizeNullableString(
+                        oldEvent.getEndAt()
+                );
+
+        String newEnd =
+                normalizeNullableString(
+                        newEvent.getEndAt()
+                );
+
+
+        if (!Objects.equals(
+                oldEnd,
+                newEnd
+        )) {
+
+            return true;
+        }
+
+
+        return false;
+    }
+
+
+    // =========================================================
+    // SMART PLAN INVALIDATION
+    //
+    // Invalidation is secondary.
+    //
+    // Event CRUD has already succeeded when this method runs,
+    // therefore an invalidation problem must not falsely turn
+    // the Event operation into an Event error.
+    // =========================================================
+
+    private void invalidateSmartPlanAfterEventChange(
+            Runnable onFinished
+    ) {
+
+        smartPlanInvalidationRepository
+                .markCurrentPlanNeedsUpdate(
+                        new SmartPlanInvalidationRepository
+                                .InvalidationCallback() {
+
+                            @Override
+                            public void onComplete() {
+
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
+                            }
+
+
+                            @Override
+                            public void onError(
+                                    String message
+                            ) {
+
+                                /*
+                                 * Event operation already
+                                 * succeeded.
+                                 *
+                                 * Preserve that result even if
+                                 * secondary Smart Plan
+                                 * invalidation fails.
+                                 */
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
+                            }
+                        }
+                );
+    }
+
 
     // =========================================================
     // VALIDATION
@@ -742,6 +1063,7 @@ public class EventRepository {
         return null;
     }
 
+
     // =========================================================
     // HELPERS
     // =========================================================
@@ -759,6 +1081,7 @@ public class EventRepository {
         return value.trim();
     }
 
+
     private RequestBody createJsonRequestBody(
             JsonObject jsonObject
     ) {
@@ -768,6 +1091,7 @@ public class EventRepository {
                 JSON_MEDIA_TYPE
         );
     }
+
 
     private Date parseSupabaseDate(
             String value

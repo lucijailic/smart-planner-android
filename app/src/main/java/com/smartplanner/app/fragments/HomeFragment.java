@@ -30,6 +30,7 @@ import com.smartplanner.app.models.enums.TaskPriority;
 import com.smartplanner.app.models.enums.TaskStatus;
 import com.smartplanner.app.viewmodels.EventsViewModel;
 import com.smartplanner.app.viewmodels.TasksViewModel;
+import com.smartplanner.app.activities.smartplan.SmartPlanActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -127,6 +128,12 @@ public class HomeFragment extends Fragment {
     private EventsViewModel eventsViewModel;
 
     // =========================================================
+// UI - SMART PLAN
+// =========================================================
+
+    private MaterialCardView cardSmartPlanHome;
+
+    // =========================================================
     // CONSTRUCTOR
     // =========================================================
 
@@ -185,6 +192,13 @@ public class HomeFragment extends Fragment {
 
         tvOverdueCount =
                 view.findViewById(R.id.tvOverdueCount);
+
+        // SMART PLAN
+
+        cardSmartPlanHome =
+                view.findViewById(
+                        R.id.cardSmartPlanHome
+                );
 
         // TODAY'S TASKS
 
@@ -289,6 +303,10 @@ public class HomeFragment extends Fragment {
 
         btnQuickAddEvent.setOnClickListener(
                 v -> openAddEvent()
+        );
+
+        cardSmartPlanHome.setOnClickListener(
+                v -> openSmartPlan()
         );
     }
 
@@ -471,6 +489,17 @@ public class HomeFragment extends Fragment {
                 new Intent(
                         requireContext(),
                         AddEditEventActivity.class
+                );
+
+        startActivity(intent);
+    }
+
+    private void openSmartPlan() {
+
+        Intent intent =
+                new Intent(
+                        requireContext(),
+                        SmartPlanActivity.class
                 );
 
         startActivity(intent);

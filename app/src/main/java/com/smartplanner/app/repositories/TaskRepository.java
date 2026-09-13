@@ -18,6 +18,7 @@ import com.smartplanner.app.models.enums.TaskStatus;
 import com.smartplanner.app.storage.SessionManager;
 
 import java.util.List;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -43,6 +44,14 @@ public class TaskRepository {
     private final TaskApi taskApi;
     private final SessionManager sessionManager;
 
+    private final SmartPlanInvalidationRepository
+            smartPlanInvalidationRepository;
+
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
+
     public TaskRepository(
             Context context
     ) {
@@ -54,7 +63,17 @@ public class TaskRepository {
 
         sessionManager =
                 SessionManager.getInstance(context);
+
+        smartPlanInvalidationRepository =
+                new SmartPlanInvalidationRepository(
+                        context.getApplicationContext()
+                );
     }
+
+
+    // =========================================================
+    // CALLBACK
+    // =========================================================
 
     public interface TaskCallback<T> {
 
@@ -62,6 +81,7 @@ public class TaskRepository {
 
         void onError(String message);
     }
+
 
     // =========================================================
     // TASKS
@@ -138,6 +158,11 @@ public class TaskRepository {
                 );
     }
 
+
+    // =========================================================
+    // GET SINGLE TASK
+    // =========================================================
+
     public void getTask(
             String taskId,
             TaskCallback<Task> callback
@@ -206,6 +231,11 @@ public class TaskRepository {
                         }
                 );
     }
+
+
+    // =========================================================
+    // CREATE TASK
+    // =========================================================
 
     public void createTask(
             String categoryId,
@@ -322,8 +352,18 @@ public class TaskRepository {
                                     return;
                                 }
 
-                                callback.onSuccess(
-                                        tasks.get(0)
+                                Task createdTask =
+                                        tasks.get(0);
+
+                                /*
+                                 * New Task is created as TO_DO,
+                                 * therefore it is eligible for
+                                 * Smart Plan scheduling.
+                                 */
+                                invalidateSmartPlanAfterTaskChange(
+                                        () -> callback.onSuccess(
+                                                createdTask
+                                        )
                                 );
                             }
 
@@ -340,6 +380,29 @@ public class TaskRepository {
                         }
                 );
     }
+
+
+    // =========================================================
+    // UPDATE TASK
+    //
+    // Smart Plan scheduling relevant fields:
+    //
+    // priority
+    // deadline
+    // estimated_duration
+    // is_important
+    //
+    // Non-scheduling fields:
+    //
+    // title
+    // description
+    // category
+    // reminder
+    //
+    // Existing Task update logic remains unchanged.
+    // We only read the old Task first so we can determine
+    // whether Smart Plan invalidation is actually necessary.
+    // =========================================================
 
     public void updateTask(
             String taskId,
@@ -419,6 +482,90 @@ public class TaskRepository {
                         ? priority
                         : TaskPriority.MEDIUM;
 
+
+        /*
+         * First read current Task state.
+         *
+         * This is only used for Smart Plan invalidation
+         * comparison.
+         *
+         * If this read fails for some temporary reason,
+         * we still continue with the original Task update
+         * so existing Task functionality is not blocked.
+         */
+        getTask(
+                taskId,
+                new TaskCallback<Task>() {
+
+                    @Override
+                    public void onSuccess(
+                            Task originalTask
+                    ) {
+
+                        performTaskUpdate(
+                                taskId,
+                                categoryId,
+                                title,
+                                description,
+                                safePriority,
+                                deadline,
+                                estimatedDuration,
+                                important,
+                                safeReminderType,
+                                originalTask,
+                                callback
+                        );
+                    }
+
+                    @Override
+                    public void onError(
+                            String message
+                    ) {
+
+                        /*
+                         * Do not break existing update behavior
+                         * only because the comparison read failed.
+                         */
+                        performTaskUpdate(
+                                taskId,
+                                categoryId,
+                                title,
+                                description,
+                                safePriority,
+                                deadline,
+                                estimatedDuration,
+                                important,
+                                safeReminderType,
+                                null,
+                                callback
+                        );
+                    }
+                }
+        );
+    }
+
+
+    // =========================================================
+    // PERFORM TASK UPDATE
+    //
+    // This contains the same PATCH logic that updateTask()
+    // had before Smart Plan invalidation was introduced.
+    // =========================================================
+
+    private void performTaskUpdate(
+            String taskId,
+            String categoryId,
+            String title,
+            String description,
+            TaskPriority safePriority,
+            String deadline,
+            Integer estimatedDuration,
+            boolean important,
+            ReminderType safeReminderType,
+            Task originalTask,
+            TaskCallback<Task> callback
+    ) {
+
         JsonObject request =
                 new JsonObject();
 
@@ -442,6 +589,7 @@ public class TaskRepository {
             );
         }
 
+
         // -----------------------------------------------------
         // TITLE
         // -----------------------------------------------------
@@ -450,6 +598,7 @@ public class TaskRepository {
                 "title",
                 title.trim()
         );
+
 
         // -----------------------------------------------------
         // DESCRIPTION
@@ -471,6 +620,7 @@ public class TaskRepository {
             );
         }
 
+
         // -----------------------------------------------------
         // PRIORITY
         // -----------------------------------------------------
@@ -480,6 +630,7 @@ public class TaskRepository {
                 safePriority.name()
         );
 
+
         // -----------------------------------------------------
         // DEADLINE
         // -----------------------------------------------------
@@ -488,12 +639,11 @@ public class TaskRepository {
                 || deadline.trim().isEmpty()) {
 
             /*
-             * Ovo mora fizički otići prema Supabaseu kao:
+             * Must physically be sent as:
              *
              * "deadline": null
              *
-             * Ako bi se polje potpuno izostavilo iz PATCH-a,
-             * Supabase bi zadržao stari deadline.
+             * Otherwise Supabase would preserve the old value.
              */
             request.add(
                     "deadline",
@@ -507,6 +657,7 @@ public class TaskRepository {
                     deadline.trim()
             );
         }
+
 
         // -----------------------------------------------------
         // ESTIMATED DURATION
@@ -527,6 +678,7 @@ public class TaskRepository {
             );
         }
 
+
         // -----------------------------------------------------
         // IMPORTANT
         // -----------------------------------------------------
@@ -536,34 +688,31 @@ public class TaskRepository {
                 important
         );
 
+
         // -----------------------------------------------------
         // REMINDER
         // -----------------------------------------------------
 
-        /*
-         * Poslovno pravilo:
-         *
-         * Task bez deadlinea ne smije imati reminder.
-         *
-         * normalizeReminderType() zato vraća NONE kada
-         * deadline ne postoji.
-         */
         request.addProperty(
                 "reminder_type",
                 safeReminderType.name()
         );
 
+
         /*
-         * Status i completed_at ovdje namjerno ne mijenjamo.
+         * Status and completed_at remain intentionally
+         * untouched here.
          *
-         * Oni se mijenjaju isključivo metodom
+         * They continue to be changed exclusively through
          * updateTaskStatus().
          */
+
 
         RequestBody requestBody =
                 createJsonRequestBody(
                         request
                 );
+
 
         taskApi.updateTask(
                         "eq." + taskId,
@@ -601,10 +750,69 @@ public class TaskRepository {
                                     return;
                                 }
 
-                                callback.onSuccess(
-                                        tasks.get(0)
+
+                                Task updatedTask =
+                                        tasks.get(0);
+
+
+                                /*
+                                 * If we successfully loaded the
+                                 * previous Task, compare only
+                                 * scheduling-relevant fields.
+                                 */
+                                if (originalTask != null) {
+
+                                    boolean schedulingChanged =
+                                            hasSchedulingRelevantTaskChange(
+                                                    originalTask,
+                                                    updatedTask
+                                            );
+
+
+                                    if (schedulingChanged) {
+
+                                        invalidateSmartPlanAfterTaskChange(
+                                                () -> callback.onSuccess(
+                                                        updatedTask
+                                                )
+                                        );
+
+                                    } else {
+
+                                        /*
+                                         * title / description /
+                                         * category / reminder only:
+                                         *
+                                         * Smart Plan remains valid.
+                                         */
+                                        callback.onSuccess(
+                                                updatedTask
+                                        );
+                                    }
+
+                                    return;
+                                }
+
+
+                                /*
+                                 * The PATCH succeeded but the
+                                 * pre-update comparison read was
+                                 * unavailable.
+                                 *
+                                 * To protect Smart Plan
+                                 * correctness, invalidate it
+                                 * conservatively.
+                                 *
+                                 * The Task update itself remains
+                                 * successful either way.
+                                 */
+                                invalidateSmartPlanAfterTaskChange(
+                                        () -> callback.onSuccess(
+                                                updatedTask
+                                        )
                                 );
                             }
+
 
                             @Override
                             public void onFailure(
@@ -619,6 +827,11 @@ public class TaskRepository {
                         }
                 );
     }
+
+
+    // =========================================================
+    // UPDATE IMPORTANT
+    // =========================================================
 
     public void updateImportant(
             String taskId,
@@ -677,8 +890,20 @@ public class TaskRepository {
                                     return;
                                 }
 
-                                callback.onSuccess(
-                                        tasks.get(0)
+
+                                Task updatedTask =
+                                        tasks.get(0);
+
+
+                                /*
+                                 * Important contributes to Task
+                                 * scoring, therefore Smart Plan
+                                 * becomes outdated.
+                                 */
+                                invalidateSmartPlanAfterTaskChange(
+                                        () -> callback.onSuccess(
+                                                updatedTask
+                                        )
                                 );
                             }
 
@@ -695,6 +920,11 @@ public class TaskRepository {
                         }
                 );
     }
+
+
+    // =========================================================
+    // UPDATE TASK STATUS
+    // =========================================================
 
     public void updateTaskStatus(
             String taskId,
@@ -725,6 +955,7 @@ public class TaskRepository {
         JsonObject request =
                 new JsonObject();
 
+
         // -----------------------------------------------------
         // STATUS
         // -----------------------------------------------------
@@ -734,6 +965,7 @@ public class TaskRepository {
                 status.name()
         );
 
+
         // -----------------------------------------------------
         // COMPLETED AT
         // -----------------------------------------------------
@@ -742,12 +974,12 @@ public class TaskRepository {
                 || completedAt.trim().isEmpty()) {
 
             /*
-             * Kod Reopen Task moramo poslati:
+             * Reopen Task:
              *
              * "completed_at": null
              *
-             * kako bi se prethodno vrijeme završetka
-             * stvarno obrisalo iz baze.
+             * so previous completion time is actually removed
+             * from Supabase.
              */
             request.add(
                     "completed_at",
@@ -762,10 +994,12 @@ public class TaskRepository {
             );
         }
 
+
         RequestBody requestBody =
                 createJsonRequestBody(
                         request
                 );
+
 
         taskApi.updateTaskStatus(
                         "eq." + taskId,
@@ -803,8 +1037,25 @@ public class TaskRepository {
                                     return;
                                 }
 
-                                callback.onSuccess(
-                                        tasks.get(0)
+
+                                Task updatedTask =
+                                        tasks.get(0);
+
+
+                                /*
+                                 * Any status change affects Smart
+                                 * Plan scheduling.
+                                 *
+                                 * COMPLETED additionally removes
+                                 * future PLANNED sessions for this
+                                 * Task.
+                                 */
+                                invalidateSmartPlanAfterTaskStatusChange(
+                                        taskId,
+                                        status,
+                                        () -> callback.onSuccess(
+                                                updatedTask
+                                        )
                                 );
                             }
 
@@ -821,6 +1072,11 @@ public class TaskRepository {
                         }
                 );
     }
+
+
+    // =========================================================
+    // DELETE TASK
+    // =========================================================
 
     public void deleteTask(
             String taskId,
@@ -851,8 +1107,17 @@ public class TaskRepository {
 
                                 if (response.isSuccessful()) {
 
-                                    callback.onSuccess(
-                                            null
+                                    /*
+                                     * Database cascade continues
+                                     * working exactly as before.
+                                     *
+                                     * We only additionally mark
+                                     * current Smart Plan outdated.
+                                     */
+                                    invalidateSmartPlanAfterTaskChange(
+                                            () -> callback.onSuccess(
+                                                    null
+                                            )
                                     );
 
                                 } else {
@@ -877,8 +1142,12 @@ public class TaskRepository {
                 );
     }
 
+
     // =========================================================
     // SUBTASKS
+    //
+    // Subtasks intentionally do NOT invalidate Smart Plan.
+    // They are not scheduling inputs.
     // =========================================================
 
     public void getSubtasks(
@@ -949,6 +1218,7 @@ public class TaskRepository {
                         }
                 );
     }
+
 
     public void createSubtask(
             String taskId,
@@ -1060,6 +1330,7 @@ public class TaskRepository {
                 );
     }
 
+
     public void updateSubtaskCompleted(
             String subtaskId,
             boolean completed,
@@ -1136,6 +1407,7 @@ public class TaskRepository {
                 );
     }
 
+
     public void deleteSubtask(
             String subtaskId,
             TaskCallback<Void> callback
@@ -1191,6 +1463,176 @@ public class TaskRepository {
                 );
     }
 
+
+    // =========================================================
+    // SMART PLAN INVALIDATION
+    // =========================================================
+
+    private void invalidateSmartPlanAfterTaskChange(
+            Runnable onFinished
+    ) {
+
+        smartPlanInvalidationRepository
+                .markCurrentPlanNeedsUpdate(
+                        new SmartPlanInvalidationRepository
+                                .InvalidationCallback() {
+
+                            @Override
+                            public void onComplete() {
+
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
+                            }
+
+                            @Override
+                            public void onError(
+                                    String message
+                            ) {
+
+                                /*
+                                 * Task operation already succeeded.
+                                 *
+                                 * Never convert a successful Task
+                                 * CRUD action into a Task error
+                                 * because secondary Smart Plan
+                                 * invalidation failed.
+                                 */
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
+                            }
+                        }
+                );
+    }
+
+
+    private void invalidateSmartPlanAfterTaskStatusChange(
+            String taskId,
+            TaskStatus newStatus,
+            Runnable onFinished
+    ) {
+
+        smartPlanInvalidationRepository
+                .handleTaskStatusChanged(
+                        taskId,
+                        newStatus,
+                        new SmartPlanInvalidationRepository
+                                .InvalidationCallback() {
+
+                            @Override
+                            public void onComplete() {
+
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
+                            }
+
+                            @Override
+                            public void onError(
+                                    String message
+                            ) {
+
+                                /*
+                                 * Task status update already
+                                 * succeeded.
+                                 *
+                                 * Never report it as failed only
+                                 * because Smart Plan cleanup /
+                                 * invalidation failed.
+                                 */
+                                if (onFinished != null) {
+
+                                    onFinished.run();
+                                }
+                            }
+                        }
+                );
+    }
+
+
+    // =========================================================
+    // CHECK WHETHER UPDATE AFFECTS SCHEDULING
+    // =========================================================
+
+    private boolean hasSchedulingRelevantTaskChange(
+            Task oldTask,
+            Task newTask
+    ) {
+
+        if (oldTask == null
+                || newTask == null) {
+
+            return true;
+        }
+
+
+        // -----------------------------------------------------
+        // PRIORITY
+        // -----------------------------------------------------
+
+        if (oldTask.getPriority()
+                != newTask.getPriority()) {
+
+            return true;
+        }
+
+
+        // -----------------------------------------------------
+        // DEADLINE
+        // -----------------------------------------------------
+
+        String oldDeadline =
+                normalizeNullableString(
+                        oldTask.getDeadline()
+                );
+
+        String newDeadline =
+                normalizeNullableString(
+                        newTask.getDeadline()
+                );
+
+
+        if (!Objects.equals(
+                oldDeadline,
+                newDeadline
+        )) {
+
+            return true;
+        }
+
+
+        // -----------------------------------------------------
+        // ESTIMATED DURATION
+        // -----------------------------------------------------
+
+        if (!Objects.equals(
+                oldTask.getEstimatedDuration(),
+                newTask.getEstimatedDuration()
+        )) {
+
+            return true;
+        }
+
+
+        // -----------------------------------------------------
+        // IMPORTANT
+        // -----------------------------------------------------
+
+        if (oldTask.isImportant()
+                != newTask.isImportant()) {
+
+            return true;
+        }
+
+
+        return false;
+    }
+
+
     // =========================================================
     // HELPERS
     // =========================================================
@@ -1211,6 +1653,7 @@ public class TaskRepository {
                 : ReminderType.NONE;
     }
 
+
     private String normalizeNullableString(
             String value
     ) {
@@ -1223,6 +1666,7 @@ public class TaskRepository {
 
         return value.trim();
     }
+
 
     private RequestBody createJsonRequestBody(
             JsonObject jsonObject
