@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.smartplanner.app.R;
 import com.smartplanner.app.activities.task.TaskDetailsActivity;
@@ -31,6 +33,8 @@ import com.smartplanner.app.models.Task;
 import com.smartplanner.app.models.enums.SmartPlanItemStatus;
 import com.smartplanner.app.models.enums.SmartPlanStatus;
 import com.smartplanner.app.repositories.SmartPlanGenerationRepository;
+import com.smartplanner.app.smartplan.UnscheduledReason;
+import com.smartplanner.app.smartplan.UnscheduledTask;
 import com.smartplanner.app.viewmodels.SmartPlanViewModel;
 
 import java.time.LocalDate;
@@ -77,6 +81,20 @@ public class SmartPlanActivity extends AppCompatActivity {
     private TextView tvSmartPlanStatus;
     private TextView tvSmartPlanPeriod;
     private TextView tvSmartPlanStatusDescription;
+
+
+    // =========================================================
+    // PLAN INSIGHTS
+    // =========================================================
+
+    private MaterialCardView cardSmartPlanInsights;
+    private TextView tvSmartPlanInsightsSummary;
+
+    private List<String> currentWarnings =
+            new ArrayList<>();
+
+    private List<UnscheduledTask> currentUnscheduledTasks =
+            new ArrayList<>();
 
 
     // =========================================================
@@ -169,6 +187,10 @@ public class SmartPlanActivity extends AppCompatActivity {
 
         observeSessionActions();
 
+        observeWarnings();
+
+        observeUnscheduledTasks();
+
 
         selectTodayView();
 
@@ -217,6 +239,17 @@ public class SmartPlanActivity extends AppCompatActivity {
         tvSmartPlanStatusDescription =
                 findViewById(
                         R.id.tvSmartPlanStatusDescription
+                );
+
+
+        cardSmartPlanInsights =
+                findViewById(
+                        R.id.cardSmartPlanInsights
+                );
+
+        tvSmartPlanInsightsSummary =
+                findViewById(
+                        R.id.tvSmartPlanInsightsSummary
                 );
 
 
@@ -360,6 +393,12 @@ public class SmartPlanActivity extends AppCompatActivity {
         );
 
 
+        cardSmartPlanInsights.setOnClickListener(
+                view ->
+                        showPlanInsights()
+        );
+
+
         btnRetrySmartPlan.setOnClickListener(
                 view -> {
 
@@ -373,6 +412,891 @@ public class SmartPlanActivity extends AppCompatActivity {
         btnGenerateSmartPlan.setOnClickListener(
                 view ->
                         handleGenerateButtonClick()
+        );
+    }
+
+
+    // =========================================================
+    // OBSERVE WARNINGS
+    // =========================================================
+
+    private void observeWarnings() {
+
+        viewModel
+                .getWarnings()
+                .observe(
+                        this,
+                        warnings -> {
+
+                            currentWarnings =
+                                    warnings != null
+                                            ? new ArrayList<>(
+                                            warnings
+                                    )
+                                            : new ArrayList<>();
+
+
+                            updatePlanInsightsCard();
+                        }
+                );
+    }
+
+
+    // =========================================================
+    // OBSERVE UNSCHEDULED TASKS
+    // =========================================================
+
+    private void observeUnscheduledTasks() {
+
+        viewModel
+                .getUnscheduledTasks()
+                .observe(
+                        this,
+                        unscheduledTasks -> {
+
+                            currentUnscheduledTasks =
+                                    unscheduledTasks != null
+                                            ? new ArrayList<>(
+                                            unscheduledTasks
+                                    )
+                                            : new ArrayList<>();
+
+
+                            updatePlanInsightsCard();
+                        }
+                );
+    }
+
+
+    // =========================================================
+    // UPDATE PLAN INSIGHTS CARD
+    // =========================================================
+
+    private void updatePlanInsightsCard() {
+
+        int warningCount =
+                currentWarnings != null
+                        ? currentWarnings.size()
+                        : 0;
+
+
+        int unscheduledCount =
+                currentUnscheduledTasks != null
+                        ? currentUnscheduledTasks.size()
+                        : 0;
+
+
+        int totalCount =
+                warningCount
+                        + unscheduledCount;
+
+
+        if (totalCount <= 0) {
+
+            cardSmartPlanInsights.setVisibility(
+                    View.GONE
+            );
+
+            return;
+        }
+
+
+        cardSmartPlanInsights.setVisibility(
+                View.VISIBLE
+        );
+
+
+        if (totalCount == 1) {
+
+            tvSmartPlanInsightsSummary.setText(
+                    "1 item needs your attention"
+            );
+
+        } else {
+
+            tvSmartPlanInsightsSummary.setText(
+                    totalCount
+                            + " items need your attention"
+            );
+        }
+    }
+
+
+    // =========================================================
+    // PLAN INSIGHTS BOTTOM SHEET
+    // =========================================================
+
+    private void showPlanInsights() {
+
+        int warningCount =
+                currentWarnings != null
+                        ? currentWarnings.size()
+                        : 0;
+
+
+        int unscheduledCount =
+                currentUnscheduledTasks != null
+                        ? currentUnscheduledTasks.size()
+                        : 0;
+
+
+        if (warningCount == 0
+                && unscheduledCount == 0) {
+
+            return;
+        }
+
+
+        BottomSheetDialog bottomSheetDialog =
+                new BottomSheetDialog(
+                        this
+                );
+
+
+        View sheetView =
+                getLayoutInflater().inflate(
+                        R.layout.bottom_sheet_smart_plan_insights,
+                        null
+                );
+
+
+        bottomSheetDialog.setContentView(
+                sheetView
+        );
+
+
+        TextView tvDescription =
+                sheetView.findViewById(
+                        R.id.tvPlanInsightsDescription
+                );
+
+
+        LinearLayout layoutUnscheduledSection =
+                sheetView.findViewById(
+                        R.id.layoutUnscheduledTasksSection
+                );
+
+
+        TextView tvUnscheduledCount =
+                sheetView.findViewById(
+                        R.id.tvUnscheduledTasksCount
+                );
+
+
+        LinearLayout layoutUnscheduledContainer =
+                sheetView.findViewById(
+                        R.id.layoutUnscheduledTasksContainer
+                );
+
+
+        LinearLayout layoutWarningsSection =
+                sheetView.findViewById(
+                        R.id.layoutWarningsSection
+                );
+
+
+        TextView tvWarningsCount =
+                sheetView.findViewById(
+                        R.id.tvWarningsCount
+                );
+
+
+        LinearLayout layoutWarningsContainer =
+                sheetView.findViewById(
+                        R.id.layoutWarningsContainer
+                );
+
+
+        MaterialButton btnClose =
+                sheetView.findViewById(
+                        R.id.btnClosePlanInsights
+                );
+
+
+        int totalCount =
+                warningCount
+                        + unscheduledCount;
+
+
+        if (totalCount == 1) {
+
+            tvDescription.setText(
+                    "1 item in your Smart Plan needs attention."
+            );
+
+        } else {
+
+            tvDescription.setText(
+                    totalCount
+                            + " items in your Smart Plan need attention."
+            );
+        }
+
+
+        // =====================================================
+        // UNSCHEDULED TASKS
+        // =====================================================
+
+        if (unscheduledCount > 0) {
+
+            layoutUnscheduledSection.setVisibility(
+                    View.VISIBLE
+            );
+
+
+            tvUnscheduledCount.setText(
+                    String.valueOf(
+                            unscheduledCount
+                    )
+            );
+
+
+            populateUnscheduledTasks(
+                    layoutUnscheduledContainer
+            );
+
+        } else {
+
+            layoutUnscheduledSection.setVisibility(
+                    View.GONE
+            );
+        }
+
+
+        // =====================================================
+        // WARNINGS
+        // =====================================================
+
+        if (warningCount > 0) {
+
+            layoutWarningsSection.setVisibility(
+                    View.VISIBLE
+            );
+
+
+            tvWarningsCount.setText(
+                    String.valueOf(
+                            warningCount
+                    )
+            );
+
+
+            populateWarnings(
+                    layoutWarningsContainer
+            );
+
+        } else {
+
+            layoutWarningsSection.setVisibility(
+                    View.GONE
+            );
+        }
+
+
+        btnClose.setOnClickListener(
+                view ->
+                        bottomSheetDialog.dismiss()
+        );
+
+
+        bottomSheetDialog.setOnShowListener(
+                dialog -> {
+
+                    FrameLayout bottomSheet =
+                            bottomSheetDialog.findViewById(
+                                    com.google.android.material.R.id.design_bottom_sheet
+                            );
+
+
+                    if (bottomSheet != null) {
+
+                        bottomSheet.setBackgroundColor(
+                                Color.TRANSPARENT
+                        );
+                    }
+                }
+        );
+
+
+        bottomSheetDialog.show();
+    }
+
+
+    // =========================================================
+    // POPULATE UNSCHEDULED TASKS
+    // =========================================================
+
+    private void populateUnscheduledTasks(
+            LinearLayout container
+    ) {
+
+        container.removeAllViews();
+
+
+        for (UnscheduledTask unscheduledTask :
+                currentUnscheduledTasks) {
+
+            if (unscheduledTask == null) {
+                continue;
+            }
+
+
+            Task task =
+                    unscheduledTask.getTask();
+
+
+            String taskTitle =
+                    "Task";
+
+
+            if (task != null
+                    && task.getTitle() != null
+                    && !task.getTitle()
+                    .trim()
+                    .isEmpty()) {
+
+                taskTitle =
+                        task.getTitle()
+                                .trim();
+            }
+
+
+            String reasonText =
+                    getUnscheduledReasonText(
+                            unscheduledTask.getReason()
+                    );
+
+
+            String remainingText =
+                    formatRemainingMinutes(
+                            unscheduledTask.getRemainingMinutes()
+                    );
+
+
+            String description =
+                    reasonText;
+
+
+            if (!remainingText.isEmpty()) {
+
+                description =
+                        description
+                                + " · "
+                                + remainingText;
+            }
+
+
+            MaterialCardView itemView =
+                    createInsightItemView(
+                            taskTitle,
+                            description,
+                            false
+                    );
+
+
+            container.addView(
+                    itemView
+            );
+        }
+    }
+
+
+    // =========================================================
+    // POPULATE WARNINGS
+    // =========================================================
+
+    private void populateWarnings(
+            LinearLayout container
+    ) {
+
+        container.removeAllViews();
+
+
+        for (String warning :
+                currentWarnings) {
+
+            if (warning == null
+                    || warning.trim().isEmpty()) {
+
+                continue;
+            }
+
+
+            String warningTitle =
+                    getWarningTitle(
+                            warning
+                    );
+
+
+            String warningDescription =
+                    getWarningDescription(
+                            warning
+                    );
+
+
+            MaterialCardView itemView =
+                    createInsightItemView(
+                            warningTitle,
+                            warningDescription,
+                            true
+                    );
+
+
+            container.addView(
+                    itemView
+            );
+        }
+    }
+
+
+    // =========================================================
+    // CREATE PLAN INSIGHT ITEM
+    // =========================================================
+
+    private MaterialCardView createInsightItemView(
+            String title,
+            String description,
+            boolean warning
+    ) {
+
+        MaterialCardView card =
+                new MaterialCardView(
+                        this
+                );
+
+
+        LinearLayout.LayoutParams cardParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+
+        cardParams.bottomMargin =
+                dpToPx(
+                        9
+                );
+
+
+        card.setLayoutParams(
+                cardParams
+        );
+
+
+        card.setRadius(
+                dpToPx(
+                        14
+                )
+        );
+
+
+        card.setCardElevation(
+                0f
+        );
+
+
+        card.setStrokeWidth(
+                dpToPx(
+                        1
+                )
+        );
+
+
+        if (warning) {
+
+            card.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                            this,
+                            R.color.sp_home_deadline_bg
+                    )
+            );
+
+
+            card.setStrokeColor(
+                    ContextCompat.getColor(
+                            this,
+                            R.color.sp_home_deadline_icon_bg
+                    )
+            );
+
+        } else {
+
+            card.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                            this,
+                            R.color.sp_surface_soft
+                    )
+            );
+
+
+            card.setStrokeColor(
+                    ContextCompat.getColor(
+                            this,
+                            R.color.sp_border
+                    )
+            );
+        }
+
+
+        LinearLayout content =
+                new LinearLayout(
+                        this
+                );
+
+
+        content.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+        );
+
+
+        content.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+
+        content.setPadding(
+                dpToPx(14),
+                dpToPx(12),
+                dpToPx(14),
+                dpToPx(12)
+        );
+
+
+        TextView tvTitle =
+                new TextView(
+                        this
+                );
+
+
+        tvTitle.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+        );
+
+
+        tvTitle.setText(
+                title
+        );
+
+
+        tvTitle.setTextColor(
+                ContextCompat.getColor(
+                        this,
+                        R.color.sp_text_primary
+                )
+        );
+
+
+        tvTitle.setTextSize(
+                13
+        );
+
+
+        tvTitle.setTypeface(
+                Typeface.DEFAULT,
+                Typeface.BOLD
+        );
+
+
+        TextView tvDescription =
+                new TextView(
+                        this
+                );
+
+
+        LinearLayout.LayoutParams descriptionParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+
+        descriptionParams.topMargin =
+                dpToPx(
+                        4
+                );
+
+
+        tvDescription.setLayoutParams(
+                descriptionParams
+        );
+
+
+        tvDescription.setText(
+                description
+        );
+
+
+        tvDescription.setTextColor(
+                ContextCompat.getColor(
+                        this,
+                        R.color.sp_text_secondary
+                )
+        );
+
+
+        tvDescription.setTextSize(
+                11
+        );
+
+
+        content.addView(
+                tvTitle
+        );
+
+
+        content.addView(
+                tvDescription
+        );
+
+
+        card.addView(
+                content
+        );
+
+
+        return card;
+    }
+
+
+    // =========================================================
+    // UNSCHEDULED REASON TEXT
+    // =========================================================
+
+    private String getUnscheduledReasonText(
+            UnscheduledReason reason
+    ) {
+
+        if (reason == null) {
+
+            return "Could not be scheduled";
+        }
+
+
+        switch (reason) {
+
+            case MISSING_DURATION:
+
+                return "Estimated duration is missing";
+
+
+            case NO_AVAILABLE_TIME:
+
+                return "No available time was found";
+
+
+            case DAILY_LIMIT_REACHED:
+
+                return "Daily planning limit reached";
+
+
+            case PLANNING_HORIZON_FULL:
+
+                return "7-day planning period is full";
+
+
+            default:
+
+                return "Could not be scheduled";
+        }
+    }
+
+
+    // =========================================================
+    // WARNING TITLE
+    // =========================================================
+
+    private String getWarningTitle(
+            String warning
+    ) {
+
+        if (warning == null) {
+
+            return "Planning warning";
+        }
+
+
+        String normalized =
+                warning.trim()
+                        .toUpperCase(
+                                Locale.ENGLISH
+                        );
+
+
+        if (normalized.contains(
+                "DEADLINE_CONFLICT"
+        )) {
+
+            return "Deadline conflict";
+        }
+
+
+        if (normalized.contains(
+                "BREAK_SHORTENED"
+        )) {
+
+            return "Break adjusted";
+        }
+
+
+        return "Planning warning";
+    }
+
+
+    // =========================================================
+    // WARNING DESCRIPTION
+    // =========================================================
+
+    private String getWarningDescription(
+            String warning
+    ) {
+
+        if (warning == null
+                || warning.trim().isEmpty()) {
+
+            return "Smart Plan detected something that may need your attention.";
+        }
+
+
+        String normalized =
+                warning.trim()
+                        .toUpperCase(
+                                Locale.ENGLISH
+                        );
+
+
+        if (normalized.contains(
+                "DEADLINE_CONFLICT"
+        )) {
+
+            return "A task could not be fully scheduled before its deadline.";
+        }
+
+
+        if (normalized.contains(
+                "BREAK_SHORTENED"
+        )) {
+
+            return "A preferred break was shortened so the plan could use the available time.";
+        }
+
+
+        return formatTechnicalMessage(
+                warning
+        );
+    }
+
+
+    // =========================================================
+    // FORMAT TECHNICAL WARNING
+    // =========================================================
+
+    private String formatTechnicalMessage(
+            String value
+    ) {
+
+        if (value == null
+                || value.trim().isEmpty()) {
+
+            return "Smart Plan detected something that may need your attention.";
+        }
+
+
+        String formatted =
+                value.trim()
+                        .replace(
+                                "_",
+                                " "
+                        )
+                        .toLowerCase(
+                                Locale.ENGLISH
+                        );
+
+
+        if (formatted.isEmpty()) {
+
+            return "Smart Plan detected something that may need your attention.";
+        }
+
+
+        return formatted.substring(
+                0,
+                1
+        ).toUpperCase(
+                Locale.ENGLISH
+        )
+                + formatted.substring(
+                1
+        );
+    }
+
+
+    // =========================================================
+    // FORMAT REMAINING MINUTES
+    // =========================================================
+
+    private String formatRemainingMinutes(
+            int minutes
+    ) {
+
+        if (minutes <= 0) {
+
+            return "";
+        }
+
+
+        if (minutes < 60) {
+
+            return minutes
+                    + " min remaining";
+        }
+
+
+        int hours =
+                minutes / 60;
+
+
+        int remainingMinutes =
+                minutes % 60;
+
+
+        if (remainingMinutes == 0) {
+
+            return hours
+                    + (hours == 1
+                    ? " hr remaining"
+                    : " hrs remaining");
+        }
+
+
+        return hours
+                + " hr "
+                + remainingMinutes
+                + " min remaining";
+    }
+
+
+    // =========================================================
+    // DP -> PX
+    // =========================================================
+
+    private int dpToPx(
+            int dp
+    ) {
+
+        float density =
+                getResources()
+                        .getDisplayMetrics()
+                        .density;
+
+
+        return Math.round(
+                dp * density
         );
     }
 
@@ -420,10 +1344,6 @@ public class SmartPlanActivity extends AppCompatActivity {
         );
 
 
-        // =====================================================
-        // SHEET VIEWS
-        // =====================================================
-
         TextView tvSubtitle =
                 sheetView.findViewById(
                         R.id.tvSessionActionsSubtitle
@@ -465,10 +1385,6 @@ public class SmartPlanActivity extends AppCompatActivity {
                         R.id.dividerRemoveSession
                 );
 
-
-        // =====================================================
-        // STATUS-SPECIFIC CONTENT
-        // =====================================================
 
         SmartPlanItemStatus status =
                 item.getStatus();
@@ -536,10 +1452,6 @@ public class SmartPlanActivity extends AppCompatActivity {
         }
 
 
-        // =====================================================
-        // VIEW TASK
-        // =====================================================
-
         actionViewTask.setOnClickListener(
                 view -> {
 
@@ -551,10 +1463,6 @@ public class SmartPlanActivity extends AppCompatActivity {
                 }
         );
 
-
-        // =====================================================
-        // MOVE
-        // =====================================================
 
         actionMove.setOnClickListener(
                 view -> {
@@ -568,10 +1476,6 @@ public class SmartPlanActivity extends AppCompatActivity {
         );
 
 
-        // =====================================================
-        // COMPLETE
-        // =====================================================
-
         actionComplete.setOnClickListener(
                 view -> {
 
@@ -583,10 +1487,6 @@ public class SmartPlanActivity extends AppCompatActivity {
                 }
         );
 
-
-        // =====================================================
-        // SKIP
-        // =====================================================
 
         actionSkip.setOnClickListener(
                 view -> {
@@ -600,10 +1500,6 @@ public class SmartPlanActivity extends AppCompatActivity {
         );
 
 
-        // =====================================================
-        // REMOVE
-        // =====================================================
-
         actionRemove.setOnClickListener(
                 view -> {
 
@@ -615,10 +1511,6 @@ public class SmartPlanActivity extends AppCompatActivity {
                 }
         );
 
-
-        // =====================================================
-        // TRANSPARENT DEFAULT MATERIAL BACKGROUND
-        // =====================================================
 
         bottomSheetDialog.setOnShowListener(
                 dialog -> {
@@ -2099,8 +2991,6 @@ public class SmartPlanActivity extends AppCompatActivity {
 
         if (weekViewSelected) {
 
-            // TODAY - UNSELECTED
-
             btnSmartPlanToday.setBackgroundTintList(
                     ColorStateList.valueOf(
                             unselectedBackground
@@ -2112,8 +3002,6 @@ public class SmartPlanActivity extends AppCompatActivity {
                     unselectedText
             );
 
-
-            // WEEK - SELECTED
 
             btnSmartPlanWeek.setBackgroundTintList(
                     ColorStateList.valueOf(
@@ -2128,8 +3016,6 @@ public class SmartPlanActivity extends AppCompatActivity {
 
         } else {
 
-            // TODAY - SELECTED
-
             btnSmartPlanToday.setBackgroundTintList(
                     ColorStateList.valueOf(
                             selectedBackground
@@ -2141,8 +3027,6 @@ public class SmartPlanActivity extends AppCompatActivity {
                     selectedText
             );
 
-
-            // WEEK - UNSELECTED
 
             btnSmartPlanWeek.setBackgroundTintList(
                     ColorStateList.valueOf(
