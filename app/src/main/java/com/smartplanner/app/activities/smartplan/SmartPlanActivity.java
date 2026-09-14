@@ -1,42 +1,53 @@
 package com.smartplanner.app.activities.smartplan;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.smartplanner.app.R;
 import com.smartplanner.app.activities.task.TaskDetailsActivity;
 import com.smartplanner.app.adapters.SmartPlanAdapter;
 import com.smartplanner.app.models.SmartPlan;
 import com.smartplanner.app.models.SmartPlanItem;
 import com.smartplanner.app.models.Task;
+import com.smartplanner.app.models.enums.SmartPlanItemStatus;
 import com.smartplanner.app.models.enums.SmartPlanStatus;
 import com.smartplanner.app.repositories.SmartPlanGenerationRepository;
 import com.smartplanner.app.viewmodels.SmartPlanViewModel;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-public class SmartPlanActivity
-        extends AppCompatActivity {
+public class SmartPlanActivity extends AppCompatActivity {
 
     // =========================================================
     // VIEW MODEL
@@ -118,6 +129,9 @@ public class SmartPlanActivity
     private boolean generating =
             false;
 
+    private boolean sessionActionInProgress =
+            false;
+
 
     // =========================================================
     // LIFECYCLE
@@ -153,6 +167,8 @@ public class SmartPlanActivity
 
         observeGeneration();
 
+        observeSessionActions();
+
 
         selectTodayView();
 
@@ -169,11 +185,6 @@ public class SmartPlanActivity
         super.onResume();
 
 
-        /*
-         * If the user opens TaskDetailsActivity and edits the
-         * Task title, returning to Smart Plan should refresh
-         * the titles shown on session cards.
-         */
         if (viewModel != null) {
 
             viewModel.loadTasks();
@@ -290,7 +301,7 @@ public class SmartPlanActivity
 
         smartPlanAdapter =
                 new SmartPlanAdapter(
-                        this::openTaskDetails
+                        this::showSessionActions
                 );
 
 
@@ -367,6 +378,804 @@ public class SmartPlanActivity
 
 
     // =========================================================
+    // SESSION ACTIONS BOTTOM SHEET
+    // =========================================================
+
+    private void showSessionActions(
+            SmartPlanItem item
+    ) {
+
+        if (item == null) {
+            return;
+        }
+
+
+        if (sessionActionInProgress) {
+
+            Toast.makeText(
+                    this,
+                    "Please wait for the current action to finish.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+
+        BottomSheetDialog bottomSheetDialog =
+                new BottomSheetDialog(
+                        this
+                );
+
+
+        View sheetView =
+                getLayoutInflater().inflate(
+                        R.layout.bottom_sheet_smart_plan_session_actions,
+                        null
+                );
+
+
+        bottomSheetDialog.setContentView(
+                sheetView
+        );
+
+
+        // =====================================================
+        // SHEET VIEWS
+        // =====================================================
+
+        TextView tvSubtitle =
+                sheetView.findViewById(
+                        R.id.tvSessionActionsSubtitle
+                );
+
+
+        View actionViewTask =
+                sheetView.findViewById(
+                        R.id.actionViewTask
+                );
+
+
+        View actionMove =
+                sheetView.findViewById(
+                        R.id.actionMoveSession
+                );
+
+
+        View actionComplete =
+                sheetView.findViewById(
+                        R.id.actionCompleteSession
+                );
+
+
+        View actionSkip =
+                sheetView.findViewById(
+                        R.id.actionSkipSession
+                );
+
+
+        View actionRemove =
+                sheetView.findViewById(
+                        R.id.actionRemoveSession
+                );
+
+
+        View dividerRemove =
+                sheetView.findViewById(
+                        R.id.dividerRemoveSession
+                );
+
+
+        // =====================================================
+        // STATUS-SPECIFIC CONTENT
+        // =====================================================
+
+        SmartPlanItemStatus status =
+                item.getStatus();
+
+
+        if (status == SmartPlanItemStatus.COMPLETED) {
+
+            tvSubtitle.setText(
+                    "This session has already been completed."
+            );
+
+
+            actionMove.setVisibility(
+                    View.GONE
+            );
+
+            actionComplete.setVisibility(
+                    View.GONE
+            );
+
+            actionSkip.setVisibility(
+                    View.GONE
+            );
+
+            actionRemove.setVisibility(
+                    View.GONE
+            );
+
+            dividerRemove.setVisibility(
+                    View.GONE
+            );
+
+        } else if (status == SmartPlanItemStatus.SKIPPED) {
+
+            tvSubtitle.setText(
+                    "This session has been skipped."
+            );
+
+
+            actionMove.setVisibility(
+                    View.GONE
+            );
+
+            actionComplete.setVisibility(
+                    View.GONE
+            );
+
+            actionSkip.setVisibility(
+                    View.GONE
+            );
+
+            actionRemove.setVisibility(
+                    View.GONE
+            );
+
+            dividerRemove.setVisibility(
+                    View.GONE
+            );
+
+        } else {
+
+            tvSubtitle.setText(
+                    "Choose what you want to do with this session."
+            );
+        }
+
+
+        // =====================================================
+        // VIEW TASK
+        // =====================================================
+
+        actionViewTask.setOnClickListener(
+                view -> {
+
+                    bottomSheetDialog.dismiss();
+
+                    openTaskDetails(
+                            item
+                    );
+                }
+        );
+
+
+        // =====================================================
+        // MOVE
+        // =====================================================
+
+        actionMove.setOnClickListener(
+                view -> {
+
+                    bottomSheetDialog.dismiss();
+
+                    startMoveSession(
+                            item
+                    );
+                }
+        );
+
+
+        // =====================================================
+        // COMPLETE
+        // =====================================================
+
+        actionComplete.setOnClickListener(
+                view -> {
+
+                    bottomSheetDialog.dismiss();
+
+                    completeSession(
+                            item
+                    );
+                }
+        );
+
+
+        // =====================================================
+        // SKIP
+        // =====================================================
+
+        actionSkip.setOnClickListener(
+                view -> {
+
+                    bottomSheetDialog.dismiss();
+
+                    skipSession(
+                            item
+                    );
+                }
+        );
+
+
+        // =====================================================
+        // REMOVE
+        // =====================================================
+
+        actionRemove.setOnClickListener(
+                view -> {
+
+                    bottomSheetDialog.dismiss();
+
+                    showRemoveSessionConfirmation(
+                            item
+                    );
+                }
+        );
+
+
+        // =====================================================
+        // TRANSPARENT DEFAULT MATERIAL BACKGROUND
+        // =====================================================
+
+        bottomSheetDialog.setOnShowListener(
+                dialog -> {
+
+                    FrameLayout bottomSheet =
+                            bottomSheetDialog.findViewById(
+                                    com.google.android.material.R.id.design_bottom_sheet
+                            );
+
+
+                    if (bottomSheet != null) {
+
+                        bottomSheet.setBackgroundColor(
+                                Color.TRANSPARENT
+                        );
+                    }
+                }
+        );
+
+
+        bottomSheetDialog.show();
+    }
+
+
+    // =========================================================
+    // MOVE SESSION
+    // =========================================================
+
+    private void startMoveSession(
+            SmartPlanItem item
+    ) {
+
+        if (!isValidSessionItem(
+                item
+        )) {
+
+            showInvalidSessionMessage();
+
+            return;
+        }
+
+
+        if (item.getStatus() != null
+                && item.getStatus()
+                != SmartPlanItemStatus.PLANNED) {
+
+            Toast.makeText(
+                    this,
+                    "Only planned sessions can be moved.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+
+        ZonedDateTime currentStart =
+                parseSmartPlanItemDateTime(
+                        item.getPlannedStart()
+                );
+
+
+        if (currentStart == null) {
+
+            Toast.makeText(
+                    this,
+                    "Unable to read the current session time.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+
+        showMoveDatePicker(
+                item,
+                currentStart
+        );
+    }
+
+
+    // =========================================================
+    // MOVE DATE PICKER
+    // =========================================================
+
+    private void showMoveDatePicker(
+            SmartPlanItem item,
+            ZonedDateTime currentStart
+    ) {
+
+        LocalDate currentDate =
+                currentStart.toLocalDate();
+
+
+        DatePickerDialog datePickerDialog =
+                new DatePickerDialog(
+                        this,
+                        (view, year, month, dayOfMonth) -> {
+
+                            LocalDate selectedDate =
+                                    LocalDate.of(
+                                            year,
+                                            month + 1,
+                                            dayOfMonth
+                                    );
+
+
+                            showMoveTimePicker(
+                                    item,
+                                    currentStart,
+                                    selectedDate
+                            );
+                        },
+                        currentDate.getYear(),
+                        currentDate.getMonthValue() - 1,
+                        currentDate.getDayOfMonth()
+                );
+
+
+        applyMoveDateLimits(
+                datePickerDialog
+        );
+
+
+        datePickerDialog.setTitle(
+                "Select new date"
+        );
+
+
+        datePickerDialog.show();
+    }
+
+
+    // =========================================================
+    // MOVE DATE LIMITS
+    // =========================================================
+
+    private void applyMoveDateLimits(
+            DatePickerDialog datePickerDialog
+    ) {
+
+        if (datePickerDialog == null) {
+            return;
+        }
+
+
+        LocalDate today =
+                LocalDate.now();
+
+
+        LocalDate minimumDate =
+                today;
+
+
+        LocalDate maximumDate =
+                null;
+
+
+        if (currentPlan != null) {
+
+            LocalDate planStart =
+                    parseLocalDate(
+                            currentPlan.getPeriodStart()
+                    );
+
+            LocalDate planEnd =
+                    parseLocalDate(
+                            currentPlan.getPeriodEnd()
+                    );
+
+
+            if (planStart != null
+                    && planStart.isAfter(
+                    minimumDate
+            )) {
+
+                minimumDate =
+                        planStart;
+            }
+
+
+            maximumDate =
+                    planEnd;
+        }
+
+
+        datePickerDialog
+                .getDatePicker()
+                .setMinDate(
+                        localDateToMillis(
+                                minimumDate
+                        )
+                );
+
+
+        if (maximumDate != null) {
+
+            datePickerDialog
+                    .getDatePicker()
+                    .setMaxDate(
+                            localDateToMillis(
+                                    maximumDate
+                            )
+                    );
+        }
+    }
+
+
+    // =========================================================
+    // MOVE TIME PICKER
+    // =========================================================
+
+    private void showMoveTimePicker(
+            SmartPlanItem item,
+            ZonedDateTime currentStart,
+            LocalDate selectedDate
+    ) {
+
+        int initialHour =
+                currentStart.getHour();
+
+        int initialMinute =
+                currentStart.getMinute();
+
+
+        TimePickerDialog timePickerDialog =
+                new TimePickerDialog(
+                        this,
+                        (view, hourOfDay, minute) -> {
+
+                            if (minute % 15 != 0) {
+
+                                Toast.makeText(
+                                        this,
+                                        "Please choose a time in 15-minute intervals.",
+                                        Toast.LENGTH_LONG
+                                ).show();
+
+                                return;
+                            }
+
+
+                            LocalTime selectedTime =
+                                    LocalTime.of(
+                                            hourOfDay,
+                                            minute
+                                    );
+
+
+                            ZonedDateTime newStart =
+                                    LocalDateTime.of(
+                                                    selectedDate,
+                                                    selectedTime
+                                            )
+                                            .atZone(
+                                                    ZoneId.systemDefault()
+                                            );
+
+
+                            confirmMoveSession(
+                                    item,
+                                    newStart
+                            );
+                        },
+                        initialHour,
+                        initialMinute,
+                        true
+                );
+
+
+        timePickerDialog.setTitle(
+                "Select new start time"
+        );
+
+
+        timePickerDialog.show();
+    }
+
+
+    // =========================================================
+    // CONFIRM MOVE
+    // =========================================================
+
+    private void confirmMoveSession(
+            SmartPlanItem item,
+            ZonedDateTime newStart
+    ) {
+
+        if (item == null
+                || newStart == null) {
+
+            return;
+        }
+
+
+        if (newStart.isBefore(
+                ZonedDateTime.now()
+        )) {
+
+            Toast.makeText(
+                    this,
+                    "A session cannot be moved to the past.",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            return;
+        }
+
+
+        DateTimeFormatter dateFormatter =
+                DateTimeFormatter.ofPattern(
+                        "EEE, MMM d",
+                        Locale.ENGLISH
+                );
+
+
+        DateTimeFormatter timeFormatter =
+                DateTimeFormatter.ofPattern(
+                        "HH:mm",
+                        Locale.ENGLISH
+                );
+
+
+        String message =
+                "Move this session to "
+                        + newStart.format(
+                        dateFormatter
+                )
+                        + " at "
+                        + newStart.format(
+                        timeFormatter
+                )
+                        + "?";
+
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(
+                        "Move session?"
+                )
+                .setMessage(
+                        message
+                )
+                .setPositiveButton(
+                        "Move",
+                        (dialog, which) ->
+                                viewModel.moveSession(
+                                        item.getId(),
+                                        newStart
+                                )
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
+                .show();
+    }
+
+
+    // =========================================================
+    // LOCAL DATE -> MILLIS
+    // =========================================================
+
+    private long localDateToMillis(
+            LocalDate date
+    ) {
+
+        Calendar calendar =
+                Calendar.getInstance();
+
+
+        calendar.set(
+                Calendar.YEAR,
+                date.getYear()
+        );
+
+        calendar.set(
+                Calendar.MONTH,
+                date.getMonthValue() - 1
+        );
+
+        calendar.set(
+                Calendar.DAY_OF_MONTH,
+                date.getDayOfMonth()
+        );
+
+        calendar.set(
+                Calendar.HOUR_OF_DAY,
+                12
+        );
+
+        calendar.set(
+                Calendar.MINUTE,
+                0
+        );
+
+        calendar.set(
+                Calendar.SECOND,
+                0
+        );
+
+        calendar.set(
+                Calendar.MILLISECOND,
+                0
+        );
+
+
+        return calendar.getTimeInMillis();
+    }
+
+
+    // =========================================================
+    // COMPLETE SESSION
+    // =========================================================
+
+    private void completeSession(
+            SmartPlanItem item
+    ) {
+
+        if (!isValidSessionItem(
+                item
+        )) {
+
+            showInvalidSessionMessage();
+
+            return;
+        }
+
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(
+                        "Complete session?"
+                )
+                .setMessage(
+                        "Mark this Smart Plan session as completed?"
+                )
+                .setPositiveButton(
+                        "Complete",
+                        (dialog, which) ->
+                                viewModel.completeSession(
+                                        item.getId()
+                                )
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
+                .show();
+    }
+
+
+    // =========================================================
+    // SKIP SESSION
+    // =========================================================
+
+    private void skipSession(
+            SmartPlanItem item
+    ) {
+
+        if (!isValidSessionItem(
+                item
+        )) {
+
+            showInvalidSessionMessage();
+
+            return;
+        }
+
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(
+                        "Skip session?"
+                )
+                .setMessage(
+                        "This session will remain in your Smart Plan history, but it will not count as completed work."
+                )
+                .setPositiveButton(
+                        "Skip",
+                        (dialog, which) ->
+                                viewModel.skipSession(
+                                        item.getId()
+                                )
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
+                .show();
+    }
+
+
+    // =========================================================
+    // REMOVE SESSION
+    // =========================================================
+
+    private void showRemoveSessionConfirmation(
+            SmartPlanItem item
+    ) {
+
+        if (!isValidSessionItem(
+                item
+        )) {
+
+            showInvalidSessionMessage();
+
+            return;
+        }
+
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(
+                        "Remove session?"
+                )
+                .setMessage(
+                        "This session will be removed from the Smart Plan."
+                )
+                .setPositiveButton(
+                        "Remove",
+                        (dialog, which) ->
+                                viewModel.removeSession(
+                                        item.getId()
+                                )
+                )
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
+                .show();
+    }
+
+
+    // =========================================================
+    // SESSION ITEM VALIDATION
+    // =========================================================
+
+    private boolean isValidSessionItem(
+            SmartPlanItem item
+    ) {
+
+        return item != null
+                && item.getId() != null
+                && !item.getId()
+                .trim()
+                .isEmpty();
+    }
+
+
+    private void showInvalidSessionMessage() {
+
+        Toast.makeText(
+                this,
+                "Unable to update this session.",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+
+    // =========================================================
     // OPEN TASK DETAILS
     // =========================================================
 
@@ -415,7 +1224,9 @@ public class SmartPlanActivity
 
     private void handleGenerateButtonClick() {
 
-        if (generating) {
+        if (generating
+                || sessionActionInProgress) {
+
             return;
         }
 
@@ -519,7 +1330,8 @@ public class SmartPlanActivity
                                 case LOADING:
 
                                     if (currentPlan != null
-                                            && !generating) {
+                                            && !generating
+                                            && !sessionActionInProgress) {
 
                                         showLoading();
                                     }
@@ -549,7 +1361,8 @@ public class SmartPlanActivity
 
                                 case ERROR:
 
-                                    if (!generating) {
+                                    if (!generating
+                                            && !sessionActionInProgress) {
 
                                         showError(
                                                 state.getMessage()
@@ -584,14 +1397,6 @@ public class SmartPlanActivity
 
                                 case LOADING:
 
-                                    /*
-                                     * Do not hide Smart Plan while
-                                     * Task titles are loading.
-                                     *
-                                     * Existing session cards may
-                                     * temporarily display the
-                                     * fallback "Task session".
-                                     */
                                     break;
 
 
@@ -612,12 +1417,6 @@ public class SmartPlanActivity
 
                                 case ERROR:
 
-                                    /*
-                                     * Task title loading is secondary.
-                                     *
-                                     * Smart Plan sessions remain usable
-                                     * even if this request fails.
-                                     */
                                     smartPlanAdapter.setTasks(
                                             new ArrayList<>()
                                     );
@@ -702,11 +1501,6 @@ public class SmartPlanActivity
                                     ).show();
 
 
-                                    /*
-                                     * Refresh Task map as well so every
-                                     * new Smart Plan item can immediately
-                                     * display its Task title.
-                                     */
                                     viewModel.loadTasks();
 
                                     break;
@@ -744,6 +1538,156 @@ public class SmartPlanActivity
                             }
                         }
                 );
+    }
+
+
+    // =========================================================
+    // OBSERVE SESSION ACTIONS
+    // =========================================================
+
+    private void observeSessionActions() {
+
+        viewModel
+                .getActionState()
+                .observe(
+                        this,
+                        state -> {
+
+                            if (state == null) {
+                                return;
+                            }
+
+
+                            switch (state.getStatus()) {
+
+                                case LOADING:
+
+                                    setSessionActionInProgress(
+                                            true
+                                    );
+
+                                    break;
+
+
+                                case SUCCESS:
+
+                                    setSessionActionInProgress(
+                                            false
+                                    );
+
+
+                                    SmartPlanViewModel.SessionActionResult result =
+                                            state.getData();
+
+
+                                    String successMessage =
+                                            "Smart Plan session updated.";
+
+
+                                    if (result != null
+                                            && result.getActionType() != null) {
+
+                                        switch (result.getActionType()) {
+
+                                            case COMPLETE:
+
+                                                successMessage =
+                                                        "Session completed.";
+
+                                                break;
+
+
+                                            case SKIP:
+
+                                                successMessage =
+                                                        "Session skipped.";
+
+                                                break;
+
+
+                                            case REMOVE:
+
+                                                successMessage =
+                                                        "Session removed.";
+
+                                                break;
+
+
+                                            case MOVE:
+
+                                                successMessage =
+                                                        "Session moved.";
+
+                                                break;
+                                        }
+                                    }
+
+
+                                    Toast.makeText(
+                                            this,
+                                            successMessage,
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+
+                                    viewModel.refreshSmartPlan();
+
+                                    viewModel.loadTasks();
+
+                                    break;
+
+
+                                case ERROR:
+
+                                    setSessionActionInProgress(
+                                            false
+                                    );
+
+
+                                    String message =
+                                            state.getMessage();
+
+
+                                    if (message == null
+                                            || message.trim().isEmpty()) {
+
+                                        message =
+                                                "Unable to update Smart Plan session.";
+                                    }
+
+
+                                    Toast.makeText(
+                                            this,
+                                            message,
+                                            Toast.LENGTH_LONG
+                                    ).show();
+
+                                    break;
+                            }
+                        }
+                );
+    }
+
+
+    // =========================================================
+    // SESSION ACTION STATE
+    // =========================================================
+
+    private void setSessionActionInProgress(
+            boolean inProgress
+    ) {
+
+        sessionActionInProgress =
+                inProgress;
+
+
+        btnGenerateSmartPlan.setEnabled(
+                !inProgress
+                        && !generating
+        );
+
+
+        updateViewModeButtons();
     }
 
 
@@ -1089,22 +2033,7 @@ public class SmartPlanActivity
                 false;
 
 
-        btnSmartPlanToday.setAlpha(
-                1.0f
-        );
-
-        btnSmartPlanWeek.setAlpha(
-                0.65f
-        );
-
-
-        btnSmartPlanToday.setEnabled(
-                false
-        );
-
-        btnSmartPlanWeek.setEnabled(
-                !generating
-        );
+        updateViewModeButtons();
 
 
         tvSmartPlanSectionTitle.setText(
@@ -1122,22 +2051,7 @@ public class SmartPlanActivity
                 true;
 
 
-        btnSmartPlanToday.setAlpha(
-                0.65f
-        );
-
-        btnSmartPlanWeek.setAlpha(
-                1.0f
-        );
-
-
-        btnSmartPlanToday.setEnabled(
-                !generating
-        );
-
-        btnSmartPlanWeek.setEnabled(
-                false
-        );
+        updateViewModeButtons();
 
 
         tvSmartPlanSectionTitle.setText(
@@ -1146,6 +2060,128 @@ public class SmartPlanActivity
 
 
         updateDisplayedItems();
+    }
+
+
+    // =========================================================
+    // UPDATE TODAY / WEEK BUTTON STYLE
+    // =========================================================
+
+    private void updateViewModeButtons() {
+
+        int selectedBackground =
+                ContextCompat.getColor(
+                        this,
+                        R.color.sp_teal_deep
+                );
+
+
+        int unselectedBackground =
+                ContextCompat.getColor(
+                        this,
+                        R.color.sp_surface_soft
+                );
+
+
+        int selectedText =
+                ContextCompat.getColor(
+                        this,
+                        R.color.white
+                );
+
+
+        int unselectedText =
+                ContextCompat.getColor(
+                        this,
+                        R.color.sp_text_secondary
+                );
+
+
+        if (weekViewSelected) {
+
+            // TODAY - UNSELECTED
+
+            btnSmartPlanToday.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                            unselectedBackground
+                    )
+            );
+
+
+            btnSmartPlanToday.setTextColor(
+                    unselectedText
+            );
+
+
+            // WEEK - SELECTED
+
+            btnSmartPlanWeek.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                            selectedBackground
+                    )
+            );
+
+
+            btnSmartPlanWeek.setTextColor(
+                    selectedText
+            );
+
+        } else {
+
+            // TODAY - SELECTED
+
+            btnSmartPlanToday.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                            selectedBackground
+                    )
+            );
+
+
+            btnSmartPlanToday.setTextColor(
+                    selectedText
+            );
+
+
+            // WEEK - UNSELECTED
+
+            btnSmartPlanWeek.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                            unselectedBackground
+                    )
+            );
+
+
+            btnSmartPlanWeek.setTextColor(
+                    unselectedText
+            );
+        }
+
+
+        boolean controlsEnabled =
+                !generating
+                        && !sessionActionInProgress;
+
+
+        btnSmartPlanToday.setEnabled(
+                controlsEnabled
+        );
+
+        btnSmartPlanWeek.setEnabled(
+                controlsEnabled
+        );
+
+
+        btnSmartPlanToday.setAlpha(
+                controlsEnabled
+                        ? 1.0f
+                        : 0.55f
+        );
+
+        btnSmartPlanWeek.setAlpha(
+                controlsEnabled
+                        ? 1.0f
+                        : 0.55f
+        );
     }
 
 
@@ -1312,6 +2348,7 @@ public class SmartPlanActivity
 
         btnGenerateSmartPlan.setEnabled(
                 !generating
+                        && !sessionActionInProgress
         );
 
 
@@ -1323,28 +2360,13 @@ public class SmartPlanActivity
                             : "Regenerating..."
             );
 
-
-            btnSmartPlanToday.setEnabled(
-                    false
-            );
-
-            btnSmartPlanWeek.setEnabled(
-                    false
-            );
-
         } else {
 
             updatePlanHeader();
-
-
-            btnSmartPlanToday.setEnabled(
-                    weekViewSelected
-            );
-
-            btnSmartPlanWeek.setEnabled(
-                    !weekViewSelected
-            );
         }
+
+
+        updateViewModeButtons();
     }
 
 
