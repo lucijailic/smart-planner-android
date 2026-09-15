@@ -2,6 +2,7 @@ package com.smartplanner.app.api;
 
 import com.smartplanner.app.models.auth.AuthResponse;
 import com.smartplanner.app.models.auth.ForgotPasswordRequest;
+import com.smartplanner.app.models.auth.GoogleIdTokenRequest;
 import com.smartplanner.app.models.auth.LoginRequest;
 import com.smartplanner.app.models.auth.RegisterRequest;
 import com.smartplanner.app.models.auth.UpdatePasswordRequest;
@@ -21,6 +22,12 @@ public interface AuthApi {
     Call<AuthResponse> login(
             @Query("grant_type") String grantType,
             @Body LoginRequest request
+    );
+
+    @POST("auth/v1/token")
+    Call<AuthResponse> loginWithGoogle(
+            @Query("grant_type") String grantType,
+            @Body GoogleIdTokenRequest request
     );
 
     @POST("auth/v1/signup")

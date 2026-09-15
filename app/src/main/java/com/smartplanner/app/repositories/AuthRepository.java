@@ -6,6 +6,7 @@ import com.smartplanner.app.api.ApiClient;
 import com.smartplanner.app.api.AuthApi;
 import com.smartplanner.app.models.auth.AuthResponse;
 import com.smartplanner.app.models.auth.ForgotPasswordRequest;
+import com.smartplanner.app.models.auth.GoogleIdTokenRequest;
 import com.smartplanner.app.models.auth.LoginRequest;
 import com.smartplanner.app.models.auth.RegisterRequest;
 import com.smartplanner.app.models.auth.UpdatePasswordRequest;
@@ -71,6 +72,66 @@ public class AuthRepository {
                         } else {
                             callback.onError(
                                     "Invalid email or password."
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<AuthResponse> call,
+                            Throwable throwable
+                    ) {
+                        callback.onError(
+                                "Unable to connect. Please try again."
+                        );
+                    }
+                });
+    }
+
+    public void loginWithGoogle(
+            String idToken,
+            AuthCallback<AuthResponse> callback
+    ) {
+
+        if (idToken == null || idToken.trim().isEmpty()) {
+            callback.onError(
+                    "Unable to sign in with Google."
+            );
+            return;
+        }
+
+        GoogleIdTokenRequest request =
+                new GoogleIdTokenRequest(idToken);
+
+        authApi.loginWithGoogle(
+                        "id_token",
+                        request
+                )
+                .enqueue(new Callback<AuthResponse>() {
+
+                    @Override
+                    public void onResponse(
+                            Call<AuthResponse> call,
+                            Response<AuthResponse> response
+                    ) {
+
+                        if (response.isSuccessful()
+                                && response.body() != null) {
+
+                            AuthResponse authResponse =
+                                    response.body();
+
+                            if (saveSession(authResponse)) {
+                                callback.onSuccess(authResponse);
+                            } else {
+                                callback.onError(
+                                        "Unable to create a valid session."
+                                );
+                            }
+
+                        } else {
+                            callback.onError(
+                                    "Unable to sign in with Google."
                             );
                         }
                     }

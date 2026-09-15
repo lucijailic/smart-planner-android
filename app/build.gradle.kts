@@ -17,6 +17,8 @@ if (localPropertiesFile.exists()) {
 val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: ""
 val supabasePublishableKey = localProperties.getProperty("SUPABASE_PUBLISHABLE_KEY") ?: ""
 
+val googleWebClientId = localProperties.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
+
 android {
     namespace = "com.smartplanner.app"
     compileSdk {
@@ -41,6 +43,12 @@ android {
             "String",
             "SUPABASE_PUBLISHABLE_KEY",
             "\"$supabasePublishableKey\""
+        )
+
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"$googleWebClientId\""
         )
     }
 
@@ -84,6 +92,11 @@ dependencies {
     // HTTP client
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
+
+    // Google Sign-In / Credential Manager
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     // Testing
     testImplementation(libs.junit)
