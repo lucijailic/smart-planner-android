@@ -12,16 +12,11 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:minHeight="780dp"
         android:paddingStart="28dp"
         android:paddingEnd="28dp"
-        android:paddingBottom="22dp">
-
-
-        <!-- ================================================= -->
-        <!-- LOGO -->
-        <!-- ================================================= -->
+        android:paddingBottom="30dp">
 
         <ImageView
             android:id="@+id/ivLogo"
@@ -34,11 +29,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-
-
-        <!-- ================================================= -->
-        <!-- BRAND NAME -->
-        <!-- ================================================= -->
 
         <TextView
             android:id="@+id/tvAppName"
@@ -54,11 +44,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/ivLogo" />
 
-
-        <!-- ================================================= -->
-        <!-- TITLE -->
-        <!-- ================================================= -->
-
         <TextView
             android:id="@+id/tvLoginTitle"
             android:layout_width="wrap_content"
@@ -72,11 +57,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvAppName" />
-
-
-        <!-- ================================================= -->
-        <!-- SUBTITLE -->
-        <!-- ================================================= -->
 
         <TextView
             android:id="@+id/tvLoginSubtitle"
@@ -92,11 +72,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvLoginTitle" />
-
-
-        <!-- ================================================= -->
-        <!-- EMAIL -->
-        <!-- ================================================= -->
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilEmail"
@@ -124,11 +99,6 @@
                 android:textSize="16sp" />
 
         </com.google.android.material.textfield.TextInputLayout>
-
-
-        <!-- ================================================= -->
-        <!-- PASSWORD -->
-        <!-- ================================================= -->
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPassword"
@@ -159,11 +129,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-
-        <!-- ================================================= -->
-        <!-- FORGOT PASSWORD -->
-        <!-- ================================================= -->
-
         <TextView
             android:id="@+id/tvForgotPassword"
             android:layout_width="wrap_content"
@@ -178,11 +143,6 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tilPassword" />
-
-
-        <!-- ================================================= -->
-        <!-- SIGN IN BUTTON -->
-        <!-- ================================================= -->
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignIn"
@@ -205,11 +165,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvForgotPassword" />
 
-
-        <!-- ================================================= -->
-        <!-- LOADING -->
-        <!-- ================================================= -->
-
         <ProgressBar
             android:id="@+id/progressLogin"
             android:layout_width="30dp"
@@ -221,21 +176,78 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnSignIn" />
 
+        <LinearLayout
+            android:id="@+id/layoutLoginDivider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnSignIn">
 
-        <!-- ================================================= -->
-        <!-- CREATE ACCOUNT -->
-        <!-- ================================================= -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/sp_text_secondary"
+                android:alpha="0.25" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:text="or continue with"
+                android:textColor="@color/sp_text_secondary"
+                android:textSize="13sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/sp_text_secondary"
+                android:alpha="0.25" />
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGoogleSignIn"
+            android:layout_width="0dp"
+            android:layout_height="58dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/white"
+            android:elevation="2dp"
+            android:fontFamily="sans-serif-medium"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Continue with Google"
+            android:textAllCaps="false"
+            android:textColor="@color/sp_text_primary"
+            android:textSize="16sp"
+            app:cornerRadius="18dp"
+            app:icon="@drawable/ic_google"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconTint="@null"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutLoginDivider"
+            app:strokeColor="@color/sp_text_secondary"
+            app:strokeWidth="1dp" />
 
         <LinearLayout
             android:id="@+id/layoutCreateAccount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="18dp"
             android:gravity="center"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnGoogleSignIn">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -257,7 +269,6 @@
                 android:textStyle="bold" />
 
         </LinearLayout>
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

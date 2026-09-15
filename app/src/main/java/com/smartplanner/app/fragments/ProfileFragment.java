@@ -14,6 +14,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.credentials.ClearCredentialStateRequest;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.exceptions.ClearCredentialException;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -55,6 +58,8 @@ public class ProfileFragment extends Fragment {
 
     private ProfileViewModel profileViewModel;
     private AuthRepository authRepository;
+
+    private CredentialManager credentialManager;
 
     private ActivityResultLauncher<Intent> editProfileLauncher;
 
@@ -125,6 +130,9 @@ public class ProfileFragment extends Fragment {
 
         authRepository =
                 new AuthRepository(requireContext());
+
+        credentialManager =
+                CredentialManager.create(requireContext());
     }
 
     private void setupActivityResultLaunchers() {
@@ -289,7 +297,8 @@ public class ProfileFragment extends Fragment {
                         }
 
                         requireActivity().runOnUiThread(
-                                ProfileFragment.this::openLogin
+                                ProfileFragment.this
+                                        ::clearCredentialStateAndOpenLogin
                         );
                     }
 
@@ -313,7 +322,7 @@ public class ProfileFragment extends Fragment {
                                         ).show();
                                     }
 
-                                    openLogin();
+                                    clearCredentialStateAndOpenLogin();
                                 }
                         );
                     }
@@ -321,7 +330,58 @@ public class ProfileFragment extends Fragment {
         );
     }
 
+    private void clearCredentialStateAndOpenLogin() {
+
+        if (!isAdded()) {
+            return;
+        }
+
+        ClearCredentialStateRequest request =
+                new ClearCredentialStateRequest();
+
+        credentialManager.clearCredentialStateAsync(
+                request,
+                null,
+                requireContext().getMainExecutor(),
+                new androidx.credentials.CredentialManagerCallback<
+                        Void,
+                        ClearCredentialException>() {
+
+                    @Override
+                    public void onResult(Void result) {
+
+                        if (!isAdded()) {
+                            return;
+                        }
+
+                        openLogin();
+                    }
+
+                    @Override
+                    public void onError(
+                            @NonNull ClearCredentialException exception
+                    ) {
+
+                        if (!isAdded()) {
+                            return;
+                        }
+
+                        /*
+                         * Supabase/local logout has already been handled.
+                         * Credential Manager cleanup failure must not
+                         * prevent the user from returning to Login.
+                         */
+                        openLogin();
+                    }
+                }
+        );
+    }
+
     private void openLogin() {
+
+        if (!isAdded()) {
+            return;
+        }
 
         Intent intent = new Intent(
                 requireContext(),
