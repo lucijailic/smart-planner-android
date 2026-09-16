@@ -33,14 +33,6 @@ public class EventReminderManager {
                         event.getId()
                 );
 
-        /*
-         * Uvijek prvo brišemo eventualni stari alarm.
-         *
-         * Ovo je važno kod Edit Event:
-         * - promjena početnog vremena
-         * - promjena reminder opcije
-         * - promjena na No reminder
-         */
         NotificationScheduler.cancelNotification(
                 context,
                 notificationId
@@ -82,10 +74,7 @@ public class EventReminderManager {
                 startDate.getTime()
                         - reminderOffsetMillis;
 
-        /*
-         * Ne zakazujemo reminder čije je vrijeme
-         * već prošlo.
-         */
+
         if (triggerAtMillis
                 <= System.currentTimeMillis()) {
 

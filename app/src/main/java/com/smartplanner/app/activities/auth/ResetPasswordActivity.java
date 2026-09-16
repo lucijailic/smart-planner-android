@@ -189,13 +189,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
         Uri uri = intent.getData();
 
-        /*
-         * Supabase recovery redirects commonly place
-         * session parameters inside the URI fragment:
-         *
-         * smartplanner://reset-password
-         * #access_token=...&type=recovery&...
-         */
+
         String fragment = uri.getFragment();
 
         if (fragment != null
@@ -222,10 +216,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
             }
         }
 
-        /*
-         * Also check regular query parameters
-         * so the parsing is a little more robust.
-         */
+
         String type =
                 uri.getQueryParameter("type");
 

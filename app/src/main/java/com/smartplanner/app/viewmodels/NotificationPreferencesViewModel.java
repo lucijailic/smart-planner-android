@@ -106,10 +106,6 @@ public class NotificationPreferencesViewModel
                                 UiState.success(result)
                         );
 
-                        /*
-                         * Keep the main preferences state synchronized
-                         * with the newly saved data.
-                         */
                         preferencesState.postValue(
                                 UiState.success(result)
                         );

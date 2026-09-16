@@ -42,13 +42,7 @@ public class NotificationScheduler {
                         message
                 );
 
-        /*
-         * Ako aplikacija ima dopuštenje za exact alarm,
-         * koristimo točno zakazivanje.
-         *
-         * Ako nema, koristimo setAndAllowWhileIdle(),
-         * tako da reminder i dalje radi bez rušenja aplikacije.
-         */
+
         if (Build.VERSION.SDK_INT
                 >= Build.VERSION_CODES.S) {
 

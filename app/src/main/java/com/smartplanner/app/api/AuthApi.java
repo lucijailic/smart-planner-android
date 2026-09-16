@@ -62,4 +62,7 @@ public interface AuthApi {
             @Header("Authorization") String authorization,
             @Body UpdatePasswordRequest request
     );
+
+    @POST("functions/v1/delete-account")
+    Call<Void> deleteAccount();
 }

@@ -75,9 +75,6 @@ public class PlanningPreferencesRepository {
 
     // =========================================================
     // GET CURRENT PREFERENCES
-    //
-    // null result is valid:
-    // it means that Smart Plan setup has not been completed yet.
     // =========================================================
 
     public void getCurrentPreferences(
@@ -128,16 +125,6 @@ public class PlanningPreferencesRepository {
                                         response.body();
 
 
-                                /*
-                                 * Unlike NotificationPreferences,
-                                 * PlanningPreferences are not
-                                 * created automatically during
-                                 * registration.
-                                 *
-                                 * Empty result therefore means
-                                 * Smart Plan setup has not been
-                                 * completed yet.
-                                 */
                                 if (preferences == null
                                         || preferences.isEmpty()) {
 
@@ -172,13 +159,6 @@ public class PlanningPreferencesRepository {
 
     // =========================================================
     // CREATE PREFERENCES
-    //
-    // Used during first Smart Plan setup.
-    //
-    // Usually there is no current Smart Plan at this point.
-    // Calling invalidation is still safe because the
-    // invalidation repository treats "no current plan" as a
-    // successful no-op.
     // =========================================================
 
     public void createPreferences(
@@ -279,16 +259,7 @@ public class PlanningPreferencesRepository {
 
 
     // =========================================================
-    // UPDATE PREFERENCES
-    //
-    // All three fields directly affect Smart Plan generation:
-    //
-    // max_daily_minutes
-    // preferred_session_minutes
-    // break_minutes
-    //
-    // Therefore an existing plan becomes NEEDS_UPDATE after a
-    // successful update.
+    // UPDATE PREFERENCE
     // =========================================================
 
     public void updatePreferences(
@@ -391,12 +362,6 @@ public class PlanningPreferencesRepository {
 
     // =========================================================
     // SMART PLAN INVALIDATION
-    //
-    // Preferences operation has already succeeded when this
-    // helper runs.
-    //
-    // A secondary invalidation failure therefore must not turn
-    // a successful Preferences operation into an error.
     // =========================================================
 
     private void invalidateSmartPlanAfterPreferencesChange(
@@ -423,13 +388,7 @@ public class PlanningPreferencesRepository {
                                     String message
                             ) {
 
-                                /*
-                                 * Preferences were already saved.
-                                 *
-                                 * Preserve the successful result
-                                 * even if Smart Plan invalidation
-                                 * itself failed.
-                                 */
+
                                 if (onFinished != null) {
 
                                     onFinished.run();

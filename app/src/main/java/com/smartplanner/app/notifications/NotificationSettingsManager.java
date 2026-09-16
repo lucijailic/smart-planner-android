@@ -20,13 +20,7 @@ public class NotificationSettingsManager {
     private static final String KEY_DEFAULT_EVENT_REMINDER =
             "default_event_reminder";
 
-    /*
-     * Fallback vrijednosti koristimo samo ako lokalni
-     * cache još nikada nije sinkroniziran sa Supabaseom.
-     *
-     * One odgovaraju fallback vrijednostima koje već
-     * koristi NotificationsActivity.
-     */
+
     private static final boolean DEFAULT_NOTIFICATIONS_ENABLED =
             true;
 

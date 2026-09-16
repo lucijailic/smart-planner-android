@@ -78,17 +78,6 @@ public class SmartPlanMoveRepository {
 
     // =========================================================
     // MOVE SESSION
-    //
-    // Full flow:
-    //
-    // 1. Load current Smart Plan
-    // 2. Load its items
-    // 3. Find session being moved
-    // 4. Load Events
-    // 5. Load Availability
-    // 6. Load Planning Preferences
-    // 7. Validate new time
-    // 8. Persist move
     // =========================================================
 
     public void moveSession(
@@ -235,10 +224,6 @@ public class SmartPlanMoveRepository {
                         }
 
 
-                        /*
-                         * Only currently PLANNED sessions
-                         * should be manually moved.
-                         */
                         if (targetItem.getStatus()
                                 != SmartPlanItemStatus.PLANNED) {
 
@@ -272,10 +257,7 @@ public class SmartPlanMoveRepository {
                                 );
 
 
-                        /*
-                         * A single Smart Plan session must stay
-                         * inside one calendar day.
-                         */
+
                         if (!newStart
                                 .toLocalDate()
                                 .equals(
@@ -385,9 +367,7 @@ public class SmartPlanMoveRepository {
         }
 
 
-        /*
-         * Do not allow moving a session into the past.
-         */
+
         if (newStart.isBefore(
                 ZonedDateTime.now()
         )) {
@@ -719,11 +699,6 @@ public class SmartPlanMoveRepository {
 
     // =========================================================
     // SMART PLAN OVERLAP
-    //
-    // Only another PLANNED session blocks the new slot.
-    //
-    // Current session is ignored because it is the one
-    // being moved.
     // =========================================================
 
     private boolean hasSmartPlanOverlap(
@@ -960,14 +935,6 @@ public class SmartPlanMoveRepository {
 
     // =========================================================
     // DAILY LIMIT
-    //
-    // Existing PLANNED and COMPLETED sessions count toward
-    // the daily workload.
-    //
-    // SKIPPED sessions do not consume the daily limit because
-    // they were not performed.
-    //
-    // The target item is excluded because it is being moved.
     // =========================================================
 
     private boolean respectsDailyLimit(
@@ -1002,9 +969,7 @@ public class SmartPlanMoveRepository {
                 }
 
 
-                /*
-                 * Exclude session currently being moved.
-                 */
+
                 if (item.getId() != null
                         && targetItem.getId() != null
                         && item.getId().equals(
@@ -1014,11 +979,6 @@ public class SmartPlanMoveRepository {
                     continue;
                 }
 
-
-                /*
-                 * SKIPPED does not contribute to performed /
-                 * planned workload for this validation.
-                 */
                 if (item.getStatus()
                         == SmartPlanItemStatus.SKIPPED) {
 
@@ -1066,11 +1026,6 @@ public class SmartPlanMoveRepository {
 
     // =========================================================
     // INTERVAL OVERLAP
-    //
-    // [start, end)
-    //
-    // Session ending at 10:00 and another beginning at
-    // 10:00 do NOT overlap.
     // =========================================================
 
     private boolean intervalsOverlap(

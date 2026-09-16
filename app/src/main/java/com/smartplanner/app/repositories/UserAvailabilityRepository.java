@@ -80,9 +80,6 @@ public class UserAvailabilityRepository {
 
     // =========================================================
     // GET AVAILABILITY
-    //
-    // Empty list is valid.
-    // It means Smart Plan availability has not been configured.
     // =========================================================
 
     public void getAvailability(
@@ -162,15 +159,6 @@ public class UserAvailabilityRepository {
 
     // =========================================================
     // SAVE AVAILABILITY
-    //
-    // All seven days are sent together.
-    //
-    // Missing rows -> INSERT
-    // Existing rows -> UPDATE
-    //
-    // Availability directly defines when Smart Plan sessions
-    // are allowed to exist. After a successful save, an
-    // existing Smart Plan therefore becomes NEEDS_UPDATE.
     // =========================================================
 
     public void saveAvailability(
@@ -332,16 +320,6 @@ public class UserAvailabilityRepository {
                                     return;
                                 }
 
-
-                                /*
-                                 * Availability save already
-                                 * succeeded.
-                                 *
-                                 * Smart Plan invalidation is a
-                                 * secondary operation and must not
-                                 * turn this successful save into an
-                                 * Availability error.
-                                 */
                                 invalidateSmartPlanAfterAvailabilityChange(
                                         () -> callback.onSuccess(
                                                 availability
@@ -393,14 +371,6 @@ public class UserAvailabilityRepository {
                                     String message
                             ) {
 
-                                /*
-                                 * Availability was already saved.
-                                 *
-                                 * Do not report that successful
-                                 * operation as failed only because
-                                 * secondary Smart Plan invalidation
-                                 * failed.
-                                 */
                                 if (onFinished != null) {
 
                                     onFinished.run();

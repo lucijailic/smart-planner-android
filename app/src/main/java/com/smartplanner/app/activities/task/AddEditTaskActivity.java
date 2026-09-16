@@ -97,17 +97,9 @@ public class AddEditTaskActivity extends AppCompatActivity {
     private ReminderType selectedReminderType =
             ReminderType.NONE;
 
-    /*
-     * Default reminder dohvaćen iz Notification Settingsa.
-     * Koristi se samo za novi Task.
-     */
     private ReminderType defaultTaskReminderType =
             ReminderType.ONE_DAY;
 
-    /*
-     * Pratimo je li korisnik ručno promijenio reminder.
-     * Time sprječavamo da default prepiše korisnikov izbor.
-     */
     private boolean reminderManuallySelected =
             false;
 
@@ -1118,10 +1110,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
         selectedReminderType =
                 ReminderType.NONE;
 
-        /*
-         * Ako korisnik ponovno doda deadline,
-         * default reminder se ponovno može primijeniti.
-         */
+
         if (!editMode) {
 
             reminderManuallySelected =
@@ -1201,10 +1190,7 @@ public class AddEditTaskActivity extends AppCompatActivity {
 
         if (hasDeadline) {
 
-            /*
-             * Za novi Task primjenjujemo default reminder
-             * samo dok korisnik nije ručno odabrao drugi.
-             */
+
             if (!editMode
                     && !reminderManuallySelected) {
 

@@ -244,11 +244,7 @@ public class TaskAdapter
                 task.getStatus()
                         == TaskStatus.COMPLETED;
 
-        /*
-         * Listener prvo uklanjamo jer RecyclerView ponovno
-         * koristi ViewHolder i setChecked() ne smije slučajno
-         * pozvati prethodni listener.
-         */
+
         holder.checkTaskCompleted
                 .setOnCheckedChangeListener(
                         null
@@ -300,9 +296,7 @@ public class TaskAdapter
                         }
                 );
 
-        /*
-         * Klik na checkbox ne smije otvoriti TaskDetails.
-         */
+
         holder.checkTaskCompleted.setOnClickListener(
                 view -> {
                 }

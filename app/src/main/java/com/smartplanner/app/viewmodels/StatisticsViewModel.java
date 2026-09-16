@@ -119,11 +119,6 @@ public class StatisticsViewModel extends AndroidViewModel {
 
         selectedPeriod = period;
 
-        /*
-         * Nema potrebe ponovno zvati Supabase.
-         * Već učitane podatke samo ponovno obrađujemo
-         * za odabrani period.
-         */
         if (tasksLoaded && categoriesLoaded) {
             calculateStatistics();
         }
@@ -220,11 +215,6 @@ public class StatisticsViewModel extends AndroidViewModel {
             return;
         }
 
-        /*
-         * Bez kategorija i dalje možemo izračunati
-         * summary i daily chart, ali Tasks by Category
-         * ne možemo pouzdano prikazati.
-         */
         if (categoriesError != null) {
 
             calculateSummaryAndDaily();
@@ -356,8 +346,6 @@ public class StatisticsViewModel extends AndroidViewModel {
 
             // -------------------------------------------------
             // COMPLETION RATE
-            // Based on tasks whose deadline belongs
-            // to selected period.
             // -------------------------------------------------
 
             LocalDate deadlineDate =
@@ -625,10 +613,7 @@ public class StatisticsViewModel extends AndroidViewModel {
 
         if (selectedPeriod == StatisticsPeriod.WEEK) {
 
-            /*
-             * Za trenutni tjedan računamo samo dane
-             * koji su do sada prošli, uključujući danas.
-             */
+
             days =
                     java.time.temporal.ChronoUnit.DAYS.between(
                             periodStart,
@@ -637,10 +622,6 @@ public class StatisticsViewModel extends AndroidViewModel {
 
         } else {
 
-            /*
-             * Za trenutni mjesec koristimo broj dana
-             * od prvog dana mjeseca do danas.
-             */
             days =
                     java.time.temporal.ChronoUnit.DAYS.between(
                             periodStart,

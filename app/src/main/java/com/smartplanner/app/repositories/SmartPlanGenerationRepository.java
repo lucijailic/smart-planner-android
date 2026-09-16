@@ -105,16 +105,6 @@ public class SmartPlanGenerationRepository {
 
         private final SmartPlanResult algorithmResult;
 
-        /*
-         * true:
-         *
-         * A new SmartPlan was successfully persisted.
-         *
-         * false:
-         *
-         * Generator returned no planned sessions,
-         * therefore no new SmartPlan was persisted.
-         */
         private final boolean planCreated;
 
         public GenerationResult(
@@ -158,8 +148,6 @@ public class SmartPlanGenerationRepository {
 
     // =========================================================
     // GENERATE SMART PLAN
-    //
-    // Used only when there is NO current SmartPlan.
     // =========================================================
 
     public void generateSmartPlan(
@@ -211,13 +199,6 @@ public class SmartPlanGenerationRepository {
 
     // =========================================================
     // REGENERATE SMART PLAN
-    //
-    // Used only when an ACTIVE or NEEDS_UPDATE
-    // SmartPlan already exists.
-    //
-    // Persistence is atomic through:
-    //
-    // public.regenerate_smart_plan(...)
     // =========================================================
 
     public void regenerateSmartPlan(
@@ -525,19 +506,7 @@ public class SmartPlanGenerationRepository {
                                     List<SmartPlanItem> allItems
                             ) {
 
-                                /*
-                                 * Full Generate / Regenerate uses only
-                                 * COMPLETED historical sessions.
-                                 *
-                                 * COMPLETED:
-                                 * reduces remaining Task duration.
-                                 *
-                                 * SKIPPED:
-                                 * does NOT reduce duration.
-                                 *
-                                 * PLANNED:
-                                 * must NOT block a newly generated plan.
-                                 */
+
                                 List<SmartPlanItem> completedHistory =
                                         filterCompletedItems(
                                                 allItems
@@ -638,19 +607,7 @@ public class SmartPlanGenerationRepository {
 
         if (!smartPlanResult.hasPlannedItems()) {
 
-            /*
-             * GENERATE:
-             *
-             * No empty parent SmartPlan is created.
-             *
-             *
-             * REGENERATE:
-             *
-             * Existing current plan remains untouched.
-             *
-             * UI can still show algorithm warnings and
-             * unscheduled Tasks.
-             */
+
 
             callback.onSuccess(
                     new GenerationResult(
@@ -690,13 +647,6 @@ public class SmartPlanGenerationRepository {
 
     // =========================================================
     // FIRST GENERATE
-    //
-    // Atomic persistence through PostgreSQL RPC:
-    //
-    // public.create_smart_plan(...)
-    //
-    // Parent SmartPlan + all generated items are created
-    // inside one database transaction.
     // =========================================================
 
     private void persistFirstSmartPlan(
@@ -730,14 +680,7 @@ public class SmartPlanGenerationRepository {
                                     return;
                                 }
 
-                                /*
-                                 * Parent and items are already stored
-                                 * atomically by PostgreSQL.
-                                 *
-                                 * We only fetch the created items so
-                                 * GenerationResult contains the actual
-                                 * persisted database models.
-                                 */
+
                                 loadCreatedSmartPlanItems(
                                         createdPlan,
                                         algorithmResult,
@@ -800,18 +743,6 @@ public class SmartPlanGenerationRepository {
                                     String message
                             ) {
 
-                                /*
-                                 * Important:
-                                 *
-                                 * The RPC itself already succeeded.
-                                 *
-                                 * Parent and all sessions exist in the
-                                 * database. Only this follow-up read
-                                 * failed.
-                                 *
-                                 * We do not attempt a client-side
-                                 * rollback.
-                                 */
                                 callback.onError(
                                         message
                                 );
@@ -822,8 +753,6 @@ public class SmartPlanGenerationRepository {
 
     // =========================================================
     // REGENERATE
-    //
-    // Atomic persistence through PostgreSQL RPC.
     // =========================================================
 
     private void persistRegeneratedSmartPlan(

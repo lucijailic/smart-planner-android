@@ -2,6 +2,8 @@ package com.smartplanner.app.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -14,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.credentials.ClearCredentialStateRequest;
 import androidx.credentials.CredentialManager;
 import androidx.credentials.exceptions.ClearCredentialException;
@@ -23,6 +26,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 import com.smartplanner.app.BuildConfig;
 import com.smartplanner.app.R;
 import com.smartplanner.app.activities.auth.LoginActivity;
@@ -55,6 +59,7 @@ public class ProfileFragment extends Fragment {
     private MaterialCardView cardSettings;
     private MaterialCardView cardAbout;
     private MaterialCardView cardLogout;
+    private MaterialCardView cardDeleteAccount;
 
     private ProfileViewModel profileViewModel;
     private AuthRepository authRepository;
@@ -124,6 +129,9 @@ public class ProfileFragment extends Fragment {
 
         cardLogout =
                 view.findViewById(R.id.cardLogout);
+
+        cardDeleteAccount =
+                view.findViewById(R.id.cardDeleteAccount);
     }
 
     private void initRepositories() {
@@ -195,6 +203,10 @@ public class ProfileFragment extends Fragment {
 
         cardLogout.setOnClickListener(
                 view -> performLogout()
+        );
+
+        cardDeleteAccount.setOnClickListener(
+                view -> showDeleteAccountDialog()
         );
     }
 
@@ -282,6 +294,220 @@ public class ProfileFragment extends Fragment {
         aboutDialog.show();
     }
 
+    private void showDeleteAccountDialog() {
+
+        if (!isAdded()) {
+            return;
+        }
+
+        View dialogView =
+                LayoutInflater.from(requireContext())
+                        .inflate(
+                                R.layout.dialog_delete_account,
+                                null
+                        );
+
+        TextInputEditText etDeleteConfirmation =
+                dialogView.findViewById(
+                        R.id.etDeleteConfirmation
+                );
+
+        MaterialButton btnCancelDelete =
+                dialogView.findViewById(
+                        R.id.btnCancelDelete
+                );
+
+        MaterialButton btnConfirmDelete =
+                dialogView.findViewById(
+                        R.id.btnConfirmDelete
+                );
+
+        ProgressBar progressDeleteAccount =
+                dialogView.findViewById(
+                        R.id.progressDeleteAccount
+                );
+
+        AlertDialog deleteDialog =
+                new MaterialAlertDialogBuilder(
+                        requireContext()
+                )
+                        .setView(dialogView)
+                        .create();
+
+        deleteDialog.setCanceledOnTouchOutside(false);
+
+        btnConfirmDelete.setEnabled(false);
+
+        etDeleteConfirmation.addTextChangedListener(
+                new TextWatcher() {
+
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s,
+                            int start,
+                            int count,
+                            int after
+                    ) {
+                        // No action needed.
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence s,
+                            int start,
+                            int before,
+                            int count
+                    ) {
+
+                        boolean confirmed =
+                                s != null
+                                        && "DELETE".equals(
+                                        s.toString().trim()
+                                );
+
+                        btnConfirmDelete.setEnabled(
+                                confirmed
+                        );
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            Editable editable
+                    ) {
+                        // No action needed.
+                    }
+                }
+        );
+
+        btnCancelDelete.setOnClickListener(
+                view -> deleteDialog.dismiss()
+        );
+
+        btnConfirmDelete.setOnClickListener(
+                view -> {
+
+                    String confirmation =
+                            etDeleteConfirmation
+                                    .getText() == null
+                                    ? ""
+                                    : etDeleteConfirmation
+                                    .getText()
+                                    .toString()
+                                    .trim();
+
+                    if (!"DELETE".equals(confirmation)) {
+                        return;
+                    }
+
+                    performDeleteAccount(
+                            deleteDialog,
+                            etDeleteConfirmation,
+                            btnCancelDelete,
+                            btnConfirmDelete,
+                            progressDeleteAccount
+                    );
+                }
+        );
+
+        deleteDialog.show();
+    }
+
+    private void performDeleteAccount(
+            AlertDialog deleteDialog,
+            TextInputEditText etDeleteConfirmation,
+            MaterialButton btnCancelDelete,
+            MaterialButton btnConfirmDelete,
+            ProgressBar progressDeleteAccount
+    ) {
+
+        etDeleteConfirmation.setEnabled(false);
+        btnCancelDelete.setEnabled(false);
+        btnConfirmDelete.setEnabled(false);
+
+        progressDeleteAccount.setVisibility(
+                View.VISIBLE
+        );
+
+        authRepository.deleteAccount(
+                new AuthRepository.AuthCallback<Void>() {
+
+                    @Override
+                    public void onSuccess(Void result) {
+
+                        if (!isAdded()) {
+                            return;
+                        }
+
+                        requireActivity().runOnUiThread(
+                                () -> {
+
+                                    if (deleteDialog.isShowing()) {
+                                        deleteDialog.dismiss();
+                                    }
+
+                                    Toast.makeText(
+                                            requireContext(),
+                                            "Account deleted successfully.",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                    clearCredentialStateAndOpenLogin();
+                                }
+                        );
+                    }
+
+                    @Override
+                    public void onError(String message) {
+
+                        if (!isAdded()) {
+                            return;
+                        }
+
+                        requireActivity().runOnUiThread(
+                                () -> {
+
+                                    progressDeleteAccount.setVisibility(
+                                            View.GONE
+                                    );
+
+                                    etDeleteConfirmation.setEnabled(
+                                            true
+                                    );
+
+                                    btnCancelDelete.setEnabled(
+                                            true
+                                    );
+
+                                    String currentText =
+                                            etDeleteConfirmation
+                                                    .getText() == null
+                                                    ? ""
+                                                    : etDeleteConfirmation
+                                                    .getText()
+                                                    .toString()
+                                                    .trim();
+
+                                    btnConfirmDelete.setEnabled(
+                                            "DELETE".equals(
+                                                    currentText
+                                            )
+                                    );
+
+                                    Toast.makeText(
+                                            requireContext(),
+                                            message == null
+                                                    || message.trim().isEmpty()
+                                                    ? "Unable to delete account. Please try again."
+                                                    : message,
+                                            Toast.LENGTH_LONG
+                                    ).show();
+                                }
+                        );
+                    }
+                }
+        );
+    }
+
     private void performLogout() {
 
         cardLogout.setEnabled(false);
@@ -342,7 +568,9 @@ public class ProfileFragment extends Fragment {
         credentialManager.clearCredentialStateAsync(
                 request,
                 null,
-                requireContext().getMainExecutor(),
+                ContextCompat.getMainExecutor(
+                        requireContext()
+                ),
                 new androidx.credentials.CredentialManagerCallback<
                         Void,
                         ClearCredentialException>() {
@@ -366,11 +594,6 @@ public class ProfileFragment extends Fragment {
                             return;
                         }
 
-                        /*
-                         * Supabase/local logout has already been handled.
-                         * Credential Manager cleanup failure must not
-                         * prevent the user from returning to Login.
-                         */
                         openLogin();
                     }
                 }
