@@ -41,12 +41,6 @@ public class SmartPlanInvalidationRepository {
 
     // =========================================================
     // CALLBACK
-    //
-    // Invalidation is a secondary operation.
-    //
-    // The original Task/Event CRUD operation may already
-    // have succeeded, therefore callers can decide whether
-    // they want to surface an invalidation failure.
     // =========================================================
 
     public interface InvalidationCallback {
@@ -61,17 +55,6 @@ public class SmartPlanInvalidationRepository {
 
     // =========================================================
     // MARK CURRENT PLAN AS NEEDS_UPDATE
-    //
-    // Safe behavior:
-    //
-    // no current plan
-    //      -> nothing to invalidate
-    //
-    // NEEDS_UPDATE
-    //      -> already invalidated
-    //
-    // ACTIVE
-    //      -> NEEDS_UPDATE
     // =========================================================
 
     public void markCurrentPlanNeedsUpdate(
@@ -112,13 +95,7 @@ public class SmartPlanInvalidationRepository {
                         }
 
 
-                        /*
-                         * getCurrentSmartPlan() returns either
-                         * ACTIVE or NEEDS_UPDATE.
-                         *
-                         * If it is already NEEDS_UPDATE,
-                         * invalidation is idempotent.
-                         */
+
                         if (currentPlan.getStatus()
                                 == SmartPlanStatus.NEEDS_UPDATE) {
 
@@ -178,16 +155,6 @@ public class SmartPlanInvalidationRepository {
 
     // =========================================================
     // TASK STATUS CHANGE
-    //
-    // Any Task status change affects planning.
-    //
-    // Special case:
-    //
-    // Task -> COMPLETED
-    //
-    // Future PLANNED SmartPlanItems for that Task are removed
-    // because work that is already completely finished must
-    // not remain scheduled in the future.
     // =========================================================
 
     public void handleTaskStatusChanged(
@@ -254,10 +221,7 @@ public class SmartPlanInvalidationRepository {
                             SmartPlan currentPlan
                     ) {
 
-                        /*
-                         * No current plan means there are no
-                         * current future sessions to clean.
-                         */
+
                         if (currentPlan == null) {
 
                             complete(
@@ -363,16 +327,6 @@ public class SmartPlanInvalidationRepository {
 
     // =========================================================
     // FIND FUTURE PLANNED ITEMS
-    //
-    // Historical COMPLETED and SKIPPED items are preserved.
-    //
-    // Only:
-    //
-    // same Task
-    // PLANNED
-    // future session
-    //
-    // is removed.
     // =========================================================
 
     private List<SmartPlanItem> findFuturePlannedItems(

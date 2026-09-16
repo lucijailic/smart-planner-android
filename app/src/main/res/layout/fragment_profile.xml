@@ -517,7 +517,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="8dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
@@ -533,6 +533,35 @@
                     android:fontFamily="sans-serif-rounded"
                     android:gravity="center"
                     android:text="@string/log_out"
+                    android:textColor="@color/sp_error"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- DELETE ACCOUNT -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDeleteAccount"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/sp_error"
+                app:strokeWidth="1dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="sans-serif-rounded"
+                    android:gravity="center"
+                    android:text="Delete account"
                     android:textColor="@color/sp_error"
                     android:textSize="14sp"
                     android:textStyle="bold" />

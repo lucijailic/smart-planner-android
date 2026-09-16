@@ -24,8 +24,6 @@ public class AuthInterceptor implements Interceptor {
 
         Request originalRequest = chain.request();
 
-        // If the request already has an Authorization header,
-        // keep it. This is needed for flows such as password recovery.
         if (originalRequest.header("Authorization") != null) {
             return chain.proceed(originalRequest);
         }

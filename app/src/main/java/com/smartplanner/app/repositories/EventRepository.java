@@ -328,11 +328,7 @@ public class EventRepository {
                                 Event createdEvent =
                                         events.get(0);
 
-                                /*
-                                 * A new Event creates a new busy
-                                 * interval that may affect an
-                                 * existing Smart Plan.
-                                 */
+
                                 invalidateSmartPlanAfterEventChange(
                                         () -> callback.onSuccess(
                                                 createdEvent
@@ -357,11 +353,6 @@ public class EventRepository {
 
     // =========================================================
     // UPDATE EVENT
-    //
-    // Only start_at / end_at are scheduling-relevant.
-    //
-    // Changing title, description, category, location,
-    // important or reminder does NOT invalidate Smart Plan.
     // =========================================================
 
     public void updateEvent(
@@ -409,13 +400,7 @@ public class EventRepository {
                         : ReminderType.NONE;
 
 
-        /*
-         * Load the previous Event only so we can compare
-         * start_at and end_at after the successful PATCH.
-         *
-         * If this additional read fails, the original Event
-         * update is still allowed to continue.
-         */
+
         getEvent(
                 eventId,
                 new EventCallback<Event>() {
@@ -446,11 +431,7 @@ public class EventRepository {
                             String message
                     ) {
 
-                        /*
-                         * Do not block existing Event update
-                         * behavior only because this comparison
-                         * read failed.
-                         */
+
                         performEventUpdate(
                                 eventId,
                                 categoryId,
@@ -472,8 +453,6 @@ public class EventRepository {
 
     // =========================================================
     // PERFORM EVENT UPDATE
-    //
-    // Existing PATCH logic is kept unchanged here.
     // =========================================================
 
     private void performEventUpdate(
@@ -654,11 +633,6 @@ public class EventRepository {
                                         events.get(0);
 
 
-                                /*
-                                 * If we successfully loaded the
-                                 * original Event, compare only
-                                 * scheduling-relevant fields.
-                                 */
                                 if (originalEvent != null) {
 
                                     boolean schedulingChanged =
@@ -678,10 +652,6 @@ public class EventRepository {
 
                                     } else {
 
-                                        /*
-                                         * Only non-scheduling
-                                         * fields changed.
-                                         */
                                         callback.onSuccess(
                                                 updatedEvent
                                         );
@@ -691,15 +661,6 @@ public class EventRepository {
                                 }
 
 
-                                /*
-                                 * Event PATCH succeeded, but the
-                                 * pre-update read was unavailable.
-                                 *
-                                 * In that rare case we invalidate
-                                 * conservatively so an existing
-                                 * plan cannot silently remain
-                                 * outdated.
-                                 */
                                 invalidateSmartPlanAfterEventChange(
                                         () -> callback.onSuccess(
                                                 updatedEvent
@@ -725,10 +686,6 @@ public class EventRepository {
 
     // =========================================================
     // UPDATE IMPORTANT
-    //
-    // Event importance does not affect Smart Plan scheduling.
-    //
-    // Therefore this method remains functionally unchanged.
     // =========================================================
 
     public void updateImportant(
@@ -849,14 +806,7 @@ public class EventRepository {
 
                                 if (response.isSuccessful()) {
 
-                                    /*
-                                     * Event was successfully
-                                     * removed.
-                                     *
-                                     * The busy-time structure has
-                                     * changed, therefore existing
-                                     * Smart Plan may be outdated.
-                                     */
+
                                     invalidateSmartPlanAfterEventChange(
                                             () -> callback.onSuccess(
                                                     null
@@ -956,12 +906,6 @@ public class EventRepository {
 
     // =========================================================
     // SMART PLAN INVALIDATION
-    //
-    // Invalidation is secondary.
-    //
-    // Event CRUD has already succeeded when this method runs,
-    // therefore an invalidation problem must not falsely turn
-    // the Event operation into an Event error.
     // =========================================================
 
     private void invalidateSmartPlanAfterEventChange(
@@ -988,14 +932,6 @@ public class EventRepository {
                                     String message
                             ) {
 
-                                /*
-                                 * Event operation already
-                                 * succeeded.
-                                 *
-                                 * Preserve that result even if
-                                 * secondary Smart Plan
-                                 * invalidation fails.
-                                 */
                                 if (onFinished != null) {
 
                                     onFinished.run();

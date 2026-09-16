@@ -16,11 +16,6 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface EventApi {
-
-    // =========================================================
-    // EVENTS
-    // =========================================================
-
     @GET("rest/v1/events")
     Call<List<Event>> getEvents(
             @Query("user_id") String userFilter,

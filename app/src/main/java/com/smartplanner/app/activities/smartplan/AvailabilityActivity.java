@@ -292,12 +292,7 @@ public class AvailabilityActivity
             List<UserAvailability> availability
     ) {
 
-        /*
-         * First Smart Plan setup.
-         *
-         * Nothing exists yet in Supabase,
-         * therefore show proposed default week.
-         */
+
         if (availability == null
                 || availability.isEmpty()) {
 
@@ -307,10 +302,6 @@ public class AvailabilityActivity
         }
 
 
-        /*
-         * Start with defaults in case an old/incomplete
-         * account is missing one of the seven rows.
-         */
         applyDefaultAvailability();
 
 
@@ -804,12 +795,7 @@ public class AvailabilityActivity
             }
 
 
-            /*
-             * Disabled days retain their times.
-             *
-             * Therefore the database still receives
-             * a valid start/end interval.
-             */
+
             if (timeToMinutes(
                     row.endTime
             )

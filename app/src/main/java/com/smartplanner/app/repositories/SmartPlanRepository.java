@@ -393,11 +393,6 @@ public class SmartPlanRepository {
 
     // =========================================================
     // CREATE FIRST SMART PLAN - OLD REST METHOD
-    //
-    // Kept for compatibility.
-    //
-    // Standard Generate flow will later use
-    // createSmartPlanAtomically().
     // =========================================================
 
     public void createSmartPlan(
@@ -524,17 +519,6 @@ public class SmartPlanRepository {
 
     // =========================================================
     // ATOMIC CREATE FIRST SMART PLAN
-    //
-    // Calls:
-    //
-    // public.create_smart_plan(...)
-    //
-    // PostgreSQL performs:
-    //
-    // new ACTIVE Smart Plan
-    // + all generated SmartPlanItems
-    //
-    // inside one transaction.
     // =========================================================
 
     public void createSmartPlanAtomically(
@@ -718,18 +702,6 @@ public class SmartPlanRepository {
 
     // =========================================================
     // ATOMIC REGENERATE SMART PLAN
-    //
-    // Calls:
-    //
-    // public.regenerate_smart_plan(...)
-    //
-    // PostgreSQL performs:
-    //
-    // old current plan -> ARCHIVED
-    // new plan -> ACTIVE
-    // insert all sessions
-    //
-    // inside one transaction.
     // =========================================================
 
     public void regenerateSmartPlan(
@@ -896,10 +868,6 @@ public class SmartPlanRepository {
 
     // =========================================================
     // CREATE GENERATED ITEMS
-    //
-    // Legacy persistence method kept for compatibility.
-    //
-    // Atomic Generate will no longer need this method.
     // =========================================================
 
     public void createGeneratedSmartPlanItems(

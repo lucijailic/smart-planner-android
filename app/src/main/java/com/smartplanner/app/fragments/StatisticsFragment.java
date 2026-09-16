@@ -508,11 +508,7 @@ public class StatisticsFragment extends Fragment {
 
         if (weekMode) {
 
-            /*
-             * WEEK:
-             * svih 7 dana ravnomjerno popunjavaju
-             * cijelu dostupnu širinu.
-             */
+
             columnParams =
                     new LinearLayout.LayoutParams(
                             0,
@@ -522,11 +518,7 @@ public class StatisticsFragment extends Fragment {
 
         } else {
 
-            /*
-             * MONTH:
-             * dani ostaju fiksne širine pa se
-             * graf može horizontalno scrollati.
-             */
+
             columnParams =
                     new LinearLayout.LayoutParams(
                             dp(40),

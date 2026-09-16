@@ -46,9 +46,7 @@ public final class SmartPlanGenerator {
                         result
                 );
 
-        /*
-         * No eligible Tasks is a valid result.
-         */
+
         if (candidates.isEmpty()) {
             return result;
         }
@@ -90,13 +88,7 @@ public final class SmartPlanGenerator {
                         input
                 );
 
-        /*
-         * Stores breaks reserved after generated sessions.
-         *
-         * Breaks are soft preferences, so they can later
-         * be shortened if they prevent otherwise valid
-         * scheduling.
-         */
+
         List<ReservedBreak> reservedBreaks =
                 new ArrayList<>();
 
@@ -123,11 +115,6 @@ public final class SmartPlanGenerator {
                                 preferences
                         );
 
-                /*
-                 * If no session fits while full breaks are
-                 * reserved, try shortening/removing one of
-                 * those soft breaks and try again.
-                 */
                 if (generatedItem == null
                         && preferences.getBreakMinutes() > 0) {
 
@@ -225,10 +212,7 @@ public final class SmartPlanGenerator {
                         candidate.getTask()
                 );
 
-        /*
-         * First pass:
-         * try before deadline.
-         */
+
         if (deadline != null
                 && deadline.isAfter(
                 input.getNow()
@@ -250,10 +234,7 @@ public final class SmartPlanGenerator {
             }
         }
 
-        /*
-         * Second pass:
-         * any valid slot inside planning horizon.
-         */
+
         return findSession(
                 input,
                 candidate,
@@ -481,11 +462,6 @@ public final class SmartPlanGenerator {
             return 0;
         }
 
-        /*
-         * Tasks whose entire remaining duration
-         * is shorter than the normal minimum
-         * session may still be scheduled.
-         */
         if (remaining
                 < SmartPlanConstants.MIN_SESSION_MINUTES) {
 
@@ -512,13 +488,6 @@ public final class SmartPlanGenerator {
                         maximumPossible
                 );
 
-        /*
-         * Avoid creating a tiny remainder.
-         *
-         * Example:
-         * 75 remaining, preferred 60
-         * -> 45 + 30 instead of 60 + 15.
-         */
         int remainingAfterSession =
                 remaining
                         - sessionMinutes;
@@ -638,14 +607,6 @@ public final class SmartPlanGenerator {
         return null;
     }
 
-    /*
-     * Reserves the generated session and, where
-     * possible, the configured break after it.
-     *
-     * Returns the actual reserved break interval.
-     * The interval may later be restored because
-     * breaks are a soft preference.
-     */
     private static ReservedBreak reserveGeneratedSession(
             Map<LocalDate, List<TimeSlot>> freeSlotsByDay,
             GeneratedSmartPlanItem item,
@@ -687,11 +648,6 @@ public final class SmartPlanGenerator {
                         preferredBreakMinutes
                 );
 
-        /*
-         * Determine how much of the requested
-         * break actually lies inside the free
-         * slot containing the session.
-         */
         ZonedDateTime actualBreakEnd =
                 sessionEnd;
 
@@ -759,15 +715,6 @@ public final class SmartPlanGenerator {
         return null;
     }
 
-    /*
-     * Break fallback:
-     *
-     * Restore a previously reserved break only when
-     * doing so creates a valid session for the Task.
-     *
-     * We inspect later breaks first so earlier
-     * scheduling decisions remain as stable as possible.
-     */
     private static boolean restoreReservedBreakForCandidate(
             SmartPlanInput input,
             TaskCandidate candidate,
@@ -818,10 +765,6 @@ public final class SmartPlanGenerator {
                 return true;
             }
 
-            /*
-             * Restoring this break did not help,
-             * so reserve it again.
-             */
             subtractBlockedInterval(
                     freeSlotsByDay,
                     reservedBreak.getStart(),
@@ -920,10 +863,6 @@ public final class SmartPlanGenerator {
                             merged.size() - 1
                     );
 
-            /*
-             * Merge overlapping or directly
-             * adjacent free intervals.
-             */
             if (!slot.getStart().isAfter(
                     last.getEnd()
             )) {
@@ -1059,12 +998,6 @@ public final class SmartPlanGenerator {
                 }
             }
 
-            /*
-             * A Task can also have a deadline
-             * conflict if some of its work could
-             * not be scheduled at all before the
-             * deadline.
-             */
             if (candidate
                     .getRemainingPlanningMinutes() > 0) {
 
@@ -1381,10 +1314,6 @@ public final class SmartPlanGenerator {
                         input
                 );
 
-        /*
-         * Existing PLANNED sessions occupy
-         * physical time.
-         */
         if (input.getExistingItems() != null) {
 
             for (SmartPlanItem item
@@ -1426,11 +1355,6 @@ public final class SmartPlanGenerator {
             }
         }
 
-        /*
-         * Generated sessions also occupy time.
-         * Breaks are intentionally not included
-         * because they are soft preferences.
-         */
         if (result != null
                 && result.getPlannedItems() != null) {
 
@@ -1705,10 +1629,6 @@ public final class SmartPlanGenerator {
                 continue;
             }
 
-            /*
-             * Only COMPLETED sessions reduce
-             * remaining Task duration.
-             */
             if (item.getStatus()
                     != SmartPlanItemStatus.COMPLETED) {
 
@@ -2023,10 +1943,7 @@ public final class SmartPlanGenerator {
         }
     }
 
-    /*
-     * Internal representation of a break that
-     * was reserved as a soft preference.
-     */
+
     private static class ReservedBreak {
 
         private final ZonedDateTime start;

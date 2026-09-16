@@ -337,15 +337,7 @@ public class AddEditEventActivity extends AppCompatActivity {
                 adapter
         );
 
-        /*
-         * NEW EVENT:
-         * Učitavamo default Event reminder iz lokalnih
-         * Notification Settings postavki.
-         *
-         * EDIT EVENT:
-         * Reminder će kasnije doći iz Event objekta
-         * kroz populateEvent().
-         */
+
         if (!editMode) {
 
             selectedReminder =
@@ -963,10 +955,7 @@ public class AddEditEventActivity extends AppCompatActivity {
                 event.isImportant()
         );
 
-        /*
-         * EDIT EVENT koristi reminder spremljen
-         * baš na tom Event objektu.
-         */
+
         selectedReminder =
                 event.getReminderType() != null
                         ? event.getReminderType()

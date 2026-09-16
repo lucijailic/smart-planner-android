@@ -89,11 +89,7 @@ public class NotificationHelper {
                 context
         );
 
-        /*
-         * Android 13+ requires POST_NOTIFICATIONS permission.
-         *
-         * Permission is checked before notify() is called.
-         */
+
         if (Build.VERSION.SDK_INT
                 >= Build.VERSION_CODES.TIRAMISU) {
 

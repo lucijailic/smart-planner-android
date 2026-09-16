@@ -178,14 +178,7 @@ public class AuthRepository {
 
                             AuthResponse authResponse = response.body();
 
-                            /*
-                             * If email confirmation is disabled,
-                             * Supabase may immediately return a session.
-                             *
-                             * If email confirmation is enabled,
-                             * the user can be created without an
-                             * access token / refresh token.
-                             */
+
                             if (hasSessionData(authResponse)) {
                                 saveSession(authResponse);
                             }
@@ -370,6 +363,56 @@ public class AuthRepository {
                 });
     }
 
+    public void deleteAccount(
+            AuthCallback<Void> callback
+    ) {
+
+        if (!sessionManager.hasSession()) {
+            callback.onError(
+                    "You must be signed in to delete your account."
+            );
+            return;
+        }
+
+        authApi.deleteAccount()
+                .enqueue(new Callback<Void>() {
+
+                    @Override
+                    public void onResponse(
+                            Call<Void> call,
+                            Response<Void> response
+                    ) {
+
+                        if (response.isSuccessful()) {
+
+
+                            sessionManager.clearSession();
+
+                            callback.onSuccess(null);
+
+                        } else {
+
+
+                            callback.onError(
+                                    "Unable to delete account. Please try again."
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<Void> call,
+                            Throwable throwable
+                    ) {
+
+
+                        callback.onError(
+                                "Unable to connect. Please try again."
+                        );
+                    }
+                });
+    }
+
     public void logout(
             AuthCallback<Void> callback
     ) {
@@ -383,10 +426,7 @@ public class AuthRepository {
                             Response<Void> response
                     ) {
 
-                        /*
-                         * Local session should always be removed
-                         * when the user chooses Logout.
-                         */
+
                         sessionManager.clearSession();
 
                         if (response.isSuccessful()) {
@@ -522,10 +562,7 @@ public class AuthRepository {
                         if (response.isSuccessful()
                                 && response.body() != null) {
 
-                            /*
-                             * After password recovery we require
-                             * the user to log in again.
-                             */
+
                             sessionManager.clearSession();
 
                             callback.onSuccess(response.body());

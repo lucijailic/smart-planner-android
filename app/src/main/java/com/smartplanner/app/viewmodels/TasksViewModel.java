@@ -287,10 +287,6 @@ public class TasksViewModel extends AndroidViewModel {
                                 UiState.success(result)
                         );
 
-                        /*
-                         * Osvježavamo detalje taska u ovoj
-                         * ViewModel instanci.
-                         */
                         if (result != null
                                 && result.getId() != null
                                 && !result.getId().trim().isEmpty()) {
@@ -411,17 +407,11 @@ public class TasksViewModel extends AndroidViewModel {
                             Task result
                     ) {
 
-                        /*
-                         * Activity koja prikazuje detalje odmah
-                         * dobiva novi Task objekt.
-                         */
+
                         statusActionState.postValue(
                                 UiState.success(result)
                         );
 
-                        /*
-                         * I taskDetailsState držimo sinkroniziranim.
-                         */
                         if (result != null) {
 
                             taskDetailsState.postValue(
@@ -429,14 +419,6 @@ public class TasksViewModel extends AndroidViewModel {
                             );
                         }
 
-                        /*
-                         * Osvježava listu ako ista ViewModel
-                         * instanca negdje prikazuje tasksState.
-                         *
-                         * TasksFragment dodatno radi loadTasks()
-                         * u onResume(), pa imamo sigurno
-                         * osvježavanje nakon povratka.
-                         */
                         loadTasks();
                     }
 

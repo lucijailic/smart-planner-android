@@ -203,13 +203,6 @@ public class SmartPlanViewModel
         }
 
 
-        /*
-         * COMPLETE / SKIP / MOVE:
-         * returns updated SmartPlanItem.
-         *
-         * REMOVE:
-         * returns null because the item was deleted.
-         */
         public SmartPlanItem getSmartPlanItem() {
             return smartPlanItem;
         }
@@ -296,12 +289,6 @@ public class SmartPlanViewModel
                                 )
                         );
 
-
-                        /*
-                         * SUCCESS + null is valid.
-                         *
-                         * User simply has no Smart Plan yet.
-                         */
                         if (result == null) {
 
                             smartPlanItemsState.postValue(
@@ -705,8 +692,6 @@ public class SmartPlanViewModel
 
                         // =====================================
                         // IN_PROGRESS / COMPLETED / OTHER
-                        //
-                        // No Task status change required.
                         // =====================================
 
                         finishCompleteSessionSuccess(
@@ -721,12 +706,6 @@ public class SmartPlanViewModel
                             String message
                     ) {
 
-                        /*
-                         * Session completion already succeeded.
-                         *
-                         * Do not roll it back if secondary Task
-                         * synchronization fails.
-                         */
                         finishCompleteSessionSuccess(
                                 smartPlanItemId,
                                 completedItem
@@ -953,9 +932,6 @@ public class SmartPlanViewModel
 
     // =========================================================
     // MOVE SESSION
-    //
-    // Full validation is delegated to
-    // SmartPlanMoveRepository.
     // =========================================================
 
     public void moveSession(

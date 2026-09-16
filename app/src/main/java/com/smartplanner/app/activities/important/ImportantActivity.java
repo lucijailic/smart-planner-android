@@ -462,10 +462,7 @@ public class ImportantActivity extends AppCompatActivity {
                 continue;
             }
 
-            /*
-             * Finished events no longer belong in the active
-             * Important list.
-             */
+
             if (end.before(
                     now
             )) {

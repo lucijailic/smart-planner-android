@@ -20,11 +20,6 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 public interface TaskApi {
-
-    // =========================================================
-    // TASKS
-    // =========================================================
-
     @GET("rest/v1/tasks")
     Call<List<Task>> getTasks(
             @Query("user_id") String userFilter,
@@ -45,18 +40,6 @@ public interface TaskApi {
             @Query("select") String select
     );
 
-    /*
-     * RequestBody koristimo kod updatea kako bismo mogli
-     * eksplicitno poslati JSON null vrijednosti.
-     *
-     * Primjer:
-     * "deadline": null
-     *
-     * Kod PATCH zahtjeva:
-     *
-     * polje nije poslano -> postojeća vrijednost ostaje
-     * polje je null      -> postojeća vrijednost se briše
-     */
     @Headers("Prefer: return=representation")
     @PATCH("rest/v1/tasks")
     Call<List<Task>> updateTask(
@@ -73,12 +56,6 @@ public interface TaskApi {
             @Body TaskImportantRequest request
     );
 
-    /*
-     * I ovdje koristimo RequestBody jer kod Reopen Task
-     * moramo moći poslati:
-     *
-     * "completed_at": null
-     */
     @Headers("Prefer: return=representation")
     @PATCH("rest/v1/tasks")
     Call<List<Task>> updateTaskStatus(

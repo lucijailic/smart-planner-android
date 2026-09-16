@@ -55,9 +55,6 @@ public class PlanningPreferencesViewModel
 
     // =========================================================
     // LOAD
-    //
-    // Success with null means:
-    // Smart Plan preferences do not exist yet.
     // =========================================================
 
     public void loadPreferences() {
@@ -127,11 +124,6 @@ public class PlanningPreferencesViewModel
                                 UiState.success(result)
                         );
 
-
-                        /*
-                         * Keep the main state synchronized
-                         * with the newly created preferences.
-                         */
                         preferencesState.postValue(
                                 UiState.success(result)
                         );
@@ -183,11 +175,6 @@ public class PlanningPreferencesViewModel
                                 UiState.success(result)
                         );
 
-
-                        /*
-                         * Keep the loaded preferences synchronized
-                         * with the newly saved values.
-                         */
                         preferencesState.postValue(
                                 UiState.success(result)
                         );

@@ -526,13 +526,7 @@ public class EventDetailsActivity extends AppCompatActivity {
 
                                 case SUCCESS:
 
-                                    /*
-                                     * Event je uspješno obrisan iz baze.
-                                     *
-                                     * Tek sada uklanjamo njegov Android
-                                     * reminder kako ne bismo izgubili alarm
-                                     * ako Supabase delete ne uspije.
-                                     */
+
                                     EventReminderManager.cancelEventReminder(
                                             this,
                                             eventId

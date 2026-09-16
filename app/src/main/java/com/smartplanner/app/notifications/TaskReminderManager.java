@@ -34,12 +34,7 @@ public class TaskReminderManager {
                         task.getId()
                 );
 
-        /*
-         * Prvo uvijek brišemo eventualni stari alarm.
-         *
-         * Ovo pokriva Edit Task slučaj kada korisnik
-         * promijeni deadline ili reminder.
-         */
+
         NotificationScheduler.cancelNotification(
                 context,
                 notificationId

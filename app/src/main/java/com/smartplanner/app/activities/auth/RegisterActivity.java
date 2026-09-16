@@ -119,13 +119,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     Toast.LENGTH_SHORT
                             ).show();
 
-                            /*
-                             * For now, return to Login.
-                             *
-                             * We will finalize this behavior after
-                             * configuring the Supabase email
-                             * confirmation flow.
-                             */
+
                             Intent intent = new Intent(
                                     RegisterActivity.this,
                                     LoginActivity.class

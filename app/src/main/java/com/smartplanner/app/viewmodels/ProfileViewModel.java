@@ -93,10 +93,6 @@ public class ProfileViewModel extends AndroidViewModel {
                                 UiState.success(result)
                         );
 
-                        /*
-                         * Keep the main profile state synchronized
-                         * with the updated profile.
-                         */
                         profileState.postValue(
                                 UiState.success(result)
                         );
