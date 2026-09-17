@@ -48,6 +48,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import android.widget.RadioButton;
 
 public class EventsFragment extends Fragment {
 
@@ -2051,6 +2052,10 @@ public class EventsFragment extends Fragment {
                 content
         );
 
+        // =========================================================
+        // SORT CARDS
+        // =========================================================
+
         View rowSoonest =
                 content.findViewById(
                         R.id.rowSortEventSoonest
@@ -2076,88 +2081,174 @@ public class EventsFragment extends Fragment {
                         R.id.rowSortEventTitle
                 );
 
-        TextView checkSoonest =
+        // =========================================================
+        // RADIO BUTTONS
+        // =========================================================
+
+        RadioButton radioSoonest =
                 content.findViewById(
                         R.id.checkSortEventSoonest
                 );
 
-        TextView checkLatest =
+        RadioButton radioLatest =
                 content.findViewById(
                         R.id.checkSortEventLatest
                 );
 
-        TextView checkNewest =
+        RadioButton radioNewest =
                 content.findViewById(
                         R.id.checkSortEventNewest
                 );
 
-        TextView checkOldest =
+        RadioButton radioOldest =
                 content.findViewById(
                         R.id.checkSortEventOldest
                 );
 
-        TextView checkTitle =
+        RadioButton radioTitle =
                 content.findViewById(
                         R.id.checkSortEventTitle
                 );
 
-        updateSortChecks(
-                checkSoonest,
-                checkLatest,
-                checkNewest,
-                checkOldest,
-                checkTitle
+        MaterialButton btnApply =
+                content.findViewById(
+                        R.id.btnApplyEventSort
+                );
+
+
+        final SortOption[] tempSortOption = {
+                selectedSortOption
+        };
+
+        updateEventSortSelection(
+                rowSoonest,
+                rowLatest,
+                rowNewest,
+                rowOldest,
+                rowTitle,
+                radioSoonest,
+                radioLatest,
+                radioNewest,
+                radioOldest,
+                radioTitle,
+                tempSortOption[0]
         );
 
         rowSoonest.setOnClickListener(
                 view -> {
 
-                    selectSortOption(
-                            SortOption.START_SOONEST
-                    );
+                    tempSortOption[0] =
+                            SortOption.START_SOONEST;
 
-                    dialog.dismiss();
+                    updateEventSortSelection(
+                            rowSoonest,
+                            rowLatest,
+                            rowNewest,
+                            rowOldest,
+                            rowTitle,
+                            radioSoonest,
+                            radioLatest,
+                            radioNewest,
+                            radioOldest,
+                            radioTitle,
+                            tempSortOption[0]
+                    );
                 }
         );
 
         rowLatest.setOnClickListener(
                 view -> {
 
-                    selectSortOption(
-                            SortOption.START_LATEST
-                    );
+                    tempSortOption[0] =
+                            SortOption.START_LATEST;
 
-                    dialog.dismiss();
+                    updateEventSortSelection(
+                            rowSoonest,
+                            rowLatest,
+                            rowNewest,
+                            rowOldest,
+                            rowTitle,
+                            radioSoonest,
+                            radioLatest,
+                            radioNewest,
+                            radioOldest,
+                            radioTitle,
+                            tempSortOption[0]
+                    );
                 }
         );
 
         rowNewest.setOnClickListener(
                 view -> {
 
-                    selectSortOption(
-                            SortOption.NEWEST
-                    );
+                    tempSortOption[0] =
+                            SortOption.NEWEST;
 
-                    dialog.dismiss();
+                    updateEventSortSelection(
+                            rowSoonest,
+                            rowLatest,
+                            rowNewest,
+                            rowOldest,
+                            rowTitle,
+                            radioSoonest,
+                            radioLatest,
+                            radioNewest,
+                            radioOldest,
+                            radioTitle,
+                            tempSortOption[0]
+                    );
                 }
         );
 
         rowOldest.setOnClickListener(
                 view -> {
 
-                    selectSortOption(
-                            SortOption.OLDEST
-                    );
+                    tempSortOption[0] =
+                            SortOption.OLDEST;
 
-                    dialog.dismiss();
+                    updateEventSortSelection(
+                            rowSoonest,
+                            rowLatest,
+                            rowNewest,
+                            rowOldest,
+                            rowTitle,
+                            radioSoonest,
+                            radioLatest,
+                            radioNewest,
+                            radioOldest,
+                            radioTitle,
+                            tempSortOption[0]
+                    );
                 }
         );
 
         rowTitle.setOnClickListener(
                 view -> {
 
+                    tempSortOption[0] =
+                            SortOption.TITLE_A_Z;
+
+                    updateEventSortSelection(
+                            rowSoonest,
+                            rowLatest,
+                            rowNewest,
+                            rowOldest,
+                            rowTitle,
+                            radioSoonest,
+                            radioLatest,
+                            radioNewest,
+                            radioOldest,
+                            radioTitle,
+                            tempSortOption[0]
+                    );
+                }
+        );
+
+        btnApply.setOnClickListener(
+                view -> {
+
                     selectSortOption(
-                            SortOption.TITLE_A_Z
+                            tempSortOption[0]
                     );
 
                     dialog.dismiss();
@@ -2167,48 +2258,114 @@ public class EventsFragment extends Fragment {
         dialog.show();
     }
 
-    private void updateSortChecks(
-            TextView soonest,
-            TextView latest,
-            TextView newest,
-            TextView oldest,
-            TextView title
+    private void updateEventSortSelection(
+            View rowSoonest,
+            View rowLatest,
+            View rowNewest,
+            View rowOldest,
+            View rowTitle,
+            RadioButton radioSoonest,
+            RadioButton radioLatest,
+            RadioButton radioNewest,
+            RadioButton radioOldest,
+            RadioButton radioTitle,
+            SortOption selected
     ) {
 
-        soonest.setVisibility(
-                selectedSortOption
-                        == SortOption.START_SOONEST
-                        ? View.VISIBLE
-                        : View.INVISIBLE
+        radioSoonest.setChecked(
+                selected == SortOption.START_SOONEST
         );
 
-        latest.setVisibility(
-                selectedSortOption
-                        == SortOption.START_LATEST
-                        ? View.VISIBLE
-                        : View.INVISIBLE
+        radioLatest.setChecked(
+                selected == SortOption.START_LATEST
         );
 
-        newest.setVisibility(
-                selectedSortOption
-                        == SortOption.NEWEST
-                        ? View.VISIBLE
-                        : View.INVISIBLE
+        radioNewest.setChecked(
+                selected == SortOption.NEWEST
         );
 
-        oldest.setVisibility(
-                selectedSortOption
-                        == SortOption.OLDEST
-                        ? View.VISIBLE
-                        : View.INVISIBLE
+        radioOldest.setChecked(
+                selected == SortOption.OLDEST
         );
 
-        title.setVisibility(
-                selectedSortOption
-                        == SortOption.TITLE_A_Z
-                        ? View.VISIBLE
-                        : View.INVISIBLE
+        radioTitle.setChecked(
+                selected == SortOption.TITLE_A_Z
         );
+
+        updateEventSortCardAppearance(
+                rowSoonest,
+                selected == SortOption.START_SOONEST
+        );
+
+        updateEventSortCardAppearance(
+                rowLatest,
+                selected == SortOption.START_LATEST
+        );
+
+        updateEventSortCardAppearance(
+                rowNewest,
+                selected == SortOption.NEWEST
+        );
+
+        updateEventSortCardAppearance(
+                rowOldest,
+                selected == SortOption.OLDEST
+        );
+
+        updateEventSortCardAppearance(
+                rowTitle,
+                selected == SortOption.TITLE_A_Z
+        );
+    }
+
+    private void updateEventSortCardAppearance(
+            View view,
+            boolean selected
+    ) {
+
+        if (!(view instanceof com.google.android.material.card.MaterialCardView)) {
+            return;
+        }
+
+        com.google.android.material.card.MaterialCardView card =
+                (com.google.android.material.card.MaterialCardView) view;
+
+        if (selected) {
+
+            card.setStrokeColor(
+                    requireContext().getColor(
+                            R.color.sp_teal
+                    )
+            );
+
+            card.setStrokeWidth(
+                    dpToPxInt(2)
+            );
+
+            card.setCardBackgroundColor(
+                    requireContext().getColor(
+                            R.color.sp_home_tasks_bg
+                    )
+            );
+
+        } else {
+
+            card.setStrokeColor(
+                    requireContext().getColor(
+                            R.color.sp_border
+                    )
+            );
+
+            card.setStrokeWidth(
+                    dpToPxInt(1)
+            );
+
+            card.setCardBackgroundColor(
+                    requireContext().getColor(
+                            R.color.sp_surface
+                    )
+            );
+        }
     }
 
     private void selectSortOption(
